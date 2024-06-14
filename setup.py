@@ -3,14 +3,14 @@ from setuptools import setup, find_packages
 setup(
     name='pygaming',
     version='0.1',
-    packages=find_packages(),
+    packages=find_packages(include=['pygaming', 'pygaming.*']),
     install_requires=[
-        'pyinstaller', 'pygame'
+        'pyinstaller',
+        'pygame'
     ],
     entry_points={
         'console_scripts': [
-            'pygaming-install=pygaming/_commands/_installer:install',
-            'pygaming-init=pygaming/_commands/_init_cwd:init_pygaming'
+            'pygaming=pygaming.commands.cli:cli'
         ],
     },
 )
