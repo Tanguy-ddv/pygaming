@@ -1,0 +1,4 @@
+INSERT INTO localizations (position, language_code, text_value) VALUES 
+('LOC_TITLE', 'EN_us', 'Title'),
+('LOC_TTILE', 'FR_fr', 'Titre'),
+('LOC_SELECT_PLAYER', 'EN_us', 'Choose your fighter!') -- Example of use of the localizations table

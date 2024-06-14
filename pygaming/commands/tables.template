@@ -1,0 +1,15 @@
+-- In this file are created every tables. This sql file is the first executed at game launch.
+
+CREATE TABLE localizations (
+    position TEXT NOT NULL PRIMARY KEY, --"LOC_..."
+    language_code TEXT DEFAULT 'EN_us', --'EN_us" for us english, "FR_fr" for french, "IT_it" for italian, "ES_mx" for mexican spanish etc.
+    text_value TEXT NOT NULL -- The value itself
+);
+
+-- Exemple of table to store the users:
+
+CREATE TABLE player(
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    victories INTEGER DEFAULT 0
+)
