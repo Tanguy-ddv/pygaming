@@ -3,6 +3,8 @@
 import socket
 import threading
 import json
+import time
+from ._constants import SERVER_PORT, DISCOVERY_PORT, MAX_COMMUNICATION_LENGTH,  CONTENT, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP
 
 class ClientSocketManager():
     """
@@ -11,11 +13,11 @@ class ClientSocketManager():
     Without this class, deconnection of players might create duplicate ids.
     """
 
-    def __init__(self, client_socket: socket.socket, id_: int, address: str, port):
+    def __init__(self, client_socket: socket.socket, id_: int, address: str, port: int):
         """Create an instance of the clientSocket."""
         self.socket = client_socket
         self.id_ = id_
-        self.status = 'online'
+        self.status = ONLINE
         self.address = address
         self.port = port
 
@@ -23,90 +25,98 @@ class Server:
     """
     The server must be unique. It is launched with the server_main function.
     Every player, i.e. every client, connect to this server. This server receive and
-    transmit the data to the game.
+    transmit the data to the players.
     """
-    def __init__(self, host_ip, host_port):
+    def __init__(self):
 
-        self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__client_socket_managers: list[ClientSocketManager] = []
-        self.__running = True
-        self.__last_received = {}
-        self.__is_triggered = False
+        host_ip = socket.gethostbyname(socket.gethostname())
+        host_port = SERVER_PORT
+
+        self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._client_socket_managers: list[ClientSocketManager] = []
+        self._running = True
+        self._last_received = []
+        self._is_triggered = False
         print(f"Server launched: {host_ip}, {host_port}")
-        self.__server_socket.bind((host_ip, host_port))
-        self.__server_socket.listen(20)
-        threading.Thread(target=self.__accept_clients).start()
+        self._server_socket.bind((host_ip, host_port))
+        self._server_socket.listen(20)
+        threading.Thread(target=self._accept_clients).start()
+        threading.Thread(target=self._broadcast_address, kwargs={'host_port' : host_port, 'host_ip' : host_ip}).start()
 
-    def __accept_clients(self):
-        while self.__running:
-            client_socket, (address, port) = self.__server_socket.accept()
-            if address not in [client_socket_m.address for client_socket_m in self.__client_socket_managers]:
-                if self.__client_socket_managers:
-                    id_ = max(client_socket_m.id_ for client_socket_m in self.__client_socket_managers) +1
+    def _accept_clients(self):
+        """Accept a new client."""
+        while self._running:
+            client_socket, (address, port) = self._server_socket.accept()
+            if address not in [client_socket_m.address for client_socket_m in self._client_socket_managers]:
+                if self._client_socket_managers:
+                    id_ = max(client_socket_m.id_ for client_socket_m in self._client_socket_managers) +1
                 else:
                     id_ = 1
-                self.__client_socket_managers.append(ClientSocketManager(client_socket, id_, address, port))
+                self._client_socket_managers.append(ClientSocketManager(client_socket, id_, address, port))
                 print(f"New client connected: {address} has the id {id_}")
             else:
-                for client_socket_m in self.__client_socket_managers:
+                for client_socket_m in self._client_socket_managers:
                     if client_socket_m.address == address:
-                        client_socket_m.status == 'online'
+                        client_socket_m.status == ONLINE
                         client_socket_m.port = port
                         print(f"Client {address} (id={id_}) is now reconnected")
 
-            welcome_message = {"header" : "new_id", "content" : id_}
+            welcome_message = {HEADER : NEW_ID, CONTENT : id_}
             json_message = json.dumps(welcome_message)
             client_socket.send(json_message.encode())
-            threading.Thread(target=self.__handle_client, args=(client_socket, id_)).start()
+            threading.Thread(target=self._handle_client, args=(client_socket, id_)).start()
 
-    def __handle_client(self, client_socket: socket.socket, id_: int):
-        while self.__running:
+    def _broadcast_address(self, host_ip):
+        """Send in the socket.SOCK_DGRAM socket the host_ip and the host port every 5 seconds."""
+        while self._running:
+            broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            message = json.dumps({HEADER : BROADCAST_IP, CONTENT:  host_ip})
+            broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
+            time.sleep(5)  # Send broadcast every 5 seconds
+
+    def _handle_client(self, client_socket: socket.socket, id_: int):
+        while self._running:
             try:
-                data = client_socket.recv(1024)
+                data = client_socket.recv(MAX_COMMUNICATION_LENGTH)
                 if data:
                     json_data = json.loads(data.decode())
-                    self.__last_received = json_data
-                    self.__is_triggered = True
-                else:
-                    self.__is_triggered = False
+                    self._last_received.append(json_data)
             except Exception:
-                for client_sck in self.__client_socket_managers:
+                for client_sck in self._client_socket_managers:
                     if client_sck.id_ == id_:
                         print(f"Client {client_sck.address} with id {client_sck.id_} just deconnected.")
-                        client_sck.status = 'offline'
+                        client_sck.status = OFFLINE
                 break
     
-    def get_last_received(self) -> dict:
+    def get_last_receptions(self) -> dict:
         """Return the last data received."""
-        if self.__is_triggered:
-            self.__is_triggered = False
-            return self.__last_received
+        last_receiptions = self._last_received
+        self._last_received.clear()
+        return last_receiptions
 
     def send(self, client_id, data):
         """The data to one client."""
-        for client_socket in self.__client_socket_managers:
+        for client_socket in self._client_socket_managers:
             if client_socket.id_ == client_id:
                 json_data = json.dumps(data)
                 client_socket.socket.send(json_data.encode())
 
     def send_all(self, data):
         """Send data to all the clients."""
-        for client_socket in self.__client_socket_managers:
+        for client_socket in self._client_socket_managers:
             json_data = json.dumps(data)
             client_socket.socket.send(json_data.encode())
 
     def stop(self):
-        self.__running = False
-        self.__server_socket.close()
-        for client_socket in self.__client_socket_managers:
+        self._running = False
+        self._server_socket.close()
+        for client_socket in self._client_socket_managers:
             client_socket.socket.close()
 
 if __name__ == '__main__':
-    SERVER_IP = socket.gethostbyname(socket.gethostname())
-    print("The server's IP adress is:", SERVER_IP)
-    SERVER_PORT = 50505
-    server = Server(SERVER_IP, SERVER_PORT)
+    server = Server()
     while True:
-        last_received = server.get_last_received()
-        if last_received:
-            print(last_received)
+        last_received = server.get_last_receptions()
+        for data in last_received:
+            print(data)
