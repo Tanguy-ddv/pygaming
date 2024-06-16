@@ -76,5 +76,4 @@ class Color:
             B = __HEX.index(b1_hex)*16 + __HEX.index(b2_hex)
             return Color(R, G, B)
 
-
         raise ValueError(f"Invalid color format, got {hex}")
