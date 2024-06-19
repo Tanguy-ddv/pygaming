@@ -1,8 +1,8 @@
 -- In this file are created every tables. This sql file is the first executed at game launch.
 
 CREATE TABLE localizations (
-    position TEXT NOT NULL PRIMARY KEY, --"LOC_..."
-    language_code TEXT DEFAULT 'EN_us', --'EN_us" for us english, "FR_fr" for french, "IT_it" for italian, "ES_mx" for mexican spanish etc.
+    position TEXT NOT NULL, --"LOC_..."
+    language_code TEXT DEFAULT 'en_US', --'en_US" for us english, "fr_FR" for french, "it_IT" for italian, "es_MX" for mexican spanish etc.
     text_value TEXT NOT NULL -- The value itself
 );
 
