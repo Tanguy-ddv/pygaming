@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-
 class File(ABC):
     """Represent any type of file that would be loaded for the game: image, sounds, etc."""
 
@@ -12,5 +11,3 @@ class File(ABC):
     @abstractmethod
     def get(self) -> Any:
         """Get the object in the proper format to be used by the game."""
-
-    
