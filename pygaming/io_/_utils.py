@@ -3,7 +3,6 @@ import sys
 import os
 import json
 
-
 def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fonts'], file: str, dynamic : bool = False):
     """
     Return the full path of the file.
