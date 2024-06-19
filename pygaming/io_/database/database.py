@@ -3,16 +3,22 @@ The Database is used to address queries to the database.
 """
 import sqlite3 as sql
 import os
+import json
 from .._utils import get_file
 
 __DB_PATH = get_file('data','sql/db.sqlite')
 __TABLE_PATH = get_file('data', 'sql/tables.sql')
-__IG_QUERIES_PATH = get_file('data', 'sql/ig_queries.sql')
-__IG_STATIC_ = get_file('data', 'sql/ig_queries.sql',)
+__IG_QUERIES_PATH = get_file('data', 'sql/ig_queries.sql', dynamic=True)
+__CONFIG_FILE = get_file('data', 'config.json', dynamic=True)
 
 class Database:
-    """The Database instance is used to adress queries to the database.
-        No need to have 2 databases on the same code.
+    """
+    The Database instance is used to adress queries to the database.
+    No need to have 2 databases on the same code as they will connect to the same db.
+    The database automatically create a .sqlite file in the temporary folder /data/sql/db.sqlite,
+    then execute every .sql file in the data/sql/ folder.
+    At instance deletion, the .sqlite file is deleted if the debug mode is not selected ()
+    
     """
 
     def __init__(self, debug: bool=False) -> None:
@@ -121,3 +127,25 @@ class Database:
         query = f"SELECT * FROM {table} WHERE {join_table}_id = {id_}"
         result, description = self._execute_select_query(query)
         return [{key : value for key,value in zip(description, res) if (key != f"{table}_id" or return_id)} for res in result]
+
+    def get_texts(self, language: str):
+        """Return all the texts of the game.
+        If the text is not avaiable in the chosen language, get the text in the default language."""
+        with open(__CONFIG_FILE, 'r') as f:
+            default_language = json.load(f)['default_language']
+        return self._execute_select_query(
+            f"""SELECT position, text_value
+                FROM localizations
+                WHERE language_code = '{language}'
+
+                UNION
+
+                SELECT position, text_value
+                FROM localizations
+                WHERE language_code = '{default_language}'
+                AND position NOT IN (
+                    SELECT position
+                    FROM localizations
+                    WHERE language_code = '{language}'
+            )"""
+        )

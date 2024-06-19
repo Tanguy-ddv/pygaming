@@ -165,3 +165,7 @@ testing/
 data/
 assets/icon.ico
 src/
+game.exe
+player.exe
+setup.exe
+server.exe
