@@ -2,11 +2,14 @@
 The function init_working_directory is used to create the working environment first.
 It should be only used by using the command line defined in the `setup.py` file:
 pygaming-init -name
-The function make some basic folders and files to assure the localisation of the files for the building.
+The function make some basic folders and files to assure the localization of the files for the building
+and to guide the programmer.
 """
 
 import os
 import shutil
+import json
+import locale
 
 def init_cwd():
     """
@@ -51,16 +54,27 @@ def init_cwd():
     if not os.path.exists('data'):
         os.mkdir('data')
         os.mkdir('data/sql')
-        # create the 'tables.sql' file that will be used to generate the files.
 
+        # create the 'tables.sql' file that will be used to generate the files.
         shutil.copyfile(
             os.path.join(this_dir, 'pygaming', 'commands/tables.template'),
             os.path.join(cwd, 'data/sql/tables.sql')
         )
+        # Create an empty ig_queries.sql to store all the insert queries executed during the game.
+        open(os.path.join(cwd, 'data/sql/ig_queries.sql'), 'w').close()
 
+        # Create the 'localizations.sql' that is used to store all the texts of the game.
         shutil.copyfile(
             os.path.join(this_dir, 'pygaming', 'commands/localizations.template'),
             os.path.join(cwd, 'data/sql/localizations.sql')
         )
+        # Create the keymap.json file used to map the inputs.
+        shutil.copyfile(
+            os.path.join(this_dir, 'pygaming', 'commands/keymap.template'),
+            os.path.join(cwd, 'data/keymap.json')
+        )
+
+        with open(os.path.join(cwd, 'data/config.json'), 'r') as f:
+            json.dump({'default_langage': locale.getdefaultlocale()[0]}, f)
 
         print(f" The folder {os.path.join(cwd, 'data')} have been created. Insert in this all the data you need: .sql file to manage the database, and other `content` file if needed, as .json and .zip files, or custom files.")

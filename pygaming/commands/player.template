@@ -18,3 +18,7 @@ class MyGamePlayer(Player):
     def _on_start():
         # Implement here the function that will be called at the very begining of the game.
         raise NotImplementedError()
+    
+if __name__ == '__main__':
+    myplayer = MyGamePlayer()
+    myplayer.run()
