@@ -48,9 +48,7 @@ class Inputs:
                     self.mouse_y = event.pos[1]
                     return velocity
 
-
-
-    def get_action(self):
+    def get_actions(self):
         """Return a dict of str: bool specifying if the action is trigger or not."""
         types = [event.type for event in pygame.event.get()]
         return {
