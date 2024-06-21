@@ -6,17 +6,27 @@ import json
 __KEYMAP_PATH = 'keymap.json'
 
 class KeyMapper:
+    """
+    The key mapper is used to map the keybord keys into actions.
+    It contains a dictionnary of pygame.types : string, that map a type of event into a string.
+    The string is an action, the pygame.type is a str(int).
+    The current mapping is store in the dynamic data/keymap.json file.
+    """
 
     def __init__(self) -> None:
         
         with open(get_file('data', __KEYMAP_PATH, dynamic=True)) as f:
             self._key_map_dict: dict = json.load(f)
+            self.reverse_mapping = self.get_reversed_mapping()
 
     def new_key(self, key: int, value: str):
-        """Modify a key map"""
+        """Modify a key map."""
+        # Modify the current dict
         self._key_map_dict[str(key)] = value
+        # Modify the file
         with open(get_file('data', __KEYMAP_PATH, dynamic=True), 'w') as f:
             json.dump(self._key_map_dict, f)
+        self.reverse_mapping = self.get_reversed_mapping()
 
     def get(self, key: int):
         """Get the action associated with the key."""

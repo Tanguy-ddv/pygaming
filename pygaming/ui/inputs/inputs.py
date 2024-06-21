@@ -37,7 +37,7 @@ class Inputs:
         types = [event.type for event in pygame.event.get()]
         return {
             action : any(key in types for key in keys) 
-            for action, keys in self._key_mapper.get_reversed_mapping()}
+            for action, keys in self._key_mapper.reverse_mapping}
 
 @dataclass
 class Click:
