@@ -15,6 +15,7 @@ class Inputs:
     def __init__(self) -> None:
         
         self._key_mapper = KeyMapper()
+        self.clear_mouse_velocity()
 
     def get_characters(self):
         """Return all the letter characters a-z, digits 0-9, whitespace and punctuation."""
@@ -31,6 +32,23 @@ class Inputs:
             for event in pygame.event.get()
             if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN]
         }
+
+    def clear_mouse_velocity(self):
+        """Remove the history of mouse velocity."""
+        self.mouse_x = None
+        self.mouse_y = None
+
+    def get_mouse_velocity(self):
+        """Return the current mouse speed."""
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEMOTION:
+                if self.mouse_x is not None and self.mouse_y is not None:
+                    velocity = self.mouse_x - event.pos[0], self.mouse_y - event.pos[0]
+                    self.mouse_x = event.pos[0]
+                    self.mouse_y = event.pos[1]
+                    return velocity
+
+
 
     def get_action(self):
         """Return a dict of str: bool specifying if the action is trigger or not."""
