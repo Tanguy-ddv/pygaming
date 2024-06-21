@@ -3,7 +3,7 @@
 from ...io_.utils import get_file
 import json
 
-__KEYMAP_PATH = 'keymap.json'
+KEYMAP_PATH = 'keymap.json'
 
 class KeyMapper:
     """
@@ -15,7 +15,7 @@ class KeyMapper:
 
     def __init__(self) -> None:
         
-        with open(get_file('data', __KEYMAP_PATH, dynamic=True)) as f:
+        with open(get_file('data', KEYMAP_PATH, dynamic=True)) as f:
             self._key_map_dict: dict = json.load(f)
             self.reverse_mapping = self.get_reversed_mapping()
 
@@ -24,7 +24,7 @@ class KeyMapper:
         # Modify the current dict
         self._key_map_dict[str(key)] = value
         # Modify the file
-        with open(get_file('data', __KEYMAP_PATH, dynamic=True), 'w') as f:
+        with open(get_file('data', KEYMAP_PATH, dynamic=True), 'w') as f:
             json.dump(self._key_map_dict, f)
         self.reverse_mapping = self.get_reversed_mapping()
 
