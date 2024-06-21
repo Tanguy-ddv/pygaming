@@ -1,4 +1,4 @@
-from .._utils import get_file
+from ..utils import get_file
 from .file import File
 
 class MusicFile(File):

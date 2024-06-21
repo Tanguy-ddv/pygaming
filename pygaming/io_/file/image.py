@@ -1,6 +1,6 @@
 import pygame
 from .file import File
-from .._utils import get_file
+from ..utils import get_file
 
 class ImageFile(File):
     """Represent the file of an image."""

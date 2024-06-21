@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from .file import File
-from .._utils import get_file
+from ..utils import get_file
 
 class DataFile(File, ABC):
     """
