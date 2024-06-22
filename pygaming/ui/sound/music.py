@@ -34,7 +34,7 @@ class Jukebox:
         pygame.mixer.music.play(0)
         self._playing = True
 
-    def insure_loop(self):
+    def update(self):
         """This function should be called at the end of every gameloop to make the function loop."""
         if not pygame.mixer.music.get_busy() and self._playing:
             pygame.mixer.music.play(0, self.loop_instant)

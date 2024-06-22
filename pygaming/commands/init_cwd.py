@@ -28,7 +28,8 @@ def init_cwd():
         os.mkdir(os.path.join(cwd, 'assets/images'))
 
         open(os.path.join(cwd, 'assets/icon.ico'),'w').close()
-        open(os.path.join(cwd, 'assets/loop_times.json'),'w').close()
+        with open(os.path.join(cwd, 'assets/loop_times.json'),'w') as f:
+            json.dump({}, f)
 
         print(f"The folder {os.path.join(cwd, 'assets')} has been created, remember to modify the icon.ico file with your icon. You can easily convert any .png image into a .ico with online converter.")
 
