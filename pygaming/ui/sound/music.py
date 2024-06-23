@@ -5,7 +5,7 @@ from ...io_.utils import get_file
 import json
 from ...io_.file.music import MusicFile
 
-CONFIG_PATH = 'config.json'
+SETTINGS_PATH = 'settings.json'
 
 
 class Jukebox:
@@ -13,7 +13,7 @@ class Jukebox:
 
     def __init__(self) -> None:
         
-        with open(get_file('data', CONFIG_PATH, dynamic=True)) as f:
+        with open(get_file('data', SETTINGS_PATH, dynamic=True)) as f:
             volumes = json.load(f)['volume']
             self.main_volume = volumes['main']
             self.music_volume = volumes['music']
@@ -27,9 +27,9 @@ class Jukebox:
         pygame.mixer.music.stop()
         self._playing = False
     
-    def play(self, music: MusicFile):
+    def play(self, music_file: MusicFile):
         """Play the music."""
-        path, self.loop_instant = music.get()
+        path, self.loop_instant = music_file.get()
         pygame.mixer.music.load(path)
         pygame.mixer.music.play(0)
         self._playing = True
@@ -42,12 +42,12 @@ class Jukebox:
     def _save_volumes(self):
         """Save the volumes in the config file."""
 
-        with open(get_file('data', CONFIG_PATH, dynamic=True)) as f:
+        with open(get_file('data', SETTINGS_PATH, dynamic=True)) as f:
             config = json.load(f)
             config['volume']['main'] = self.main_volume
             config['volume']['music'] = self.music_volume
 
-        with open(get_file('data', CONFIG_PATH, dynamic=True), 'w') as f:
+        with open(get_file('data', SETTINGS_PATH, dynamic=True), 'w') as f:
             json.dump(config, f)
 
     def set_main_volume(self, volume):

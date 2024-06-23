@@ -28,7 +28,14 @@ def init_cwd():
         os.mkdir(os.path.join(cwd, 'assets/images'))
 
         open(os.path.join(cwd, 'assets/icon.ico'),'w').close()
-        with open(os.path.join(cwd, 'assets/loop_times.json'),'w') as f:
+        shutil.copyfile(
+            os.path.join(this_dir, 'pygaming', 'commands/icon.template'),
+            os.path.join(cwd, 'assets/icon.ico')
+        )
+        with open(os.path.join(cwd, 'assets/musics/loop_times.json'),'w') as f:
+            json.dump({}, f)
+        
+        with open(os.path.join(cwd, 'assets/sounds/categories.json'),'w') as f:
             json.dump({}, f)
 
         print(f"The folder {os.path.join(cwd, 'assets')} has been created, remember to modify the icon.ico file with your icon. You can easily convert any .png image into a .ico with online converter.")
@@ -79,14 +86,23 @@ def init_cwd():
         with open(os.path.join(cwd, 'data/config.json'), 'r') as f:
             json.dump(
                 {
-                    'default_langage': locale.getdefaultlocale()[0],
-                    'volume' : {
-                        'main' : 1,
-                        'music' : 1,
-                        'sounds' : 1
-                    }
+                    'default_langage': locale.getdefaultlocale()[0]
                 },
                 f
             )
+        
+        with open(os.path.join(cwd, 'data/settings.json'), 'r') as f:
+            json.dump(
+                {
+                    'volume' : {
+                        'main' : 1,
+                        'music' : 1,
+                        'sounds' : {}
+                    },
+                    'current_language' : locale.getlocale()[0]
+                },
+                f
+            )
+
 
         print(f" The folder {os.path.join(cwd, 'data')} have been created. Insert in this all the data you need: .sql file to manage the database, and other `content` file if needed, as .json and .zip files, or custom files.")
