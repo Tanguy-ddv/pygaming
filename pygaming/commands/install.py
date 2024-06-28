@@ -68,7 +68,7 @@ def install():
         )
 
     if os.path.exists(os.path.join(base_path, "src/player.py")):
-        command = ['pyinstaller'] + default_options + [os.path.join(base_path, "src/player.py")]
+        command = ['pyinstaller'] + default_options + ['--windowed'] + [os.path.join(base_path, "src/player.py")]
         subprocess.run(command, capture_output=True, text=True)
     
         shutil.copyfile(

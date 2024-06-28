@@ -30,6 +30,7 @@ def build(name: str):
 
     options = [
         '--onefile',
+        '--windowed'
         '--icon=assets/icon.ico',
         f"--add-data={os.path.join(cwd, 'data')};data",
         f"--add-data={os.path.join(cwd, 'assets')};assets",
