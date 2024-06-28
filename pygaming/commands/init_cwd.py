@@ -13,7 +13,7 @@ import locale
 def init_cwd():
     """Create some files and folder in the current working directory."""
 
-    cwd= os.getcwd()
+    cwd = os.getcwd()
     this_dir = os.path.dirname(__name__)
 
     # Create the asset folder with:
@@ -23,7 +23,7 @@ def init_cwd():
     #   - categories.json that map a sound file to its category (used to manage the different game volumes)
     #   - loop_times.json that map a music file to its loop instant (in sec).
     # Remark: These two file might stay empty if no musics (or no looping musics) and no sound or no sound categories.
-    if not os.path.exists('assets'):
+    if not os.path.exists(os.path.join(cwd, 'assets')):
             
         with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/assert_success.txt'), 'r') as f:
             TEXT = ''.join(f.readlines())
@@ -63,7 +63,7 @@ def init_cwd():
     #   - the current language
     #   - the full screen (0/1)
 
-    if not os.path.exists('data'):
+    if not os.path.exists(os.path.join(cwd, 'data')):
 
         with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/data_success.txt'), 'r') as f:
             TEXT = ''.join(f.readlines())
@@ -117,7 +117,7 @@ def init_cwd():
     # - The player.py file which is a tempalte to use. Any online game must have one player.py / playing player.
     #   The player class display things, based on the server receptions, and send data to the server
 
-    if not os.path.exists('src'):
+    if not os.path.exists(os.path.join(cwd, 'src')):
 
         with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/src_success.txt'), 'r') as f:
             TEXT = ''.join(f.readlines())

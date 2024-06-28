@@ -1,4 +1,8 @@
 """The build function create the game-install.exe file that is to be distributed."""
+import os
+import json
+import subprocess
+import shutil
 
 def build(name: str):
     """
@@ -11,4 +15,31 @@ def build(name: str):
     ---
     name: str, the name of the game.
     """
+    cwd = os.getcwd()
+    config_path = os.path.join(cwd, 'data', 'config.json')
+    this_dir = os.path.dirname(__name__)
 
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+        config['name'] = name
+    with open(config_path, 'w', encoding='utf-8') as f:
+        json.dump(config, f)
+    
+        cwd= os.getcwd()
+    this_dir = os.path.dirname(__name__)
+
+    options = [
+        '--onefile',
+        '--icon=assets/icon.ico',
+        f"--add-data={os.path.join(cwd, 'data')};data",
+        f"--add-data={os.path.join(cwd, 'assets')};assets",
+        f"--add-data={os.path.join(cwd, 'src')};src",
+    ]
+
+    command = ['pyinstaller'] + options + [os.path.join(this_dir, 'pygaming', 'commands/install.py')]
+    subprocess.run(command, capture_output=True, text=True)
+
+    shutil.copyfile(
+        os.path.join(cwd, 'dist/install.exe'),
+        os.path.join(cwd, f'install-{name}.exe')
+    )
