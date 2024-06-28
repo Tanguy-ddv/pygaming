@@ -26,4 +26,4 @@ def cli():
         if len(args) == 2:
             print(f"Please specify the name of your game as argument of 'pygaming build'")
         else:
-            build(args[2].capitalize())
+            build(" ".join(word.capitalize() for word in args[2:]))

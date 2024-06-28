@@ -49,39 +49,7 @@ def init_cwd():
             json.dump({}, f)
 
         # Print the success output ot guide the user
-        print("\033[33m" + TEXT)
-
-    # Create the src folder with:
-    # - The game.py file which is a template to use. Any offline could follow this template.
-    # - The server.py file which is a template to use. Any online game must have one server.
-    #   The server must be launched once and every player connects to it via the player.py file
-    #   The server is used to do all the calculations of the game, then send the data to the players.
-    # - The player.py file which is a tempalte to use. Any online game must have one player.py / playing player.
-    #   The player class display things, based on the server receptions, and send data to the server
-
-    if not os.path.exists('src'):
-
-        with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/src_success.txt'), 'r') as f:
-            TEXT = ''.join(f.readlines())
-
-        os.mkdir(os.path.join(cwd, 'src'))
-
-        shutil.copyfile(
-            os.path.join(this_dir, 'pygaming', 'commands/templates/game.py'),
-            os.path.join(cwd, 'src/game.py')
-        )
-
-        shutil.copyfile(
-            os.path.join(this_dir, 'pygaming', 'commands/templates/player.py'),
-            os.path.join(cwd, 'src/player.py')
-        )
-
-        shutil.copyfile(
-            os.path.join(this_dir, 'pygaming', 'commands/templates/server.py'),
-            os.path.join(cwd, 'src/server.py')
-        )
-
-        print("\033[32m" + TEXT)
+        print("\033[33m" + TEXT + "\033[0m")
 
     # Create the data folder with:
     # - The sql subfolder containing all the sql files, including:
@@ -139,6 +107,42 @@ def init_cwd():
         with open(os.path.join(this_dir, 'pygaming', 'commands/templates/settings.json'), 'w') as f:
             json.dump(settings, f)
         
-        print("\033[35m" + TEXT)
-    # Reinitialize the color text
-    print("\033[0mInitialization complete.")
+        print("\033[35m" + TEXT + "\033[0m")
+
+    # Create the src folder with:
+    # - The game.py file which is a template to use. Any offline could follow this template.
+    # - The server.py file which is a template to use. Any online game must have one server.
+    #   The server must be launched once and every player connects to it via the player.py file
+    #   The server is used to do all the calculations of the game, then send the data to the players.
+    # - The player.py file which is a tempalte to use. Any online game must have one player.py / playing player.
+    #   The player class display things, based on the server receptions, and send data to the server
+
+    if not os.path.exists('src'):
+
+        with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/src_success.txt'), 'r') as f:
+            TEXT = ''.join(f.readlines())
+
+        os.mkdir(os.path.join(cwd, 'src'))
+
+        shutil.copyfile(
+            os.path.join(this_dir, 'pygaming', 'commands/templates/game.py'),
+            os.path.join(cwd, 'src/game.py')
+        )
+
+        shutil.copyfile(
+            os.path.join(this_dir, 'pygaming', 'commands/templates/player.py'),
+            os.path.join(cwd, 'src/player.py')
+        )
+
+        shutil.copyfile(
+            os.path.join(this_dir, 'pygaming', 'commands/templates/server.py'),
+            os.path.join(cwd, 'src/server.py')
+        )
+
+        print("\033[32m" + TEXT + "\033[0m")
+
+    with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/init_success.txt'), 'r') as f:
+        TEXT = ''.join(f.readlines())
+
+    # Reinitialize the color text and print the end of the init
+    print(TEXT)
