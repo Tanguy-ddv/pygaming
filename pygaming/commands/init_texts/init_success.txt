@@ -1,0 +1,9 @@
+The working directory have be initialized. You can now work on your game.
+To do so, modify the classes MyGame, MyServer and MyPlayer with your game code.
+(You can rename them, as soon as running the server.py create and run one instance of your server (same for game and player))
+Once done, you can create the install file by calling the command 'pygaming build Name-of-your-game'.
+You can have whitespaces in the name of the game.
+The first letter of the words will be uppercase, every other will be lowercase
+Then, you can distribute this file. Its executation can be done in any device using the same OS.
+Executing this file will create a folder with the game assets and data, and create the executables files for the game.
+Enjoy!

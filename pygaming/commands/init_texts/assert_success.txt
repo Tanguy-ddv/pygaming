@@ -1,0 +1,23 @@
+The folder 'assets' has been created. It will be used to store all the assets of the game:
+musics, sounds, fonts and images
+
+The folder contains several subfolders and files:
+----
+The default icon is pygaming's icon, rememeber to replace this file with your own icon.
+To create a .icon file, use the image software you want (e.g : microsoft paint) to create your own icon,
+then convert into an .ico file (you can use online converters)
+----
+The musics, sounds, fonts and images folders will be used by you to store the different assets of the game.
+You can load them by using the FontFile, MusicFile, SoundFile and ImageFile to load them in the game.
+----
+The musics folder contains an empty file: loop_times.json, this file must be filled with a dictionnary-like content with:
+- The keys are the name of the music file (e.g : "music.mp3")
+- The values are the instants (in second) on which you want the musics to loop when finished
+    (e.g: 13.458, when the menu music ends, it restart at 13.458 seconds from the start)
+This file can stay empty if you don't have any music you want to loop.
+----
+The sounds folder contains an empty file: categories.json, this must be fille with a dictionnary-like content with:
+- The keys are the name of the sound file (e.g : "rain.ogg")
+- The values are the categories of the sounds (e.g : "ambient"). The categories are used to manage the volume of the sounds.
+This file can stay empty if don't have any sound or you put all of them in the same category
+------

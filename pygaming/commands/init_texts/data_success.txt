@@ -1,0 +1,20 @@
+The folder 'data' has been created. It will be used to store all the data about the game:
+database files, settings, configs, your own files.
+
+The folder contains several files:
+---
+The sql folder will contains every files related to the database 
+At the game launch, the database is create in the temporary folder. 
+ - The first script that is executed is tables.sql. This script initialize the tables of the database.
+ - Then, every other sql files (but ig_queries.sql) are executed one by one, in the alphabetical order.
+ - The localizations.sql file contains the texts, it is used to create a game that can be played in multiple languages.
+ - The ig_queries.sql is empty at the first game launch, but it might by filled during the game use by insert queries.
+---
+The settings.json file is used to store the settings.
+This file is modified when the user pause the game to change some settings.
+Fill the file with your own default settings, then call them with the setting class.
+---
+The config.json file is used to store permanent settings, like default values.
+---
+Use the data folder to store the other data of your game: sessions, players, or objects that requires a complex save.
+------

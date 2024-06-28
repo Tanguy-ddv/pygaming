@@ -163,7 +163,7 @@ cython_debug/
 
 testing/
 data/
-assets/icon.ico
+assets/
 src/
 game.exe
 player.exe
