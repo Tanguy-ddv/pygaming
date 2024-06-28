@@ -3,14 +3,10 @@ The command line entry point for the pygaming commands.
 """
 
 from .init_cwd import init_cwd
-from .install import install
-from .uninstall import uninstall
-from .make import make
+from .build import build
 
 INIT_CWD = 'init'
-INSTALL = 'install'
-UNINSTALL = 'uninstall'
-MAKE = 'make'
+BUILD = 'build'
 
 import sys
 
@@ -18,15 +14,16 @@ def cli():
     
     args = sys.argv
     if len(args) < 2:
-        print(f'You need a command: {INIT_CWD}, {INSTALL}, {MAKE} OR {UNINSTALL}')
+        print(f'You need a command: {INIT_CWD} or {BUILD}')
         sys.exit(1)
     cmd = args[1]
-    if cmd not in [INIT_CWD, UNINSTALL, INSTALL, MAKE]:
-        print(f"invalid command, you need one of {INIT_CWD}, {INSTALL}, {MAKE} OR {UNINSTALL} but got {cmd}")
+    if cmd not in [INIT_CWD, BUILD]:
+        print(f"invalid command, you need one of {INIT_CWD} or {BUILD} but got {cmd}")
     
     if cmd == INIT_CWD:
         init_cwd()
-    if cmd == INSTALL:
-        install()
-    if cmd == UNINSTALL:
-        uninstall()
+    if cmd == BUILD:
+        if len(args) == 2:
+            print(f"Please specify the name of your game as argument of 'pygaming build'")
+        else:
+            build(args[2].capitalize())
