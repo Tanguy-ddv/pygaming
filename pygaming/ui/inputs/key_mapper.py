@@ -2,6 +2,7 @@
 
 from ...io_.utils import get_file
 import json
+import pygame
 
 KEYMAP_PATH = 'keymap.json'
 
@@ -16,7 +17,13 @@ class KeyMapper:
     def __init__(self) -> None:
         
         with open(get_file('data', KEYMAP_PATH, dynamic=True)) as f:
-            self._key_map_dict: dict = json.load(f)
+            _key_map_dict: dict = json.load(f)
+            self._key_map_dict = {}
+            for key, action in _key_map_dict:
+                if not key.isdigit() and hasattr(pygame, key):
+                    self._key_map_dict[getattr(pygame, key)] = action
+                else:
+                    self._key_map_dict[key] = action
             self.reverse_mapping = self.get_reversed_mapping()
 
     def new_key(self, key: int, value: str):
