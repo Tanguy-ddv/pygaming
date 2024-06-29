@@ -28,6 +28,7 @@ class Entry(BaseWidget):
         margin_x: int = 10,
         margin_y: int = 5,
         font_color: Color = black,
+        forbidden_characters: list[str] | str = '',
         bold: bool = False,
         underline: bool = False,
         italic: bool = False,
@@ -51,6 +52,7 @@ class Entry(BaseWidget):
         size: The maxiumum number of charachters the text can have.
         margin_x, margin_y: the margin of text in its background (in pixel)
         font_color: The color of the font
+        forbidden_characters: the list of forbidden characters.
         bold, underline, italic, antialias: bool. markers for the text
         caret_blink_period:int (ms) The period of display the caret.
         The caret is the vertical cursor that show where the next character will be placed,
@@ -58,7 +60,6 @@ class Entry(BaseWidget):
         caret_width: int. The width of the caret, in pixel.
         initial_focus: bool. If false, you have to click to set the focus on the entry before interacting with.
         """
-        super().__init__(frame, x, y, width, height, bg, initial_focus)
         self.font = font_file.get(font_size, italic, bold, underline)
         width, height = _get_entry_shape(self.font, size, margin_x, margin_y)
         if isinstance(background, Color):
@@ -66,11 +67,14 @@ class Entry(BaseWidget):
             bg.fill(background.to_RGBA())
         else:
             bg = background
+        super().__init__(frame, x, y, width, height, bg, initial_focus)
         
-        self.font_color = font_color.to_RGBA()
+        self._font_color = font_color.to_RGBA()
         self.x, self.y = x,y
         self.size = size
-        self.antialias = antialias
+        self._antialias = antialias
+
+        self._forbidden_characters = forbidden_characters
 
         self._value = initial_value
         self._cursor_index = len(self._value)
@@ -87,7 +91,8 @@ class Entry(BaseWidget):
             letters = inputs.get_characters()
             if letters:
                 letter = letters[0]
-                self._add_letter(letter)
+                if letter not in self._forbidden_characters:
+                    self._add_letter(letter)
             if inputs.get_keydown(pygame.K_BACKSPACE):
                 self._remove_letter()
             arrows = inputs.get_arrows()
@@ -113,14 +118,14 @@ class Entry(BaseWidget):
     def get_surface(self) -> pygame.Surface:
         """Get the surface of the object to be displayed."""
         background = self.background.copy()
-        text = self.font.render(self._value, self.antialias, self.font_color)
+        text = self.font.render(self._value, self._antialias, self._font_color)
         left = max(self.width // 2 - text.get_width()//2, 0)
         up = self.height // 2 - text.get_height()//2 
         background.blit(text, (left, up))
         if self._show_caret and self._focus:
             start_pos = left + self._caret_pos, 2
             end_pos = left + self._caret_pos, self.height - 2
-            pygame.draw.line(background, self.font_color, start_pos, end_pos, self._caret_width)
+            pygame.draw.line(background, self._font_color, start_pos, end_pos, self._caret_width)
         return background
 
     def _add_letter(self, letter: str):
