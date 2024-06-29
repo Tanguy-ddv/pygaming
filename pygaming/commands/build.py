@@ -3,6 +3,7 @@ import os
 import json
 import subprocess
 import shutil
+import platform
 
 def build(name: str):
     """
@@ -15,6 +16,12 @@ def build(name: str):
     ---
     name: str, the name of the game.
     """
+    # Create the sep for the add-data of pyinstaller
+    if platform.system() == 'Windows':
+        sep = ';'
+    else:
+        sep = ':'
+
     cwd = os.getcwd()
     config_path = os.path.join(cwd, 'data', 'config.json')
     this_dir = os.path.dirname(__name__)
@@ -24,23 +31,57 @@ def build(name: str):
         config['name'] = name
     with open(config_path, 'w', encoding='utf-8') as f:
         json.dump(config, f)
-    
-        cwd= os.getcwd()
-    this_dir = os.path.dirname(__name__)
 
-    options = [
+    print("The config file has been modified successfully")
+    
+    cwd= os.getcwd()
+    this_dir = os.path.dirname(__name__)
+    
+    game_options = [
         '--onefile',
-        '--windowed'
-        '--icon=assets/icon.ico',
-        f"--add-data={os.path.join(cwd, 'data')};data",
-        f"--add-data={os.path.join(cwd, 'assets')};assets",
-        f"--add-data={os.path.join(cwd, 'src')};src",
+        f"--icon={os.path.join(cwd, 'assets', 'icon.ico')}",
+        f"--add-data={os.path.join(cwd, 'data')}{sep}data",
+        f"--add-data={os.path.join(cwd, 'assets')}{sep}assets",
     ]
 
-    command = ['pyinstaller'] + options + [os.path.join(this_dir, 'pygaming', 'commands/install.py')]
+    installer_options = [
+        '--onefile',
+        #'--noconsole',
+        f"--icon={os.path.join(cwd, 'assets', 'icon.ico')}",
+        f"--add-data={os.path.join(cwd, 'data')}{sep}data",
+        f"--add-data={os.path.join(cwd, 'assets')}{sep}assets",
+        f"--add-data={os.path.join(cwd, 'src')}{sep}src",
+    ]
+    # Build the game file
+    if os.path.exists(os.path.join(cwd, "src", "game.py")):
+        command = ['pyinstaller'] + game_options + ['--windowed'] + [os.path.join(cwd, "src", "game.py")]
+        subprocess.run(command, capture_output=True, text=True)
+        installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'game.exe')}{sep}game")
+        print("The game has been built successfully")
+
+    # Build the player file
+    if os.path.exists(os.path.join(cwd, "src", "player.py")):
+        command = ['pyinstaller'] + game_options + ['--windowed'] + [os.path.join(cwd, "src", "player.py")]
+        subprocess.run(command, capture_output=True, text=True)
+        installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'player.exe')}{sep}player")
+        print("The player has been built successfully")
+
+    # Build the server file
+    if os.path.exists(os.path.join(cwd, "src", "server.py")):
+        command = ['pyinstaller'] + game_options + [os.path.join(cwd, "src", "server.py")]
+        subprocess.run(command, capture_output=True, text=True)
+        installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'server.exe')}{sep}server")
+        print("The server has been built successfully")
+
+    # Create the installer
+    command = ['pyinstaller'] + installer_options + [os.path.join(os.path.abspath(this_dir), 'pygaming', 'commands/install.py')]
     subprocess.run(command, capture_output=True, text=True)
 
-    shutil.copyfile(
-        os.path.join(cwd, 'dist/install.exe'),
-        os.path.join(cwd, f'install-{name}.exe')
-    )
+    # Copy paste it on the root.
+    try:
+        shutil.copyfile(
+            os.path.join(cwd, 'dist/install.exe'),
+            os.path.join(cwd, f'install-{name}.exe')
+        )
+    except FileNotFoundError:
+        print("The file has been deleted by your antivirus, find it back and tell your antivirus it is ok")
