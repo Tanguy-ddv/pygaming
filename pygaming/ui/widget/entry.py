@@ -108,7 +108,7 @@ class Entry(BaseWidget):
 
     def _get_caret_position(self):
         """Get the position of the caret in the image."""
-        left_text: pygame.Surface = self.font.render(self._value[:self._cursor_index], self.antialias, (0,0,0))
+        left_text: pygame.Surface = self.font.render(self._value[:self._cursor_index], self._antialias, (0,0,0))
         return left_text.get_width()
 
     def get(self) -> str:
