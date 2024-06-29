@@ -4,7 +4,7 @@ from ...io_.utils import get_file
 import json
 import pygame
 
-KEYMAP_PATH = 'keymap.json'
+SETTINGS_PATH = 'settings.json'
 
 class KeyMapper:
     """
@@ -16,10 +16,10 @@ class KeyMapper:
 
     def __init__(self) -> None:
         
-        with open(get_file('data', KEYMAP_PATH, dynamic=True)) as f:
-            _key_map_dict: dict = json.load(f)
+        with open(get_file('data', SETTINGS_PATH, dynamic=True)) as f:
+            _key_map_dict: dict = json.load(f)['control']
             self._key_map_dict = {}
-            for key, action in _key_map_dict:
+            for key, action in _key_map_dict.items():
                 if not key.isdigit() and hasattr(pygame, key):
                     self._key_map_dict[getattr(pygame, key)] = action
                 else:
@@ -31,8 +31,11 @@ class KeyMapper:
         # Modify the current dict
         self._key_map_dict[str(key)] = value
         # Modify the file
-        with open(get_file('data', KEYMAP_PATH, dynamic=True), 'w') as f:
-            json.dump(self._key_map_dict, f)
+        with open(get_file('data', SETTINGS_PATH, dynamic=True), 'r') as f:
+            settings = json.load(f)
+            settings['control'] = self._key_map_dict
+        with open(get_file('data', SETTINGS_PATH, dynamic=True), 'w') as f:
+            json.dump(settings, f)
         self.reverse_mapping = self.get_reversed_mapping()
 
     def get(self, key: int):

@@ -7,7 +7,7 @@ class ImageFile(File):
 
     def __init__(self, path: str) -> None:
         super().__init__(path)
-        self.full_path = get_file(folder='assets/images', path=path)
+        self.full_path = get_file(folder='images', file=path)
         self._image = pygame.image.load(self.full_path).convert_alpha()
 
     def get(self, size: tuple[int, int] = None, rotation: float = 0) -> pygame.Surface:
