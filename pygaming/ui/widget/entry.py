@@ -69,15 +69,16 @@ class Entry(BaseWidget):
                 self._add_letter(letter)
             if inputs.get_keydown(pygame.K_BACKSPACE):
                 self._remove_letter()
-            self._time_since_last_blink += loop_duration
-            if self._time_since_last_blink > self._caret_blink_period:
-                self._show_caret = not self._show_caret
-                self._time_since_last_blink = 0
             arrows = inputs.get_arrows()
             if (pygame.KEYDOWN, pygame.K_RIGHT) in arrows:
                 self._move_cursor_to_the_right()
             if (pygame.KEYDOWN, pygame.K_LEFT) in arrows:
                 self._move_cursor_to_the_left()
+
+            self._time_since_last_blink += loop_duration
+            if self._time_since_last_blink > self._caret_blink_period:
+                self._show_caret = not self._show_caret
+                self._time_since_last_blink = 0
 
     def _get_caret_position(self):
         """Get the position of the caret in the image."""
@@ -95,7 +96,7 @@ class Entry(BaseWidget):
         left = max(self.width // 2 - text.get_width()//2, 0)
         up = self.height // 2 - text.get_height()//2 
         background.blit(text, (left, up))
-        if self._show_caret:
+        if self._show_caret and self._focus:
             start_pos = left + self._caret_pos, 2
             end_pos = left + self._caret_pos, self.height - 2
             pygame.draw.line(background, self.font_color, start_pos, end_pos, self._caret_width)

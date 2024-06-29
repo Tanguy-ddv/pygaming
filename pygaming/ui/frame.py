@@ -46,3 +46,12 @@ class Frame:
         """Update all the widgets."""
         for widget in self.widgets:
             widget.update(inputs, loop_duration)
+        
+    def get_surface(self):
+        background = self.background.copy()
+        for widget in self.widgets:
+            x = widget.x
+            y = widget.y
+            surface = widget.get_surface()
+            background.blit(surface, (x,y))
+        return background
