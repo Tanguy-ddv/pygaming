@@ -58,13 +58,8 @@ def build(name: str):
         subprocess.run(command, capture_output=True, text=True)
         installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'game.exe')}{sep}game")
         print("The game has been built successfully")
-
-    # Build the player file
-    if os.path.exists(os.path.join(cwd, "src", "player.py")):
-        command = ['pyinstaller'] + game_options + ['--windowed'] + [os.path.join(cwd, "src", "player.py")]
-        subprocess.run(command, capture_output=True, text=True)
-        installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'player.exe')}{sep}player")
-        print("The player has been built successfully")
+    else:
+        raise Exception("You need a game.py file as main file of the game")
 
     # Build the server file
     if os.path.exists(os.path.join(cwd, "src", "server.py")):

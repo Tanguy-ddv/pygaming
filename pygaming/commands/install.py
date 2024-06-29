@@ -84,31 +84,16 @@ def install():
         shutil.rmtree(os.path.join(modified_path_to_install, 'server'))
         print('The server.exe has been copied.')
 
- # Copy the game
-    if os.path.exists(os.path.join(base_path, 'game')):
-        shutil.copytree(
-            os.path.join(base_path, 'game'),
-            os.path.join(modified_path_to_install, 'game'),
-        )
-        shutil.copyfile(
-            os.path.join(modified_path_to_install, 'game', 'game.exe'),
-            os.path.join(modified_path_to_install, f'{name}.exe'),
-        )
-        shutil.rmtree(os.path.join(modified_path_to_install, 'game'))
-        print('The game.exe has been copied.')
-
-# Copy the player
-    if os.path.exists(os.path.join(base_path, 'player')):
-        shutil.copytree(
-            os.path.join(base_path, 'player'),
-            os.path.join(modified_path_to_install, 'player'),
-        )
-        shutil.copyfile(
-            os.path.join(modified_path_to_install, 'player', 'player.exe'),
-            os.path.join(modified_path_to_install, f'{name}.exe'),
-        )
-        shutil.rmtree(os.path.join(modified_path_to_install, 'player'))
-        print('The player.exe has been copied.')
+    shutil.copytree(
+        os.path.join(base_path, 'game'),
+        os.path.join(modified_path_to_install, 'game'),
+    )
+    shutil.copyfile(
+        os.path.join(modified_path_to_install, 'game', 'game.exe'),
+        os.path.join(modified_path_to_install, f'{name}.exe'),
+    )
+    shutil.rmtree(os.path.join(modified_path_to_install, 'game'))
+    print('The game.exe has been copied.')
 
 if __name__ == '__main__':
     install()

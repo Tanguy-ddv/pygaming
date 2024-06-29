@@ -130,11 +130,6 @@ def init_cwd():
         )
 
         shutil.copyfile(
-            os.path.join(this_dir, 'pygaming', 'commands/templates/player.py'),
-            os.path.join(cwd, 'src/player.py')
-        )
-
-        shutil.copyfile(
             os.path.join(this_dir, 'pygaming', 'commands/templates/server.py'),
             os.path.join(cwd, 'src/server.py')
         )

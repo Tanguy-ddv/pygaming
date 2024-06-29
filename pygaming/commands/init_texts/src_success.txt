@@ -1,8 +1,8 @@
 The folder 'src' has been created. It will be used to store all the code of the game.
-The folder already has three files:
+The folder already has two files:
 ----
     game.py : this file is a template to be completed
-You have to modify this if you want to create an offline game. If your game is online, delete it.
+You have to modify this if you want to create a game
 You have to modify the three methods : 
     - _on_start() : this one is called only at the very beginning of the game
     - _on_step() : this one is called at each loop step of the game
@@ -10,19 +10,10 @@ You have to modify the three methods :
 ---
 server.py : this file is a template to be completed
 You have to modify this if you want to create an online game. If your game is offline, delete it.
-The server is used to interact with the players, it does all the calculations of the game and send data to the player.
-Once the game is created, you have to run it once, and then you can run several instances of the player file
+The server is used to interact with the players, it does all the calculations of the game and send data to the players.
+Once the game is created, you have to run it once, and then you can run several instances of the game file
 on different devices, all connected to the same local network (private wifi)
 You have to modify the three methods : 
     - _on_start() : this one is called only at the very beginning of the game
     - _on_step() : this one is called at each loop step of the game
     - _on_end() :  this one is called only at the end of the game
----
-player.py :  this file is a template to be completed
-You have to modify this if you want to create an offline game. If your game is offline, delete it.
-The player connects to the server and read data sent from it. it display things, look at the player inputs and play sounds.
-You have to modify the three methods : 
-    - _on_start() : this one is called only at the very beginning of the game
-    - _on_step() : this one is called at each loop step of the game
-    - _on_end() :  this one is called only at the end of the game
-------
