@@ -6,7 +6,7 @@ from ...utils.color import Color
 from .base_widget import BaseWidget
 
 def _get_entry_shape(font: pygame.font.Font, size: int):
-    mmm: pygame.Surface = font.render("lm"*(size//2), True, (0,0,0))
+    mmm: pygame.Surface = font.render("lm"*(size//2) + "n"*size%2, True, (0,0,0))
     height = int(mmm.get_height()*1.05)
     width = mmm.get_width() + 20
     return width, height
