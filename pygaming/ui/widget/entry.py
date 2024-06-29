@@ -18,15 +18,15 @@ class Entry(BaseWidget):
     def __init__(
         self,
         font_file: FontFile,
-        x: int,
-        y: int,
+        x: int, # pixels
+        y: int, # pixels
         frame,
         initial_value = "",
         font_size: int = 20,
         background: pygame.Surface | Color = full_transparency,
         size: int = 15,
-        margin_x: int = 10,
-        margin_y: int = 5,
+        margin_x: int = 10, # pixels
+        margin_y: int = 5, # pixels
         font_color: Color = black,
         forbidden_characters: list[str] | str = '',
         bold: bool = False,
@@ -34,7 +34,7 @@ class Entry(BaseWidget):
         italic: bool = False,
         antialias: bool = True,
         caret_blink_period: int = 1000, # [milisecondes]
-        caret_width = 2, # pixel
+        caret_width = 2, # pixels
         initial_focus=False
     ) -> None:
         """
@@ -83,8 +83,18 @@ class Entry(BaseWidget):
         self._caret_width = caret_width
         self._time_since_last_blink = 0
         self._show_caret = True
-        self._caret_pos, self._caret_height = self._get_caret_position()
-        
+        self._update_caret_position()
+    
+    def clear(self):
+        """Clear the value of the entry"""
+        self._value = ""
+        self._update_caret_position()
+    
+    def set(self, value: str):
+        """Set the value to a specific value."""
+        self._value = str(value)
+        self._cursor_index = len(value)
+        self._update_caret_position()
 
     def update(self, inputs: Inputs, loop_duration: int):
         """Update the entry."""
@@ -107,10 +117,11 @@ class Entry(BaseWidget):
                 self._show_caret = not self._show_caret
                 self._time_since_last_blink = 0
 
-    def _get_caret_position(self):
+    def _update_caret_position(self):
         """Get the position of the caret in the image."""
         left_text: pygame.Surface = self.font.render(self._value[:self._cursor_index], self._antialias, (0,0,0))
-        return left_text.get_width(), left_text.get_height() + 6
+        self._caret_pos = left_text.get_width()
+        self._caret_height = left_text.get_height() + 6
 
     def get(self) -> str:
         """Get the textual content of the entry"""
@@ -136,7 +147,7 @@ class Entry(BaseWidget):
             letters.insert(self._cursor_index, letter)
             self._value = "".join(letters)
             self._cursor_index += 1
-            self._caret_pos, _ = self._get_caret_position()
+            self._update_caret_position()
 
     def _remove_letter(self):
         """Remove the letter."""
@@ -145,7 +156,7 @@ class Entry(BaseWidget):
             letters.pop(self._cursor_index-1)
             self._value = "".join(letters)
             self._cursor_index -= 1
-            self._caret_pos, _ = self._get_caret_position()
+            self._update_caret_position()
     
     def _move_cursor_to_the_right(self):
         """Move cursor to the right"""
@@ -153,7 +164,7 @@ class Entry(BaseWidget):
             self._cursor_index += 1
             self._time_since_last_blink = 0
             self._show_caret = True
-            self._caret_pos, _ = self._get_caret_position()
+            self._update_caret_position()
 
     def _move_cursor_to_the_left(self):
         """Move cursor to the left"""
@@ -161,4 +172,4 @@ class Entry(BaseWidget):
             self._cursor_index -= 1
             self._time_since_last_blink = 0
             self._show_caret = True
-            self._caret_pos, _ = self._get_caret_position()
+            self._update_caret_position()
