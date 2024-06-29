@@ -79,7 +79,7 @@ def install():
         )
         shutil.copyfile(
             os.path.join(modified_path_to_install, 'server', 'server.exe'),
-            os.path.join(modified_path_to_install, 'server.exe'),
+            os.path.join(modified_path_to_install, f'{name}-server.exe'),
         )
         shutil.rmtree(os.path.join(modified_path_to_install, 'server'))
         print('The server.exe has been copied.')
@@ -92,7 +92,7 @@ def install():
         )
         shutil.copyfile(
             os.path.join(modified_path_to_install, 'game', 'game.exe'),
-            os.path.join(modified_path_to_install, 'game.exe'),
+            os.path.join(modified_path_to_install, f'{name}.exe'),
         )
         shutil.rmtree(os.path.join(modified_path_to_install, 'game'))
         print('The game.exe has been copied.')
@@ -105,7 +105,7 @@ def install():
         )
         shutil.copyfile(
             os.path.join(modified_path_to_install, 'player', 'player.exe'),
-            os.path.join(modified_path_to_install, 'player.exe'),
+            os.path.join(modified_path_to_install, f'{name}.exe'),
         )
         shutil.rmtree(os.path.join(modified_path_to_install, 'player'))
         print('The player.exe has been copied.')
