@@ -2,7 +2,7 @@
 import pygame
 from ...io_.file import FontFile
 from ..inputs import Inputs
-from ...utils.color import Color
+from ...utils.color import Color, black, full_transparency
 from .base_widget import BaseWidget
 
 def _get_entry_shape(font: pygame.font.Font, size: int, margin_x, margin_y):
@@ -23,11 +23,11 @@ class Entry(BaseWidget):
         frame,
         initial_value = "",
         font_size: int = 20,
-        background: pygame.Surface | Color = Color(255,255,255),
+        background: pygame.Surface | Color = full_transparency,
         size: int = 15,
         margin_x: int = 10,
         margin_y: int = 5,
-        font_color: Color = Color(0,0,0),
+        font_color: Color = black,
         bold: bool = False,
         underline: bool = False,
         italic: bool = False,
@@ -58,6 +58,7 @@ class Entry(BaseWidget):
         caret_width: int. The width of the caret, in pixel.
         initial_focus: bool. If false, you have to click to set the focus on the entry before interacting with.
         """
+        super().__init__(frame, x, y, width, height, bg, initial_focus)
         self.font = font_file.get(font_size, italic, bold, underline)
         width, height = _get_entry_shape(self.font, size, margin_x, margin_y)
         if isinstance(background, Color):
@@ -65,7 +66,6 @@ class Entry(BaseWidget):
             bg.fill(background.to_RGBA())
         else:
             bg = background
-        super().__init__(frame, x, y, width, height, bg, initial_focus)
         
         self.font_color = font_color.to_RGBA()
         self.x, self.y = x,y

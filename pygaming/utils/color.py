@@ -35,45 +35,56 @@ class Color:
         b = __HEX[self._b//16] + __HEX[self._b%16]
         return '#' + r + g + b
 
-    @staticmethod
-    def from_RGBA(R, G, B, A=255) -> 'Color':
-        """Create a color object from a tuple of int between and 255."""
-        return Color(R, G, B, A)
+def from_RGBA(R, G, B, A=255) -> 'Color':
+    """Create a color object from a tuple of int between and 255."""
+    return Color(R, G, B, A)
     
-    @staticmethod
-    def from_rgba(r, g, b, a) -> 'Color':
-        """Create a color object from a tuple of float between 0 and 1."""
-        return Color(
-            R = int(r*255),
-            G = int(g*255),
-            B = int(b*255),
-            A = int(a*255)
-        )
+def from_rgba(r, g, b, a) -> 'Color':
+    """Create a color object from a tuple of float between 0 and 1."""
+    return Color(
+        R = int(r*255),
+        G = int(g*255),
+        B = int(b*255),
+        A = int(a*255)
+    )
     
-    @staticmethod
-    def from_hex(hex: str) -> 'Color':
-        """Create a color object from a hexadecimal representation of colors."""
-        if len(hex) == 4:
-            # We got a format #rgb
-            r_hex = hex[1]
-            R = __HEX.index(r_hex)*16
-            g_hex = hex[2]
-            G = __HEX.index(g_hex)*16
-            b_hex = hex[3]
-            B = __HEX.index(b_hex)*16
-            return Color(R, G, B)
+def from_hex(hex: str) -> 'Color':
+    """Create a color object from a hexadecimal representation of colors."""
+    if len(hex) == 4:
+        # We got a format #rgb
+        r_hex = hex[1]
+        R = __HEX.index(r_hex)*16
+        g_hex = hex[2]
+        G = __HEX.index(g_hex)*16
+        b_hex = hex[3]
+        B = __HEX.index(b_hex)*16
+        return Color(R, G, B)
 
-        if len(hex == 7):
-            # We got a format #rgb
-            r1_hex = hex[1]
-            r2_hex = hex[2]
-            R = __HEX.index(r1_hex)*16 + __HEX.index(r2_hex)
-            g1_hex = hex[3]
-            g2_hex = hex[4]
-            G = __HEX.index(g1_hex)*16 + __HEX.index(g2_hex)
-            b1_hex = hex[5]
-            b2_hex = hex[6]
-            B = __HEX.index(b1_hex)*16 + __HEX.index(b2_hex)
-            return Color(R, G, B)
+    if len(hex == 7):
+        # We got a format #rgb
+        r1_hex = hex[1]
+        r2_hex = hex[2]
+        R = __HEX.index(r1_hex)*16 + __HEX.index(r2_hex)
+        g1_hex = hex[3]
+        g2_hex = hex[4]
+        G = __HEX.index(g1_hex)*16 + __HEX.index(g2_hex)
+        b1_hex = hex[5]
+        b2_hex = hex[6]
+        B = __HEX.index(b1_hex)*16 + __HEX.index(b2_hex)
+        return Color(R, G, B)
 
-        raise ValueError(f"Invalid color format, got {hex}")
+    raise ValueError(f"Invalid color format, got {hex}")
+
+# Define some colors.
+red = from_RGBA(255,0,0)
+blue = from_RGBA(0,0,255)
+green = from_RGBA(0,255,0)
+black = from_RGBA(0,0,0)
+white = from_RGBA(255,255,255)
+full_transparency = from_RGBA(255,255,255,0)
+orange = from_RGBA(255,128,0)
+yellow = from_RGBA(255,255,0)
+pink = from_RGBA(255,200,200)
+magenta = from_RGBA(255,0,255)
+cyan = from_RGBA(0,255,255)
+grey = from_RGBA(128,128,128)
