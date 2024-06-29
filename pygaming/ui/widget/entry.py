@@ -5,10 +5,11 @@ from ..inputs import Inputs
 from ...utils.color import Color
 from .base_widget import BaseWidget
 
-def _get_entry_shape(font: pygame.font.Font, size: int):
-    mmm: pygame.Surface = font.render("lm"*(size//2) + "n"*size%2, True, (0,0,0))
-    height = int(mmm.get_height()*1.05)
-    width = mmm.get_width() + 20
+def _get_entry_shape(font: pygame.font.Font, size: int, margin_x, margin_y):
+    """Calculate the shape of the entry object."""
+    mmm: pygame.Surface = font.render("lm"*(size//2) + "n"*(size%2), True, (0,0,0))
+    height = mmm.get_height() + 2*margin_y
+    width = mmm.get_width() + 2*margin_x
     return width, height
 
 class Entry(BaseWidget):
@@ -23,7 +24,9 @@ class Entry(BaseWidget):
         initial_value = "",
         font_size: int = 20,
         background: pygame.Surface | Color = Color(255,255,255),
-        size: int = 10,
+        size: int = 15,
+        margin_x: int = 10,
+        margin_y: int = 5,
         font_color: Color = Color(0,0,0),
         bold: bool = False,
         underline: bool = False,
@@ -36,9 +39,27 @@ class Entry(BaseWidget):
         """
         An entry is a widget used to enter a textual value.
 
+        Params:
+        ----
+        font_file: FontFile. The font used to display the text.
+        x: int, y: int. The coordinate of the top-left corner of the entry in the frame.
+        frame: Frame. The frame the entry will be displayed in.
+        initial_value: str. The initial value of the entry.
+        font_size: the size of the text.
+        background: Surface | Color. If a Surface is provided, the top left part of the surface is used
+        as background for the text. If a color is provided, fill a surface with the color.
+        size: The maxiumum number of charachters the text can have.
+        margin_x, margin_y: the margin of text in its background (in pixel)
+        font_color: The color of the font
+        bold, underline, italic, antialias: bool. markers for the text
+        caret_blink_period:int (ms) The period of display the caret.
+        The caret is the vertical cursor that show where the next character will be placed,
+        The caret will be should per caret_blink_period/2 ms then hidden for caret_blink_period/2 ms.
+        caret_width: int. The width of the caret, in pixel.
+        initial_focus: bool. If false, you have to click to set the focus on the entry before interacting with.
         """
         self.font = font_file.get(font_size, italic, bold, underline)
-        width, height = _get_entry_shape(self.font, size)
+        width, height = _get_entry_shape(self.font, size, margin_x, margin_y)
         if isinstance(background, Color):
             bg = pygame.Surface((width, height))
             bg.fill(background.to_RGBA())
