@@ -36,3 +36,8 @@ class BaseWidget(ABC):
     def update(self, inputs: Inputs, loop_duration: int, **kwargs):
         """Update the widget with the inputs."""
         raise NotImplementedError()
+
+    def move(self, new_x, new_y):
+        """Move the widget on the frame."""
+        self.x = new_x
+        self.y = new_y
