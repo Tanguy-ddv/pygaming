@@ -12,7 +12,7 @@ class BaseWidget(ABC):
         self.y = y
         self.width = width
         self.height = height
-        self.background = background.subsurface((0,0, width, height))
+        self.background = pygame.transform.scale(background, (width, height))
         self.visible = True
     
     def focus(self):
