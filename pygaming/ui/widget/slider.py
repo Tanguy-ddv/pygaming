@@ -28,7 +28,7 @@ class Slider(BaseWidget):
         font_file: FontFile,
         func: Optional[Callable[[float], Any]] = None,
         from_: float | int = 0,
-        to : float | int = 100,
+        to : float | int = 4,
         nb_points: int = 5,
         initial_value: Optional[float | int] = None,
         unfocus_background: pygame.Surface | Color = blue,
@@ -49,6 +49,36 @@ class Slider(BaseWidget):
         transition_duration: float | int = 0, # [ms]
         initial_focus: bool = False
     ) -> None:
+        """
+        A slider is a widget used to enter a value in the game.
+        Params:
+        ---
+        frame: Frame. The frame in which the slider will be inserted.
+        x:int, y:int. The position of the top-left corner on the frame.
+        font_file: FontFile. The font file of the font used to display the text of the value.
+        func: Callable. If not None, the return and the display are function of the value.
+        from_: float, to: float. The first and last value of the numerical scale (before applying the function).
+        nb_points: the number of points in the scale.
+        initial_value: The initial value. if the value is not perfectly in the scale, set it to the immediate lower value possible.
+        unfocus_background, focus_background: the background when the widget is on focus or not.
+        If the provided background is a color, then create a rectangle of specified width and height with rounded extremities.
+        If the provided background is a surface, is it as it is (possibly reshape it in shape (width, height)).
+        If the focus_background is not None, use the unfocus_bakcground in both case.
+        width: int, height: int. Dimension to shape/reshape the background.
+        cursor: Color | Surface. The cursor that move on the scale. If a color is provided, make a circle of radius cursor_radius.
+        If a surface is provided, use it as a cursor. Possibly reshape it a a shape (cursor_radius*2, cursor_radius*2) if it is not None.
+        cursor_radius: int. Dimension To shape/reshape the cursor.
+        margin_x: int, margin_x: int. The margin of the scale in its background.
+        font_color: Color. the color of the font.
+        font_size: int. the size of the font.
+        bold, underline, italic, antialias: bool. markers for the text.
+        transition_func: Callable. A function [0,1] -> R with f(0) = 0 and f(1) = 1 that represent the path from one position to another.
+        transition_duration: int (ms). The duration of the transition in ms.
+        initial_focus: bool. If false, you have to click to set the focus on the entry before interacting with.        
+        """
+        # TODO: define the position to place the value of the slider.
+        # TODO: modify the update based on the frame position to take into account the relative position of the frame in the screen.
+        # TODO: verify that with a surface bg and a color focus_background, it is not fucked up.
 
         self._font_color = font_color
         self._antialias = antialias
