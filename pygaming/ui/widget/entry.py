@@ -4,6 +4,7 @@ from ...io_.file import FontFile
 from ..inputs import Inputs
 from ...utils.color import Color, black, full_transparency
 from .base_widget import BaseWidget
+from typing import Optional
 
 def _get_entry_shape(font: pygame.font.Font, size: int, margin_x, margin_y):
     """Calculate the shape of the entry object."""
@@ -13,22 +14,23 @@ def _get_entry_shape(font: pygame.font.Font, size: int, margin_x, margin_y):
     return width, height
 
 class Entry(BaseWidget):
-    """An Entry widget is used to enter text in the game, like entries in tkinter."""
+    """An Entry widget is used to enter text in the game."""
 
     def __init__(
         self,
-        font_file: FontFile,
+        frame,
         x: int, # pixels
         y: int, # pixels
-        frame,
+        font_file: FontFile,
         initial_value = "",
-        font_size: int = 20,
-        background: pygame.Surface | Color = full_transparency,
+        unfocus_background: pygame.Surface | Color = full_transparency,
+        focus_background: Optional[pygame.Surface | Color] = None,
         size: int = 15,
         margin_x: int = 10, # pixels
         margin_y: int = 5, # pixels
-        font_color: Color = black,
         forbidden_characters: list[str] | str = '',
+        font_color: Color = black,
+        font_size: int = 20,
         bold: bool = False,
         underline: bool = False,
         italic: bool = False,
@@ -62,12 +64,21 @@ class Entry(BaseWidget):
         """
         self.font = font_file.get(font_size, italic, bold, underline)
         width, height = _get_entry_shape(self.font, size, margin_x, margin_y)
-        if isinstance(background, Color):
-            bg = pygame.Surface((width, height))
-            bg.fill(background.to_RGBA())
+        if isinstance(unfocus_background, Color):
+            bg = pygame.Surface((width, height), pygame.SRCALPHA)
+            bg.fill(unfocus_background.to_RGBA())
         else:
-            bg = background
-        super().__init__(frame, x, y, width, height, bg, initial_focus)
+            bg = unfocus_background
+        
+        if isinstance(focus_background, Color):
+            focus_bg = pygame.Surface((width, height), pygame.SRCALPHA)
+            focus_bg.fill(focus_background.to_RGBA())
+        elif focus_background is None:
+            focus_bg = bg.copy()
+        else:
+            focus_bg = focus_background
+
+        super().__init__(frame, x, y, width, height, bg, focus_bg, initial_focus)
         
         self._font_color = font_color.to_RGBA()
         self.x, self.y = x,y
@@ -129,7 +140,10 @@ class Entry(BaseWidget):
 
     def get_surface(self) -> pygame.Surface:
         """Get the surface of the object to be displayed."""
-        background = self.background.copy()
+        if self._focus:
+            background = self.focus_background.copy()
+        else:
+            background = self.unfocus_background.copy()
         text = self.font.render(self._value, self._antialias, self._font_color)
         left = max(self.width // 2 - text.get_width()//2, 0)
         up = self.height // 2 - text.get_height()//2 

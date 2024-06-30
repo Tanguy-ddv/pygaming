@@ -4,7 +4,7 @@ from ..inputs import Inputs
 
 class BaseWidget(ABC):
 
-    def __init__(self, frame, x: int, y: int, width: int, height: int, background: pygame.Surface, initial_focus: bool = False) -> None:
+    def __init__(self, frame, x: int, y: int, width: int, height: int, background: pygame.Surface, focus_background: pygame.Surface, initial_focus: bool = False) -> None:
         super().__init__()
         self._focus = initial_focus
         self.frame = frame
@@ -12,9 +12,11 @@ class BaseWidget(ABC):
         self.y = y
         self.width = width
         self.height = height
-        self.background = pygame.transform.scale(background, (width, height))
+        self.unfocus_background = pygame.transform.scale(background, (width, height))
+        self.focus_background = pygame.transform.scale(focus_background, (width, height))
         self.visible = True
-    
+        frame.add_widget(self)
+
     def focus(self):
         self._focus = True
     
