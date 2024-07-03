@@ -107,7 +107,7 @@ class Entry(BaseWidget):
         self._cursor_index = len(value)
         self._update_caret_position()
 
-    def update(self, inputs: Inputs, loop_duration: int):
+    def update(self, inputs: Inputs, loop_duration: int, x_frame, y_frame):
         """Update the entry."""
         if self._focus:
             letters = inputs.get_characters()

@@ -25,3 +25,5 @@ class Phase():
             for frame in self.frames:
                 if frame.x < x < frame.x + frame.width and frame.y < y < frame.y + frame.height:
                     frame.update_focus(x, y)
+                else:
+                    frame.remove_focus()

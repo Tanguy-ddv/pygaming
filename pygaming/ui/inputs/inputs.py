@@ -28,11 +28,11 @@ class Inputs:
     def get_quit(self):
         return any(event.type == pygame.QUIT for event in self.event_list)
 
-    def get_clicks(self):
+    def get_clicks(self, frame_x:int = 0, frame_y: int = 0):
         """Return the clicks and the position."""
 
         return {event.button if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP] else 0 :
-            Click(event.pos[0], event.pos[1], event.type == pygame.MOUSEBUTTONUP)
+            Click(event.pos[0] - frame_x, event.pos[1] - frame_y, event.type == pygame.MOUSEBUTTONUP)
             for event in self.event_list
             if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP]
         }

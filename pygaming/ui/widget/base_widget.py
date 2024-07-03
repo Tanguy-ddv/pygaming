@@ -35,7 +35,7 @@ class BaseWidget(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def update(self, inputs: Inputs, loop_duration: int, **kwargs):
+    def update(self, inputs: Inputs, loop_duration: int, x: int, y: int):
         """Update the widget with the inputs."""
         raise NotImplementedError()
 

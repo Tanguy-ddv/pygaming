@@ -9,7 +9,7 @@ from ...io_.file import FontFile
 from ...utils.color import Color, blue, cyan, white
 from .base_widget import BaseWidget
 
-_DEFAULT_WIDTH = 50
+_DEFAULT_WIDTH = 150
 _DEFAULT_CURSOR_RADIUS = 15
 _DEFAULT_HEIGHT = 20
 
@@ -139,7 +139,7 @@ class Slider(BaseWidget):
         self._nb_points = nb_points
         if func is None:
             func = lambda v: v
-        self._func = lambda v: func(v*(self._to - self._from)/self._nb_points + self._from)
+        self._func = lambda v: func(v*(self._to - self._from)/(self._nb_points-1) + self._from)
 
         # Set the initial value
         if initial_value is None:
@@ -149,6 +149,8 @@ class Slider(BaseWidget):
             initial_value = to
 
         self._value = int((initial_value - from_)/(to - from_)*self._nb_points)
+        if self._value == self._nb_points:
+            self._value -= 1
 
         # The transitions params
         self._transition_func = transition_func
@@ -164,6 +166,8 @@ class Slider(BaseWidget):
             self._x_min + (self._x_max - self._x_min)/(self._nb_points-1)*value - self.cursor.get_width()//2
             for value in range(self._nb_points)
         ]
+
+        self.margin_y = margin_y
 
     def get(self):
         """Return the value of the slider."""
@@ -182,7 +186,7 @@ class Slider(BaseWidget):
             self._value -= 1
             self._current_transition = (self._value + 1, self._value)
     
-    def update(self, inputs: Inputs, loop_duration: int):
+    def update(self, inputs: Inputs, loop_duration: int, x_frame, y_frame):
         """Update the slider with a click or by moving an object."""
         # Get if an arrow have been pressed.
         if self._focus:
@@ -192,14 +196,13 @@ class Slider(BaseWidget):
             if (pygame.KEYDOWN, pygame.K_LEFT) in arrows:
                 self._move_to_the_left()
             # Get if a position have been clicked
-            clicks = inputs.get_clicks()
+            clicks = inputs.get_clicks(x_frame, y_frame)
             if 1 in clicks and not clicks[1].up:
-                x = clicks[1].x
-                y = clicks[1].y
-                if self.y < y < self.y + self.height:
+                click = clicks[1]
+                if self.y + self.margin_y < click.y < self.y + self.height - self.margin_y and self.x < click.x < click.x + self.width:
                     # The click is on the widget
                     previous_value = self._value
-                    closest_x = _get_closest(x - self.x, self._xes, self.cursor.get_width()//2)
+                    closest_x = _get_closest(click.x - self.x, self._xes, self.cursor.get_width()//2)
                     new_value = self._xes.index(closest_x)
                     if 0 <= new_value <= self._nb_points - 1:
                         self._value = new_value
@@ -208,8 +211,11 @@ class Slider(BaseWidget):
 
         # Move the cursor during the transition
         if not (self._current_transition is None):
-            self._transition_delta += loop_duration/self._transition_duration
-            if self._transition_delta > 1:
+            if self._transition_duration != 0:
+                self._transition_delta += loop_duration/self._transition_duration
+            else:
+                self._transition_delta = 1
+            if self._transition_delta >= 1:
                 self._transition_delta = 0
                 self._current_transition = None
     
@@ -232,6 +238,6 @@ class Slider(BaseWidget):
             x = t*x_arr + (1-t)*x_dep
 
         background.blit(self.cursor, (x, y))
-        text = self._font.render(str(self._value), self._antialias, self._font_color.to_RGBA())
+        text = self._font.render(str(self.get()), self._antialias, self._font_color.to_RGBA())
         background.blit(text, (x+2, y))
         return background

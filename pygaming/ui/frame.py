@@ -28,24 +28,33 @@ class Frame:
 
     @property
     def rect(self):
-        return self.x, self.y, self.x + self.width, self.y + self.height
+        return pygame.rect.Rect(self.x, self.y, self.width, self.height)
 
     def add_widget(self, widget: BaseWidget):
         self.widgets.append(widget)
     
     def update_focus(self, click_x, click_y):
         """Update the focus of all the widgets in the phase."""
+        click_x -= self.x
+        click_y -= self.y
         for widget in self.widgets:
             if widget.visible:
                 if widget.x < click_x < widget.x + widget.width and widget.y < click_y < widget.y + widget.height:
                     widget.focus()
                 else:
                     widget.unfocus()
+            else:
+                widget.unfocus()
+
+    def remove_focus(self):
+        """Remove the focus of all the widgets."""
+        for widget in self.widgets:
+            widget.unfocus()
     
     def update_widgets(self, inputs: Inputs, loop_duration: int):
         """Update all the widgets."""
         for widget in self.widgets:
-            widget.update(inputs, loop_duration)
+            widget.update(inputs, loop_duration, self.x, self.y)
         
     def get_surface(self):
         background = self.background.copy()
