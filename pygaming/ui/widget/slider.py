@@ -1,7 +1,7 @@
 """The slider is a widget used to enter a numerical value."""
 
 import pygame
-from typing import Callable, Optional, Any
+from typing import Callable, Optional, Any, Literal, Union
 
 from pygaming.ui.inputs.inputs import Inputs
 from ...io_.file import FontFile
@@ -25,7 +25,6 @@ class Slider(BaseWidget):
         frame,
         x: int,
         y: int,
-        font_file: FontFile,
         func: Optional[Callable[[float], Any]] = None,
         from_: float | int = 0,
         to : float | int = 4,
@@ -39,6 +38,8 @@ class Slider(BaseWidget):
         cursor_radius: Optional[int] = None,
         margin_x: int = 10,
         margin_y: int = 5,
+        display_value: bool = False,
+        font_file: Optional[FontFile] = None,
         font_color: Color = white,
         font_size: int = 20,
         bold: bool = False,
@@ -55,7 +56,6 @@ class Slider(BaseWidget):
         ---
         frame: Frame. The frame in which the slider will be inserted.
         x:int, y:int. The position of the top-left corner on the frame.
-        font_file: FontFile. The font file of the font used to display the text of the value.
         func: Callable. If not None, the return and the display are function of the value.
         from_: float, to: float. The first and last value of the numerical scale (before applying the function).
         nb_points: the number of points in the scale.
@@ -69,6 +69,8 @@ class Slider(BaseWidget):
         If a surface is provided, use it as a cursor. Possibly reshape it a a shape (cursor_radius*2, cursor_radius*2) if it is not None.
         cursor_radius: int. Dimension To shape/reshape the cursor.
         margin_x: int, margin_x: int. The margin of the scale in its background.
+        font_file: FontFile. The font file of the font used to display the text of the value. Optional if value_display_position is False
+        display_value: bool. if True, display the value on the cursor. If you want to display it elsewhere, use a label widget.
         font_color: Color. the color of the font.
         font_size: int. the size of the font.
         bold, underline, italic, antialias: bool. markers for the text.
@@ -76,13 +78,6 @@ class Slider(BaseWidget):
         transition_duration: int (ms). The duration of the transition in ms.
         initial_focus: bool. If false, you have to click to set the focus on the entry before interacting with.        
         """
-        # TODO: define the position to place the value of the slider.
-        # TODO: modify the update based on the frame position to take into account the relative position of the frame in the screen.
-        # TODO: verify that with a surface bg and a color focus_background, it is not fucked up.
-
-        self._font_color = font_color
-        self._antialias = antialias
-        self._font = font_file.get(font_size, italic, bold, underline)
 
         # If the cursor is a color, create a circle of that color.
         if isinstance(cursor, Color):
@@ -122,10 +117,8 @@ class Slider(BaseWidget):
             bg = unfocus_background.copy()
         
         if isinstance(focus_background, Color):
-            if width is None:
-                width = _DEFAULT_WIDTH
-            if height is None:
-                height = _DEFAULT_HEIGHT
+            width = bg.get_width() - 2*margin_x
+            height = bg.get_height() - 2*margin_y
             focus_bg = create_background(width, focus_background)
         elif focus_background is None:
             focus_bg = bg.copy()
@@ -168,6 +161,11 @@ class Slider(BaseWidget):
         ]
 
         self.margin_y = margin_y
+        if display_value:
+            self._font_color = font_color
+            self._antialias = antialias
+            self._font = font_file.get(font_size, italic, bold, underline)
+        self._display_value = display_value
 
     def get(self):
         """Return the value of the slider."""
@@ -238,6 +236,7 @@ class Slider(BaseWidget):
             x = t*x_arr + (1-t)*x_dep
 
         background.blit(self.cursor, (x, y))
-        text = self._font.render(str(self.get()), self._antialias, self._font_color.to_RGBA())
-        background.blit(text, (x+2, y))
+        if self._display_value:
+            text = self._font.render(str(self.get()), self._antialias, self._font_color.to_RGBA())
+            background.blit(text, (x - text.get_width()//2 + self.cursor.get_width()//2, y - text.get_height()//2 + self.cursor.get_height()//2))
         return background
