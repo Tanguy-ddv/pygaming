@@ -3,7 +3,8 @@ import pygame
 from ...io_.file import FontFile
 from ..inputs import Inputs
 from ...utils.color import Color, black, full_transparency
-from .base_widget import BaseWidget
+from ...utils.text_flags import TextFlags
+from .base_widget import BaseWidgetWithText
 from typing import Optional
 
 def _get_entry_shape(font: pygame.font.Font, size: int, margin_x, margin_y):
@@ -13,7 +14,7 @@ def _get_entry_shape(font: pygame.font.Font, size: int, margin_x, margin_y):
     width = mmm.get_width() + 2*margin_x
     return width, height
 
-class Entry(BaseWidget):
+class Entry(BaseWidgetWithText):
     """An Entry widget is used to enter text in the game."""
 
     def __init__(
@@ -28,13 +29,11 @@ class Entry(BaseWidget):
         size: int = 15,
         margin_x: int = 10, # pixels
         margin_y: int = 5, # pixels
-        forbidden_characters: list[str] | str = '',
+        forbidden_characters: str = '',
+        extra_accepted_characters: str = '',
         font_color: Color = black,
         font_size: int = 20,
-        bold: bool = False,
-        underline: bool = False,
-        italic: bool = False,
-        antialias: bool = True,
+        text_flags: TextFlags = TextFlags(),
         caret_blink_period: int = 1000, # [milisecondes]
         caret_width = 2, # pixels
         initial_focus=False
@@ -55,15 +54,15 @@ class Entry(BaseWidget):
         margin_x, margin_y: the margin of text in its background (in pixel)
         font_color: The color of the font
         forbidden_characters: the list of forbidden characters.
-        bold, underline, italic, antialias: bool. markers for the text
+        text_flags: TextFlags. flags for the text.
         caret_blink_period:int (ms) The period of display the caret.
         The caret is the vertical cursor that show where the next character will be placed,
         The caret will be should per caret_blink_period/2 ms then hidden for caret_blink_period/2 ms.
         caret_width: int. The width of the caret, in pixel.
         initial_focus: bool. If false, you have to click to set the focus on the entry before interacting with.
         """
-        self.font = font_file.get(font_size, italic, bold, underline)
-        width, height = _get_entry_shape(self.font, size, margin_x, margin_y)
+        font = font_file.get(font_size)
+        width, height = _get_entry_shape(font, size, margin_x, margin_y)
         if isinstance(unfocus_background, Color):
             bg = pygame.Surface((width, height), pygame.SRCALPHA)
             bg.fill(unfocus_background.to_RGBA())
@@ -78,14 +77,13 @@ class Entry(BaseWidget):
         else:
             focus_bg = focus_background
 
-        super().__init__(frame, x, y, width, height, bg, focus_bg, initial_focus)
+        super().__init__(frame, x, y, width, height, bg, focus_bg, font_color, text_flags, font_file, font_size, initial_focus)
         
-        self._font_color = font_color.to_RGBA()
         self.x, self.y = x,y
         self.size = size
-        self._antialias = antialias
 
         self._forbidden_characters = forbidden_characters
+        self._extra_accepted_characters = extra_accepted_characters
 
         self._value = initial_value
         self._cursor_index = len(self._value)
@@ -110,7 +108,7 @@ class Entry(BaseWidget):
     def update(self, inputs: Inputs, loop_duration: int, x_frame, y_frame):
         """Update the entry."""
         if self._focus:
-            letters = inputs.get_characters()
+            letters = inputs.get_characters(self._extra_accepted_characters)
             if letters:
                 letter = letters[0]
                 if letter not in self._forbidden_characters:
@@ -130,7 +128,7 @@ class Entry(BaseWidget):
 
     def _update_caret_position(self):
         """Get the position of the caret in the image."""
-        left_text: pygame.Surface = self.font.render(self._value[:self._cursor_index], self._antialias, (0,0,0))
+        left_text: pygame.Surface = self._render(self._value[:self._cursor_index])
         self._caret_pos = left_text.get_width()
         self._caret_height = left_text.get_height() + 6
 
@@ -144,7 +142,7 @@ class Entry(BaseWidget):
             background = self.focus_background.copy()
         else:
             background = self.unfocus_background.copy()
-        text = self.font.render(self._value, self._antialias, self._font_color)
+        text = self._render(self._value)
         left = max(self.width // 2 - text.get_width()//2, 0)
         up = self.height // 2 - text.get_height()//2 
         background.blit(text, (left, up))

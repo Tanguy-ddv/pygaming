@@ -21,9 +21,9 @@ class Inputs:
     def update(self):
         self.event_list = pygame.event.get()
 
-    def get_characters(self):
+    def get_characters(self, extra_characters: str = ''):
         """Return all the letter characters a-z, digits 0-9, whitespace and punctuation."""
-        return [event.unicode for event in self.event_list if event.type == pygame.KEYDOWN and event.unicode and event.unicode in _ACCEPTED_LETTERS]
+        return [event.unicode for event in self.event_list if event.type == pygame.KEYDOWN and event.unicode and event.unicode in _ACCEPTED_LETTERS + extra_characters]
 
     def get_quit(self):
         return any(event.type == pygame.QUIT for event in self.event_list)

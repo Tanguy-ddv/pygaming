@@ -1,13 +1,14 @@
 """The slider is a widget used to enter a numerical value."""
 
 import pygame
-from typing import Callable, Optional, Any, Literal, Union
+from typing import Callable, Optional, Any
 
 from pygaming.ui.inputs.inputs import Inputs
 from ...io_.file import FontFile
 
 from ...utils.color import Color, blue, cyan, white
-from .base_widget import BaseWidget
+from ...utils.text_flags import TextFlags
+from .base_widget import BaseWidgetWithText
 
 _DEFAULT_WIDTH = 150
 _DEFAULT_CURSOR_RADIUS = 15
@@ -17,7 +18,7 @@ def _get_closest(x: float, xes: list[float], delta: float):
     """return the closest value"""
     return sorted(xes, key = lambda v: abs(x - (v + delta)))[0]
 
-class Slider(BaseWidget):
+class Slider(BaseWidgetWithText):
     """A Slider widget is used to enter numerical value in the game."""
 
     def __init__(
@@ -25,7 +26,7 @@ class Slider(BaseWidget):
         frame,
         x: int,
         y: int,
-        func: Optional[Callable[[float], Any]] = None,
+        func: Callable[[float], Any] = lambda v: int(v) if int(v) == v else v,
         from_: float | int = 0,
         to : float | int = 4,
         nb_points: int = 5,
@@ -42,10 +43,7 @@ class Slider(BaseWidget):
         font_file: Optional[FontFile] = None,
         font_color: Color = white,
         font_size: int = 20,
-        bold: bool = False,
-        underline: bool = False,
-        italic: bool = False,
-        antialias: bool = True,
+        text_flags: TextFlags = TextFlags(),
         transition_func: Callable = lambda x: x,
         transition_duration: float | int = 0, # [ms]
         initial_focus: bool = False
@@ -73,7 +71,7 @@ class Slider(BaseWidget):
         display_value: bool. if True, display the value on the cursor. If you want to display it elsewhere, use a label widget.
         font_color: Color. the color of the font.
         font_size: int. the size of the font.
-        bold, underline, italic, antialias: bool. markers for the text.
+        text_flags: TextFlags. flags for the text.
         transition_func: Callable. A function [0,1] -> R with f(0) = 0 and f(1) = 1 that represent the path from one position to another.
         transition_duration: int (ms). The duration of the transition in ms.
         initial_focus: bool. If false, you have to click to set the focus on the entry before interacting with.        
@@ -125,13 +123,11 @@ class Slider(BaseWidget):
         else:
             focus_bg = focus_background.copy()
 
-        super().__init__(frame, x, y, bg.get_width(), self.height, bg, focus_bg, initial_focus)
+        super().__init__(frame, x, y, bg.get_width(), self.height, bg, focus_bg, font_color, text_flags, font_file, font_size, initial_focus)
 
         self._from = from_
         self._to = to
         self._nb_points = nb_points
-        if func is None:
-            func = lambda v: v
         self._func = lambda v: func(v*(self._to - self._from)/(self._nb_points-1) + self._from)
 
         # Set the initial value
@@ -161,10 +157,6 @@ class Slider(BaseWidget):
         ]
 
         self.margin_y = margin_y
-        if display_value:
-            self._font_color = font_color
-            self._antialias = antialias
-            self._font = font_file.get(font_size, italic, bold, underline)
         self._display_value = display_value
 
     def get(self):
@@ -237,6 +229,6 @@ class Slider(BaseWidget):
 
         background.blit(self.cursor, (x, y))
         if self._display_value:
-            text = self._font.render(str(self.get()), self._antialias, self._font_color.to_RGBA())
+            text = self._render(str(self.get()))
             background.blit(text, (x - text.get_width()//2 + self.cursor.get_width()//2, y - text.get_height()//2 + self.cursor.get_height()//2))
         return background
