@@ -11,7 +11,6 @@ class BaseWidget(ABC, Positionable):
         self.frame = frame
         self.visible = True
         frame.add_widget(self)
-        self._disabled = False
     
     def hide(self):
         """Hide the widget."""
@@ -20,6 +19,18 @@ class BaseWidget(ABC, Positionable):
     def show(self):
         """Show the widget."""
         self.visible = True
+    
+    def is_focused(self):
+        """Overriden by the is_focus of the FocusSupport class if needed."""
+        return False
+
+    def focus(self):
+        """Overriredn by the focus of the FocusSupport class if needed"""
+        pass
+
+    def unfocus(self):
+        """Overriredn by the focus of the FocusSupport class if needed"""
+        pass
     
     @abstractmethod
     def get_surface(self) -> pygame.Surface:
