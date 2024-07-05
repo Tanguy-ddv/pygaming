@@ -6,7 +6,8 @@ setup(
     packages=find_packages(include=['pygaming', 'pygaming.*']),
     install_requires=[
         'pyinstaller',
-        'pygame'
+        'pygame',
+        'numpy'
     ],
     entry_points={
         'console_scripts': [

@@ -1,14 +1,14 @@
 from .widget.base_widget import BaseWidget
 import pygame
-from ..utils.color import Color
+from ..utils.color import Color, white
 from .inputs import Inputs
+from .positionable import Positionable
 
-class Frame:
+class Frame(Positionable):
 
-    def __init__(self, x :int, y:int, width: int, height: int, background: pygame.Surface | Color = Color(255,255,255)) -> None:
+    def __init__(self, x: int, y :int, width: int, height: int, background: pygame.Surface | Color = white, layer: int = 0) -> None:
         self.widgets: list[BaseWidget] = []
-        self.x = x
-        self.y = y
+        Positionable.__init__(self, x, y, layer)
         self.width = width
         self.height = height
         

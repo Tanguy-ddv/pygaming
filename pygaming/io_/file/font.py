@@ -18,3 +18,6 @@ class FontFile(File):
         font.set_bold(bold)
         font.set_underline(underline)
         return font
+
+default_font = FontFile("")
+default_font.full_path = None
