@@ -1,10 +1,9 @@
 from abc import ABC
 
-class Positionable(ABC):
+class Positionable:
     """Positionable is an abstract class for everything having a position"""
 
     def __init__(self, x: int, y: int, layer: int = 0) -> None:
-        ABC.__init__(self)
         self.x = x
         self.y = y
         self.layer = layer

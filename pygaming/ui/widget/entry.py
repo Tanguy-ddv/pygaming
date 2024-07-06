@@ -1,20 +1,22 @@
 """The entry class is an object on which you can write some words"""
 import pygame
+from .base_widget import BaseWidget
+from .supports import FocusSupport, DisableSupport, MouseInteractionSupport, TextSupport
 from ...io_.file import FontFile
 from ..inputs import Inputs
 from ...utils.color import Color, black, full_transparency
-from ...utils.text_flags import TextFlags
-from .base_widget import BaseWidgetWithText
 from typing import Optional
+from ..utils import make_background
 
-def _get_entry_shape(font: pygame.font.Font, size: int, margin_x, margin_y):
+
+def _get_entry_shape(font: pygame.font.Font, length: int, margin_x, margin_y):
     """Calculate the shape of the entry object."""
-    mmm: pygame.Surface = font.render("lm"*(size//2) + "n"*(size%2), True, (0,0,0))
+    mmm: pygame.Surface = font.render("lm"*(length//2) + "n"*(length%2), True, (0,0,0))
     height = mmm.get_height() + 2*margin_y
     width = mmm.get_width() + 2*margin_x
     return width, height
 
-class Entry(BaseWidgetWithText):
+class Entry(BaseWidget, FocusSupport, DisableSupport, MouseInteractionSupport, TextSupport):
     """An Entry widget is used to enter text in the game."""
 
     def __init__(
@@ -24,19 +26,24 @@ class Entry(BaseWidgetWithText):
         y: int, # pixels
         font_file: FontFile,
         initial_value = "",
-        unfocus_background: pygame.Surface | Color = full_transparency,
+        background: pygame.Surface | Color = full_transparency,
         focus_background: Optional[pygame.Surface | Color] = None,
-        size: int = 15,
+        disabled_background: Optional[pygame.Surface | Color] = None,
+        length: int = 15,
         margin_x: int = 10, # pixels
         margin_y: int = 5, # pixels
+        layer: int = 0,
         forbidden_characters: str = '',
         extra_accepted_characters: str = '',
         font_color: Color = black,
         font_size: int = 20,
-        text_flags: TextFlags = TextFlags(),
+        italic: bool = False,
+        bold: bool = False,
+        underline: bool = False,
+        antialias: bool = True,
         caret_blink_period: int = 1000, # [milisecondes]
         caret_width = 2, # pixels
-        initial_focus=False
+        hover_cursor: pygame.Cursor = None,
     ) -> None:
         """
         An entry is a widget used to enter a textual value.
@@ -50,7 +57,7 @@ class Entry(BaseWidgetWithText):
         font_size: the size of the text.
         background: Surface | Color. If a Surface is provided, the top left part of the surface is used
         as background for the text. If a color is provided, fill a surface with the color.
-        size: The maxiumum number of charachters the text can have.
+        length: The maxiumum number of characters the text can have.
         margin_x, margin_y: the margin of text in its background (in pixel)
         font_color: The color of the font
         forbidden_characters: the list of forbidden characters.
@@ -61,26 +68,20 @@ class Entry(BaseWidgetWithText):
         caret_width: int. The width of the caret, in pixel.
         initial_focus: bool. If false, you have to click to set the focus on the entry before interacting with.
         """
-        font = font_file.get(font_size)
-        width, height = _get_entry_shape(font, size, margin_x, margin_y)
-        if isinstance(unfocus_background, Color):
-            bg = pygame.Surface((width, height), pygame.SRCALPHA)
-            bg.fill(unfocus_background.to_RGBA())
-        else:
-            bg = unfocus_background
+        width, height = _get_entry_shape(font_file.get(font_size), length, margin_x, margin_y)
+        bg = make_background(background, width, height, None)
         
-        if isinstance(focus_background, Color):
-            focus_bg = pygame.Surface((width, height), pygame.SRCALPHA)
-            focus_bg.fill(focus_background.to_RGBA())
-        elif focus_background is None:
-            focus_bg = bg.copy()
-        else:
-            focus_bg = focus_background
+        focus_bg = make_background(focus_background, width, height, bg)
+        disable_bg = make_background(disabled_background, width, height, bg)
 
-        super().__init__(frame, x, y, width, height, bg, focus_bg, font_color, text_flags, font_file, font_size, initial_focus)
+        BaseWidget.__init__(self, frame, x, y, layer)
+        FocusSupport.__init__(self, bg, focus_bg)
+        DisableSupport.__init__(self, bg, disable_bg)
+        MouseInteractionSupport.__init__(self, bg, x, y, layer, hover_cursor)
+        TextSupport.__init__(self, font_color, font_file, font_size, italic, bold, underline, antialias)
         
-        self.x, self.y = x,y
-        self.size = size
+        self.length = length
+        self._font_color = font_color.to_RGBA()
 
         self._forbidden_characters = forbidden_characters
         self._extra_accepted_characters = extra_accepted_characters
@@ -93,6 +94,11 @@ class Entry(BaseWidgetWithText):
         self._time_since_last_blink = 0
         self._show_caret = True
         self._update_caret_position()
+    
+    
+    def set_color(self, font_color: Color):
+        self._font_color = font_color.to_RGBA()
+        return TextSupport.set_color(font_color)
     
     def clear(self):
         """Clear the value of the entry"""
@@ -138,10 +144,7 @@ class Entry(BaseWidgetWithText):
 
     def get_surface(self) -> pygame.Surface:
         """Get the surface of the object to be displayed."""
-        if self._focus:
-            background = self.focus_background.copy()
-        else:
-            background = self.unfocus_background.copy()
+        background = self._get_background()
         text = self._render(self._value)
         left = max(self.width // 2 - text.get_width()//2, 0)
         up = self.height // 2 - text.get_height()//2 
@@ -154,7 +157,7 @@ class Entry(BaseWidgetWithText):
 
     def _add_letter(self, letter: str):
         """Add a letter in the text value"""
-        if len(self._value) < self.size:
+        if len(self._value) < self.length:
             letters = list(self._value)
             letters.insert(self._cursor_index, letter)
             self._value = "".join(letters)

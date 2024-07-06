@@ -38,7 +38,7 @@ class Frame(Positionable):
         click_x -= self.x
         click_y -= self.y
         for widget in self.widgets:
-            if widget.visible:
+            if widget.visible and widget.can_be_focused:
                 if widget.x < click_x < widget.x + widget.width and widget.y < click_y < widget.y + widget.height:
                     widget.focus()
                 else:

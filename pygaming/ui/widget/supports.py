@@ -1,17 +1,13 @@
 import pygame
-from abc import ABC, abstractmethod
 from typing import overload
 from ...utils.color import Color
 from ...io_.file import FontFile
 from ..inputs import Inputs
 import numpy as np
 from ..positionable import Positionable
-from ...io_.utils import get_file
-import json
-__CONFIG_FILE = get_file('data', 'config.json', dynamic=True)
+from ..utils import get_default_cursor
 
-
-class TextSupport(ABC):
+class TextSupport:
     """
     Add text support for the widget, use it as parent class alongside BaseWidget for your widgets.
     use ._render(text) to get a surface with the text on it.
@@ -38,7 +34,6 @@ class TextSupport(ABC):
         font_size: int, the size of the font.
         italic, bold, underline and alias: bool, flags to specify if the font is bold, italic etc.
         """
-        ABC.__init__(self)
         self.__font_color = font_color.to_RGBA()
         self._font = FontFile.get(font_file, font_size, italic, bold, underline)
         self.__antialias = antialias
@@ -95,13 +90,12 @@ class TextSupport(ABC):
         self.__font_color = font_color.to_RGBA()
         self.__update_font()
 
-class BackgroundSupport(ABC):
+class BackgroundSupport():
     """
     Add a background to the widget.
     """
 
     def __init__(self, background: pygame.Surface) -> None:
-        ABC.__init__(self)
         self._background = background.copy()
     
     @property
@@ -112,18 +106,20 @@ class BackgroundSupport(ABC):
     def width(self):
         return self._background.get_width()
 
-class MouseInteractionSupport(ABC, BackgroundSupport, Positionable):
+class MouseInteractionSupport(BackgroundSupport, Positionable):
     """Add a support for clicking and hovering."""
 
-    def __init__(self, background: pygame.Surface, x: int, y: int, layer: int, cursor: pygame.Cursor, overlay: pygame.Surface) -> None:
-        ABC.__init__(self)
+    def __init__(self, background: pygame.Surface, x: int, y: int, layer: int, cursor: pygame.Cursor = None) -> None:
         BackgroundSupport.__init__(self, background)
         Positionable.__init__(self, x, y, layer)
-        self._cursor = cursor
+        
         self._is_mouse_above = False
         self._is_clicking = False
-        with open(__CONFIG_FILE, 'r') as f:
-            self._default_cursor = json.load(f)['diamond']
+
+        if cursor is None:
+            self._cursor = get_default_cursor()
+        else:
+            self._cursor = cursor
     
     def _update_mouse(self, inputs: Inputs, x_frame, y_frame):
         """Update the cursor and do action in case of click."""
@@ -136,21 +132,20 @@ class MouseInteractionSupport(ABC, BackgroundSupport, Positionable):
             else:
                 self._is_mouse_above = False
         if 1 in clicks and not clicks[1].up:
-            click = clicks[0]
+            click = clicks[1]
             if self.x <= click.x <= self.x + self.width and self.y <= click.y <= self.y + self.height:
                 self._is_clicking = True
         if 1 in clicks and clicks[1].up and self._is_clicking:
             self._is_clicking = False
+        return clicks
 
-
-
-class FocusSupport(ABC, BackgroundSupport):
+class FocusSupport(BackgroundSupport):
     """
     Add focus support for the widget, use it as parent class alongside BaseWidget for your widgets.
     use _get_f_background() to get the background. It is either the focus background defined in
     this class or the normal background if the widget is not focused.
     """
-    def __init__(self, background: pygame.Surface, focus_background: pygame.Surface = None, initial_focus = False) -> None:
+    def __init__(self, background: pygame.Surface, focus_background: pygame.Surface = None) -> None:
         """
         Add focus support for a widget.
 
@@ -159,15 +154,14 @@ class FocusSupport(ABC, BackgroundSupport):
         background: Surface, the background.
         focus_background: Surface, Another background that will be returned as background if the widget is focused.
         if None, use the same image in both case. The focus_background will be reshaped with the background shape.
-        initial_focus: bool. If True, the widget is focused at creation.
         """
-        ABC.__init__(self)
         BackgroundSupport.__init__(self, background)
         if focus_background is None:
             self._focus_background = self._background.copy()
         else:
             self._focus_background = pygame.transform.scale(focus_background, (self.width, self.height))
-        self._focus = initial_focus
+        self._focus = False
+        self.can_be_focused = True
     
     def focus(self):
         """Set the focus to the widget."""
@@ -185,23 +179,20 @@ class FocusSupport(ABC, BackgroundSupport):
         """Return the focus background if the widget has focus, the normal background otherwise."""
         return self._focus_background.copy() if self.is_focused() else self._background.copy()
 
-class ClickSupport(ABC, BackgroundSupport):
-    pass
-
-class DisableSupport(ABC, BackgroundSupport):
+class DisableSupport(BackgroundSupport):
     """
     Add enable/disable support for the widget, use it as parent class alongside BaseWidget for your widgets.
     use _get_d_background() to get the background. It is either the focus background defined in
     this class or the normal background if the widget is not focused.
     """
-    def __init__(self, background: pygame.Surface, disable_background: pygame.Surface = None, initially_disabled = False) -> None:
-        ABC.__init__(self)
+    def __init__(self, background: pygame.Surface, disable_background: pygame.Surface = None) -> None:
         BackgroundSupport.__init__(self, background)
         if disable_background is None:
             self._disable_background = self._background.copy()
         else:
             self._disable_background = pygame.transform.scale(disable_background, (self.width, self.height))
-        self._disabled = initially_disabled
+        self._disabled = False
+        self.can_be_disabled = True
     
     def disable(self):
         """Disable the widget."""
@@ -219,7 +210,7 @@ class DisableSupport(ABC, BackgroundSupport):
         """Return the disabled background if the widget is disabled, the normal background otherwise."""
         return self._disable_background.copy() if self.is_disabled() else self._background.copy()
 
-class HitboxSupport(ABC, BackgroundSupport, Positionable):
+class HitboxSupport(BackgroundSupport, Positionable):
     """
     Add a hitbox to the widget, use it as parent class alongside BaseWidget for your widgets.
     use is_touching(self, x, y) to know if a point x,y is touching the widget.
@@ -238,7 +229,6 @@ class HitboxSupport(ABC, BackgroundSupport, Positionable):
         x: int, y: int the position of the widget.
         layer: int, the layer of the widget
         """
-        ABC.__init__(self)
         BackgroundSupport.__init__(self, background)
         Positionable.__init__(self, x, y, layer)
         self._hitbox = pygame.surfarray.array_alpha(self._background) >= 0
@@ -305,7 +295,7 @@ class HitboxSupport(ABC, BackgroundSupport, Positionable):
                     return True
         return False
 
-class FittedHitboxSupport(ABC, HitboxSupport):
+class FittedHitboxSupport(HitboxSupport):
     """
     Add a fitted hitbox to the widget. The hitbox is the pixels having an alpha above a threshold.
     """
@@ -320,6 +310,5 @@ class FittedHitboxSupport(ABC, HitboxSupport):
         layer: int, the layer of the widget
         threshold: the alpha threshold to create the hitbox. The hitbox is the pixels having alpha >= threshold.
         """
-        ABC.__init__(self)
         HitboxSupport.__init__(self, background, x, y, layer)
         self._hitbox = pygame.surfarray.array_alpha(self._background) >= threshold

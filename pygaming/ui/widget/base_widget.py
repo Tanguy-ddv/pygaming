@@ -10,6 +10,8 @@ class BaseWidget(ABC, Positionable):
         Positionable.__init__(self, x, y, layer)
         self.frame = frame
         self.visible = True
+        self.can_be_focused = False
+        self.can_be_disabled = False
         frame.add_widget(self)
     
     def hide(self):
@@ -19,19 +21,15 @@ class BaseWidget(ABC, Positionable):
     def show(self):
         """Show the widget."""
         self.visible = True
-    
-    def is_focused(self):
-        """Overriden by the is_focus of the FocusSupport class if needed."""
-        return False
 
-    def focus(self):
-        """Overriredn by the focus of the FocusSupport class if needed"""
-        pass
+    def _get_background(self) -> pygame.Surface:
+        """Return the background."""
+        if self.can_be_disabled and self.is_disabled():
+            return self._disable_background.copy()
+        elif self.can_be_focused and self.is_focused():
+            return self._focus_background.copy()
+        return self._background.copy()
 
-    def unfocus(self):
-        """Overriredn by the focus of the FocusSupport class if needed"""
-        pass
-    
     @abstractmethod
     def get_surface(self) -> pygame.Surface:
         """Return the surface to be blitted."""
