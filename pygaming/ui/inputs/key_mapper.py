@@ -21,7 +21,7 @@ class KeyMapper:
             self._key_map_dict = {}
             for key, action in _key_map_dict.items():
                 if not key.isdigit() and hasattr(pygame, key):
-                    self._key_map_dict[getattr(pygame, key)] = action
+                    self._key_map_dict[str(getattr(pygame, key))] = action
                 else:
                     self._key_map_dict[key] = action
             self.reverse_mapping = self.get_reversed_mapping()
@@ -51,6 +51,6 @@ class KeyMapper:
             if action in reversed_mapping:
                 reversed_mapping[action].append(key)
             else:
-                reversed_mapping[action] = []
+                reversed_mapping[action] = [key]
         return reversed_mapping
         

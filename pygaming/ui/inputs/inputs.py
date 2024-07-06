@@ -69,13 +69,15 @@ class Inputs:
 
     def get_actions(self):
         """Return a dict of str: bool specifying if the action is trigger or not."""
-        types = [event.key for event in self.event_list]
+        types = [event.key for event in self.event_list if event.type == pygame.KEYDOWN]
         return {
             action : any(int(key) in types for key in keys)
-            for action, keys in self._key_mapper.reverse_mapping}
+            for action, keys in self._key_mapper.reverse_mapping.items()}
 
     def get_arrows(self):
         return [(event.type, event.key) for event in self.event_list if hasattr(event, 'key') and event.key in [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT]]
+
+
 
 @dataclass
 class Click:
