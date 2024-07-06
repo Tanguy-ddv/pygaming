@@ -27,7 +27,8 @@ class Phase():
                     frame.update_focus(x, y)
                 else:
                     frame.remove_focus()
-        if self.inputs.get_actions()["next widget focus"]:
+        actions = self.inputs.get_actions()
+        if "next widget focus" in actions and actions["next widget focus"]:
             for frame in self.frames:
                 if frame.focus:
                     frame.next_widget_focus()
