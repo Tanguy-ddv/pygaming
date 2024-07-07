@@ -60,12 +60,17 @@ class Inputs:
         """Return the current mouse speed."""
         for event in self.event_list:
             if event.type == pygame.MOUSEMOTION:
+                if self.mouse_x is not None and self.mouse_y is not None:
+                    velocity = event.pos[0] - self.mouse_x, event.pos[1] - self.mouse_y
+                    self.mouse_x = event.pos[0]
+                    self.mouse_y = event.pos[1]
+                    return velocity
                 self.mouse_x = event.pos[0]
                 self.mouse_y = event.pos[1]
-                if self.mouse_x is not None and self.mouse_y is not None:
-                    velocity = self.mouse_x - event.pos[0], self.mouse_y - event.pos[0]
-                    return velocity
                 return 0,0
+        self.mouse_x = None
+        self.mouse_y = None
+        return 0,0
 
     def get_actions(self):
         """Return a dict of str: bool specifying if the action is trigger or not."""

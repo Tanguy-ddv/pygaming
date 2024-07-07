@@ -4,21 +4,34 @@ import pygame
 from typing import Callable, Optional, Any
 
 from pygaming.ui.inputs.inputs import Inputs
-from ...io_.file import FontFile
+from ...io_.file import FontFile, default_font
+from ..utils import make_rounded_rectangle
 
 from ...utils.color import Color, blue, cyan, white
 from .base_widget import BaseWidget
 from .supports import MouseInteractionSupport, TextSupport, DisableSupport, FocusSupport
 
-_DEFAULT_WIDTH = 150
+_DEFAULT_WIDTH = 200
 _DEFAULT_CURSOR_RADIUS = 15
-_DEFAULT_HEIGHT = 20
+_DEFAULT_HEIGHT = 40
 
 def _get_closest(x: float, xes: list[float], delta: float):
     """return the closest value"""
     return sorted(xes, key = lambda v: abs(x - (v + delta)))[0]
 
-class Slider(BaseWidget, MouseInteractionSupport, TextSupport, DisableSupport, FocusSupport):
+def _make_slider_background(background: Color | pygame.Surface | None, width: int, height: int, reference: pygame.Surface | None, margin_x: int, margin_y: int):
+    """Make the background of a slider."""
+    if isinstance(background, pygame.Surface):
+        bg = pygame.transform.scale(background, (width, height))
+    elif background is None:
+        bg = reference.copy()
+    else:
+        rounded_rect = make_rounded_rectangle(background, width - 2*margin_x, height - 2*margin_y)
+        bg = pygame.Surface((width, height), pygame.SRCALPHA)
+        bg.blit(rounded_rect, (margin_x, margin_y))
+    return bg
+
+class Slider(BaseWidget, MouseInteractionSupport, DisableSupport, FocusSupport):
     """A Slider widget is used to enter numerical value in the game."""
 
     def __init__(
@@ -35,20 +48,12 @@ class Slider(BaseWidget, MouseInteractionSupport, TextSupport, DisableSupport, F
         background: pygame.Surface | Color = blue,
         focus_background: Optional[pygame.Surface | Color] = None,
         disable_background: Optional[pygame.Surface | Color] = None,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
+        width: int = _DEFAULT_WIDTH,
+        height: int = _DEFAULT_HEIGHT,
         cursor: pygame.Surface | Color = cyan,
-        cursor_radius: Optional[int] = None,
+        cursor_radius: int = _DEFAULT_CURSOR_RADIUS,
         margin_x: int = 10,
         margin_y: int = 5,
-        display_value: bool = False,
-        font_file: Optional[FontFile] = None,
-        font_color: Color = white,
-        font_size: int = 20,
-        italic: bool = False,
-        bold: bool = False,
-        underline: bool = False,
-        antialias: bool = True,
         transition_func: Callable = lambda x: x,
         transition_duration: float | int = 0, # [ms]
         hover_cursor: pygame.Cursor | None = None,
@@ -59,84 +64,40 @@ class Slider(BaseWidget, MouseInteractionSupport, TextSupport, DisableSupport, F
         ---
         frame: Frame. The frame in which the slider will be inserted.
         x:int, y:int. The position of the top-left corner on the frame.
+        layer: the layer of the object in the frame.
         func: Callable. If not None, the return and the display are function of the value.
         from_: float, to: float. The first and last value of the numerical scale (before applying the function).
         nb_points: the number of points in the scale.
         initial_value: The initial value. if the value is not perfectly in the scale, set it to the immediate lower value possible.
-        unfocus_background, focus_background: the background when the widget is on focus or not.
-        If the provided background is a color, then create a rectangle of specified width and height with rounded extremities.
-        If the provided background is a surface, is it as it is (possibly reshape it in shape (width, height)).
-        If the focus_background is not None, use the unfocus_bakcground in both case.
-        width: int, height: int. Dimension to shape/reshape the background.
-        cursor: Color | Surface. The cursor that move on the scale. If a color is provided, make a circle of radius cursor_radius.
-        If a surface is provided, use it as a cursor. Possibly reshape it a a shape (cursor_radius*2, cursor_radius*2) if it is not None.
+        background: the background of the widget, if it is a color, create a rectangle with rounded edges
+        of shape (width - 2*margin_x, height - 2*margin_y) on a transparent background.
+        focus_background: The background of the widget if it is focused. If it is color, create a rectangle with rounded edges
+        of shape (width - 2*margin_x, height - 2*margin_y) on a transparent background. if it is None, use the main background.
+        disable_background: The background of the widget if it is focused. If it is color, create a rectangle with rounded edges
+        of shape (width - 2*margin_x, height - 2*margin_y) on a transparent background. if it is None, use the main background.
+        cursor: If it is a Surface, use it as the cursor of the slider. If it is a color, create a circle of that color.
         cursor_radius: int. Dimension To shape/reshape the cursor.
-        margin_x: int, margin_x: int. The margin of the scale in its background.
-        font_file: FontFile. The font file of the font used to display the text of the value. Optional if value_display_position is False
-        display_value: bool. if True, display the value on the cursor. If you want to display it elsewhere, use a label widget.
-        font_color: Color. the color of the font.
-        font_size: int. the size of the font.
-        text_flags: TextFlags. flags for the text.
+        margin_x: int, margin_y: int. The margin of the scale in its background for the creation of a rounded rectangle.
         transition_func: Callable. A function [0,1] -> R with f(0) = 0 and f(1) = 1 that represent the path from one position to another.
         transition_duration: int (ms). The duration of the transition in ms.
-        initial_focus: bool. If false, you have to click to set the focus on the entry before interacting with.        
+        hover_cursor: The image of the mouse when it is above the widget.
         """
 
         # If the cursor is a color, create a circle of that color.
         if isinstance(cursor, Color):
-            if cursor_radius is None:
-                cursor_radius = _DEFAULT_CURSOR_RADIUS
             self.cursor = pygame.Surface((2*cursor_radius, 2*cursor_radius), pygame.SRCALPHA)
             pygame.draw.circle(self.cursor, cursor.to_RGBA(), (cursor_radius, cursor_radius), cursor_radius)
-        elif cursor_radius is None:
-            self.cursor = cursor.copy()
-            cursor_radius = self.cursor.get_height()//2
         else:
             self.cursor = pygame.transform.scale(cursor, (cursor_radius*2, cursor_radius*2))
-        if height is not None:
-            height = max(self.cursor.get_height(), height) + 2*margin_y
-        else:
-            height = self.cursor.get_height() + 2*margin_y
+        height = max(cursor_radius*2, height)
 
-        def create_background(width, color: Color):
-            bg = pygame.Surface((width  + 2*margin_x, height), pygame.SRCALPHA)
-            # Create a rectangle with rounded corners.
-            rect_left = margin_x + height//2
-            rect_right = bg.get_width() - margin_x - height//2
-            rect = pygame.rect.Rect(rect_left, (height - height)//2, rect_right - rect_left, height)
-            pygame.draw.rect(bg, color.to_RGBA(), rect)
-            pygame.draw.circle(bg, color.to_RGBA(), (rect_left, height//2), height//2)
-            pygame.draw.circle(bg, color.to_RGBA(), (rect_right, height//2), height//2)
-            return bg
-
-        # If the background is a color, create a colored bar of that color on a transparent background
-        if isinstance(background, Color):
-            if width is None:
-                width = _DEFAULT_WIDTH
-            if height is None:
-                height = _DEFAULT_HEIGHT
-            bg = create_background(width, background)
-        else:
-            bg = background.copy()
-        
-        if isinstance(focus_background, Color):
-            focus_bg = create_background(width, focus_background)
-        elif focus_background is None:
-            focus_bg = bg.copy()
-        else:
-            focus_bg = focus_background.copy()
-        
-        if isinstance(disable_background, Color):
-            disable_bg = create_background(width, focus_background)
-        elif disable_background is None:
-            disable_bg = bg.copy()
-        else:
-            disable_bg = disable_background.copy()
+        bg = _make_slider_background(background, width, height, None, margin_x, margin_y)
+        focus_bg = _make_slider_background(focus_background, width, height, bg, margin_x, margin_y)
+        disable_bg = _make_slider_background(disable_background, width, height, bg, margin_x, margin_y)
 
         BaseWidget.__init__(self, frame, x, y, layer)
         FocusSupport.__init__(self, bg, focus_bg)
         MouseInteractionSupport.__init__(self, bg, x, y, layer, hover_cursor)
-        TextSupport.__init__(self, font_color, font_file, font_size, italic, bold, underline, antialias)
         DisableSupport.__init__(self, bg, disable_bg)
 
         self._from = from_
@@ -151,7 +112,7 @@ class Slider(BaseWidget, MouseInteractionSupport, TextSupport, DisableSupport, F
         if initial_value > to:
             initial_value = to
 
-        self._value = int((initial_value - from_)/(to - from_)*self._nb_points)
+        self._value = int((initial_value - from_)/(to - from_)*(self._nb_points-1))
         if self._value == self._nb_points:
             self._value -= 1
 
@@ -171,7 +132,6 @@ class Slider(BaseWidget, MouseInteractionSupport, TextSupport, DisableSupport, F
         ]
 
         self.margin_y = margin_y
-        self._display_value = display_value
 
     def get(self):
         """Return the value of the slider."""
@@ -211,7 +171,6 @@ class Slider(BaseWidget, MouseInteractionSupport, TextSupport, DisableSupport, F
                     self._value = new_value
                     self._current_transition = (previous_value, self._value)
                     self._transition_delta = 0
-            
 
         # Move the cursor during the transition
         if not (self._current_transition is None):
@@ -239,7 +198,115 @@ class Slider(BaseWidget, MouseInteractionSupport, TextSupport, DisableSupport, F
             x = t*x_arr + (1-t)*x_dep
 
         background.blit(self.cursor, (x, y))
-        if self._display_value:
-            text = self._render(str(self.get()))
-            background.blit(text, (x - text.get_width()//2 + self.cursor.get_width()//2, y - text.get_height()//2 + self.cursor.get_height()//2))
+        return background
+
+class TextSlider(Slider, TextSupport):
+    """A text slider is a slider that display its value on its cursor."""
+
+    def __init__(
+        self,
+        frame, 
+        x: int, 
+        y: int, 
+        layer: int = 0, 
+        func: Callable[[float], Any] = lambda v: int(v) if int(v) == v else v, 
+        from_: float | int = 0, 
+        to: float | int = 4, 
+        nb_points: int = 5, 
+        initial_value: float | int | None = None, 
+        background: pygame.Surface | Color = blue, 
+        focus_background: pygame.Surface | Color | None = None, 
+        disable_background: pygame.Surface | Color | None = None, 
+        width: int = _DEFAULT_WIDTH, 
+        height: int = _DEFAULT_HEIGHT, 
+        cursor: pygame.Surface | Color = cyan, 
+        cursor_radius: int = _DEFAULT_CURSOR_RADIUS, 
+        margin_x: int = 10, 
+        margin_y: int = 5, 
+        font_file: FontFile = default_font, 
+        font_color: Color = white, 
+        font_size: int = 20, 
+        italic: bool = False, 
+        bold: bool = False, 
+        underline: bool = False, 
+        antialias: bool = True, 
+        transition_func: Callable[..., Any] = lambda x: x,
+        transition_duration: float | int = 0, 
+        hover_cursor: pygame.Cursor | None = None
+    ) -> None:
+        
+        """
+        A text slider is a widget used to enter a value in the game.
+        unlike a simple slider, it displays the value on the cursor.
+        Params:
+        ---
+        frame: Frame. The frame in which the slider will be inserted.
+        x:int, y:int. The position of the top-left corner on the frame.
+        layer: the layer of the object in the frame.
+        func: Callable. If not None, the return and the display are function of the value.
+        from_: float, to: float. The first and last value of the numerical scale (before applying the function).
+        nb_points: the number of points in the scale.
+        initial_value: The initial value. if the value is not perfectly in the scale, set it to the immediate lower value possible.
+        background: the background of the widget, if it is a color, create a rectangle with rounded edges
+        of shape (width - 2*margin_x, height - 2*margin_y) on a transparent background.
+        focus_background: The background of the widget if it is focused. If it is color, create a rectangle with rounded edges
+        of shape (width - 2*margin_x, height - 2*margin_y) on a transparent background. if it is None, use the main background.
+        disable_background: The background of the widget if it is focused. If it is color, create a rectangle with rounded edges
+        of shape (width - 2*margin_x, height - 2*margin_y) on a transparent background. if it is None, use the main background.
+        cursor: If it is a Surface, use it as the cursor of the slider. If it is a color, create a circle of that color.
+        cursor_radius: int. Dimension To shape/reshape the cursor.
+        margin_x: int, margin_y: int. The margin of the scale in its background for the creation of a rounded rectangle.
+        font_file: FontFile the fontFile that represent the font you want to use.
+        font_color: Color the color of the font.
+        font_size: the size of the font, 
+        italic, bold, underline, antialias: flags for the text. 
+        transition_func: Callable. A function [0,1] -> R with f(0) = 0 and f(1) = 1 that represent the path from one position to another.
+        transition_duration: int (ms). The duration of the transition in ms.
+        hover_cursor: The image of the mouse when it is above the widget.
+        """
+        Slider.__init__(
+            self,
+            frame=frame, 
+            x=x, 
+            y=y, 
+            layer=layer, 
+            func=func, 
+            from_=from_, 
+            to=to, 
+            nb_points=nb_points, 
+            initial_value=initial_value, 
+            background=background, 
+            focus_background=focus_background, 
+            disable_background=disable_background, 
+            width=width, 
+            height=height, 
+            cursor=cursor, 
+            cursor_radius=cursor_radius, 
+            margin_x=margin_x, 
+            margin_y=margin_y, 
+            transition_func=transition_func,
+            transition_duration=transition_duration,
+            hover_cursor=hover_cursor,
+        )
+        TextSupport.__init__(self, font_color,font_file, font_size, italic, bold, underline, antialias)
+
+    def get_surface(self):
+        """Construct the surface."""
+        background = self._get_background()
+        
+        y = (self.height - self.cursor.get_height())//2
+        if self._current_transition is None:
+            x = self._xes[self._value]
+        else:
+            # Source
+            x_arr = self._xes[self._current_transition[1]]
+            # Destination
+            x_dep = self._xes[self._current_transition[0]]
+            t = self._transition_func(self._transition_delta)
+            x = t*x_arr + (1-t)*x_dep
+
+        background.blit(self.cursor, (x, y))
+
+        text = self._render(str(self.get()))
+        background.blit(text, (x - text.get_width()//2 + self.cursor.get_width()//2, y - text.get_height()//2 + self.cursor.get_height()//2))
         return background

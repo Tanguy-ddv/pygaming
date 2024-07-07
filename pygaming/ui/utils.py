@@ -26,11 +26,12 @@ def make_background(background: pygame.Surface | Color | None, width: int, heigh
     if the background is a color, return a rectangle of this color.
     if the background is None, return a copy of the reference.
     if the reference and the background are None, raise an Error.
+    We assume here that the reference have the shape (width, height)
     """
 
     if background is None:
         if reference is None:
-            raise TypeError("The reference must be a surface.")
+            raise TypeError("The reference must be a surface if the background is None.")
         return reference.copy()
     elif isinstance(background, Color):
         bg = pygame.Surface((width, height), pygame.SRCALPHA)
@@ -39,3 +40,11 @@ def make_background(background: pygame.Surface | Color | None, width: int, heigh
     else:
         return pygame.transform.scale(background, (width, height))
 
+def make_rounded_rectangle(color: Color, width: int, height: int):
+    """Make a rectange with half circles at the start and end."""
+    background = pygame.Surface((width, height), pygame.SRCALPHA)
+    rect = pygame.Rect(height//2, 0, width - height, height)
+    pygame.draw.rect(background, color.to_RGBA(), rect)
+    pygame.draw.circle(background, color.to_RGBA(), (height//2, height//2), height//2)
+    pygame.draw.circle(background, color.to_RGBA(), (width - height//2, height//2), height//2)
+    return background

@@ -1,7 +1,7 @@
 """A phase is one step of the game."""
 import pygame
 from .ui.frame import Frame
-from .ui.inputs import Inputs, Click
+from .ui.inputs import Inputs
 
 class Phase():
     """
@@ -15,9 +15,11 @@ class Phase():
         self.inputs = inputs
     
     def add_frame(self, frame: Frame):
+        """Add a new frame to the phase."""
         self.frames.append(frame)
     
     def update_focus(self):
+        """Update the focus of all the frames."""
         clicks = self.inputs.get_clicks()
         if 1 in clicks and not clicks[1].up:
             x = clicks[1].x
