@@ -1,1 +1,1 @@
-{"control": {"ESCAPE": "pause", "LEFTARROW": "left", "RIGHTARROW": "right", "UPARROW": "up", "DOWNARROW": "down"}, "current_language": "fr_FR", "full_screen": 0, "volume": {"main": 1, "music": 1, "sounds": {"all": 1}}}
+{"control": {"K_ESCAPE": "pause", "K_LEFT": "left", "K_RIGHT": "right", "K_UP": "up", "K_DOWN": "down", "K_TAB": "next widget focus", "K_RETURN" : "enter"}, "current_language": "fr_FR", "full_screen": 0, "volume": {"main": 1, "music": 1, "sounds": {}}}

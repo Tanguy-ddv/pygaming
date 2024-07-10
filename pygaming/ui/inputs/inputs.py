@@ -4,7 +4,7 @@ import pygame
 from dataclasses import dataclass
 from .key_mapper import KeyMapper
 from string import ascii_letters, digits, punctuation 
-ACCEPTED_LETTERS = ascii_letters + digits + punctuation + " "
+_ACCEPTED_LETTERS = ascii_letters + digits + punctuation + " "
 
 class Inputs:
     """
@@ -16,44 +16,73 @@ class Inputs:
         
         self._key_mapper = KeyMapper()
         self.clear_mouse_velocity()
+        self.event_list: list[pygame.event.Event] = []
+    
+    def update(self):
+        self.event_list = pygame.event.get()
 
-    def get_characters(self):
+    def get_characters(self, extra_characters: str = ''):
         """Return all the letter characters a-z, digits 0-9, whitespace and punctuation."""
-        return [event.unicode for event in pygame.event.get() if event.type == pygame.KEYDOWN and event.unicode in ACCEPTED_LETTERS]
+        return [event.unicode for event in self.event_list if event.type == pygame.KEYDOWN and event.unicode and event.unicode in _ACCEPTED_LETTERS + extra_characters]
 
     def get_quit(self):
-        return any(event.type == pygame.QUIT for event in pygame.event.get())
+        return any(event.type == pygame.QUIT for event in self.event_list)
 
-    def get_clicks(self):
+    def get_clicks(self, frame_x:int = 0, frame_y: int = 0):
         """Return the clicks and the position."""
 
-        return {event.button if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONDOWN] else 0 :
-            Click(event.pos[0], event.pos[1], event.type == pygame.MOUSEBUTTONUP)
-            for event in pygame.event.get()
-            if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN]
+        return {event.button if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP] else 0 :
+            Click(event.pos[0] - frame_x, event.pos[1] - frame_y, event.type == pygame.MOUSEBUTTONUP)
+            for event in self.event_list
+            if event.type in [pygame.MOUSEBUTTONDOWN, pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP]
         }
 
     def clear_mouse_velocity(self):
         """Remove the history of mouse velocity."""
         self.mouse_x = None
         self.mouse_y = None
+    
+    def get_keydown(self, key: int):
+        """Return true if the key is just pressed down."""
+        for event in self.event_list:
+            if event.type == pygame.KEYDOWN and event.key == key:
+                return True
+        return False
+
+    def get_keyup(self, key: int):
+        """Return true if the key is just unpressed."""
+        for event in self.event_list:
+            if event.type == pygame.KEYUP and event.key == key:
+                return True
+        return False
 
     def get_mouse_velocity(self):
         """Return the current mouse speed."""
-        for event in pygame.event.get():
+        for event in self.event_list:
             if event.type == pygame.MOUSEMOTION:
                 if self.mouse_x is not None and self.mouse_y is not None:
-                    velocity = self.mouse_x - event.pos[0], self.mouse_y - event.pos[0]
+                    velocity = event.pos[0] - self.mouse_x, event.pos[1] - self.mouse_y
                     self.mouse_x = event.pos[0]
                     self.mouse_y = event.pos[1]
                     return velocity
+                self.mouse_x = event.pos[0]
+                self.mouse_y = event.pos[1]
+                return 0,0
+        self.mouse_x = None
+        self.mouse_y = None
+        return 0,0
 
     def get_actions(self):
         """Return a dict of str: bool specifying if the action is trigger or not."""
-        types = [event.type for event in pygame.event.get()]
+        types = [event.key for event in self.event_list if event.type == pygame.KEYDOWN]
         return {
-            action : any(key in types for key in keys) 
-            for action, keys in self._key_mapper.reverse_mapping}
+            action : any(int(key) in types for key in keys)
+            for action, keys in self._key_mapper.reverse_mapping.items()}
+
+    def get_arrows(self):
+        return [(event.type, event.key) for event in self.event_list if hasattr(event, 'key') and event.key in [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT]]
+
+
 
 @dataclass
 class Click:

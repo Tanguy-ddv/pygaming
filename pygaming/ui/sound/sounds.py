@@ -1,6 +1,5 @@
 """The Sound class is used to store sounds, the SoundBox class is used to manage them."""
 
-import pygame
 from ...io_.file.sound import SoundFile
 from ...io_.utils import get_file
 import json
@@ -8,7 +7,7 @@ import json
 SETTINGS_PATH = 'settings.json'
 
 class Sound:
-    """The Sound class represent a sound, it has a category and a Soundfile."""
+    """The Sound class represent a sound, it load the category and the file from a SoundFile object."""
 
     def __init__(self, sound_file: SoundFile) -> None:
         self._sound, self.category = sound_file.get()

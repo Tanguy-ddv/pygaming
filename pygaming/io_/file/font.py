@@ -7,10 +7,10 @@ class FontFile(File):
 
     def __init__(self, name: str) -> None:
         super().__init__(name)
-        if name.endswith('.ttf'):
-            self.full_path = get_file(folder='assets/fonts', path=name)
+        if name.endswith('.ttf') or name.endswith('.TTF'):
+            self.full_path = get_file(folder='fonts', file=name)
         else:
-            self.full_path = get_file(folder='assets/fonts', path=name + '.ttf')
+            self.full_path = get_file(folder='fonts', file=name + '.ttf')
 
     def get(self, size: int, italic: bool = False, bold: bool = False, underline: bool = False) -> pygame.font.Font:
         font = pygame.font.Font(self.full_path, size)
@@ -18,3 +18,6 @@ class FontFile(File):
         font.set_bold(bold)
         font.set_underline(underline)
         return font
+
+default_font = FontFile("")
+default_font.full_path = None

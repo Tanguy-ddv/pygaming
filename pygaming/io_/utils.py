@@ -23,7 +23,8 @@ def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fo
         if dynamic:
             config_path = os.path.join(base_path, 'data', 'config.json')
             config_file = open(config_path,'r')
-            base_path = json.load(config_file)['path_to_dynamic']
+            base_path = json.load(config_file)['path']
+            config_file.close()
     else:
         base_path = os.path.abspath(".")
 
