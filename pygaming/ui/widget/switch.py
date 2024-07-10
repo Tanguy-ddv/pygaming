@@ -1,11 +1,12 @@
 from typing import Any, Callable
 from pygame import Cursor, Surface
 import pygame
+from pygaming.ui.inputs.inputs import Inputs
 from pygaming.utils.color import Color, blue, cyan
 from .slider import Slider, _make_slider_background, _DEFAULT_CURSOR_RADIUS, _DEFAULT_HEIGHT, _DEFAULT_WIDTH
 
-class OnOff(Slider):
-    """An OnOff is a 2-state slider."""
+class Switch(Slider):
+    """An Switch is a 2-state slider."""
 
     def __init__(
             self,
@@ -27,7 +28,7 @@ class OnOff(Slider):
             cursor_radius: int = _DEFAULT_CURSOR_RADIUS,
             margin_x: int = 10,
             margin_y: int = 5,
-            transition_func: Callable[..., Any] = ...,
+            transition_func: Callable[..., Any] = lambda x:x,
             transition_duration: float | int = 0,
             hover_cursor: Cursor | None = None
         ) -> None:
@@ -72,11 +73,11 @@ class OnOff(Slider):
         if self._value:
             return Slider._get_background(self)
         elif self._disabled:
-            return self._off_disable_bakcground
+            return self._off_disable_bakcground.copy()
         elif self._focus:
-            return self._off_focus_bakcground
+            return self._off_focus_bakcground.copy()
         else:
-            return self._off_background
+            return self._off_background.copy()
     
     def get_surface(self) -> Surface:
         background = self._get_background()
@@ -99,3 +100,35 @@ class OnOff(Slider):
     
     def get(self) -> bool:
         return self._value == 1
+
+    def update(self, inputs: Inputs, loop_duration: int, x_frame, y_frame):
+        # Get if an arrow have been use or 
+        if self._focus:
+            arrows = inputs.get_arrows()
+            if (pygame.KEYDOWN, pygame.K_RIGHT) in arrows:
+                self.move_to_the_right()
+            if (pygame.KEYDOWN, pygame.K_LEFT) in arrows:
+                self.move_to_the_left()
+            actions = inputs.get_actions()
+            if "enter" in actions and actions["enter"] and self._focus:
+                if self._value:
+                    self.move_to_the_left()
+                else:
+                    self.move_to_the_right()
+
+        # Get if the widget have been clicked
+        clicks = self._update_mouse(inputs, x_frame, y_frame)
+        if self._is_clicking and 1 in clicks:
+            self._value = 1 - self._value
+            self._current_transition = (1 - self._value, self._value)
+            self._transition_delta = 0
+        
+        # Move the cursor during the transition
+        if not (self._current_transition is None):
+            if self._transition_duration != 0:
+                self._transition_delta += loop_duration/self._transition_duration
+            else:
+                self._transition_delta = 1
+            if self._transition_delta >= 1:
+                self._transition_delta = 0
+                self._current_transition = None

@@ -159,18 +159,18 @@ class Slider(BaseWidget, MouseInteractionSupport, DisableSupport, FocusSupport):
                 self.move_to_the_right()
             if (pygame.KEYDOWN, pygame.K_LEFT) in arrows:
                 self.move_to_the_left()
-            # Get if a position have been clicked
-
-            clicks = self._update_mouse(inputs, x_frame, y_frame)
-            if self._is_clicking and 1 in clicks:
-                click = clicks[1]
-                previous_value = self._value
-                closest_x = _get_closest(click.x - self.x, self._xes, self.cursor.get_width()//2)
-                new_value = self._xes.index(closest_x)
-                if 0 <= new_value <= self._nb_points - 1:
-                    self._value = new_value
-                    self._current_transition = (previous_value, self._value)
-                    self._transition_delta = 0
+        
+        # Get if a position have been clicked
+        clicks = self._update_mouse(inputs, x_frame, y_frame)
+        if self._is_clicking and 1 in clicks:
+            click = clicks[1]
+            previous_value = self._value
+            closest_x = _get_closest(click.x - self.x, self._xes, self.cursor.get_width()//2)
+            new_value = self._xes.index(closest_x)
+            if 0 <= new_value <= self._nb_points - 1:
+                self._value = new_value
+                self._current_transition = (previous_value, self._value)
+                self._transition_delta = 0
 
         # Move the cursor during the transition
         if not (self._current_transition is None):

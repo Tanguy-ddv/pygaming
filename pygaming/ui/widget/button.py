@@ -73,7 +73,8 @@ class Button(BaseWidget, DisableSupport, MouseInteractionSupport, FocusSupport):
         if not self._disabled:
             previously_clicking = self._is_clicking
             self._update_mouse(inputs, x_frame, y_frame)
-            now_clicking = self._is_clicking
+            actions = inputs.get_actions()
+            now_clicking = self._is_clicking or ("enter" in actions and actions["enter"] and self._focus)
             self._active = now_clicking
             if now_clicking and previously_clicking:
                 if self._active_command is not None:
