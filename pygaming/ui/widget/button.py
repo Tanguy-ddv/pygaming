@@ -11,6 +11,7 @@ from ...io_.file import FontFile
 from ..utils import make_background
 
 class Button(BaseWidget, DisableSupport, MouseInteractionSupport, FocusSupport):
+    """Button are widgets that can be clicked."""
 
     def __init__(
         self,
@@ -90,6 +91,7 @@ class Button(BaseWidget, DisableSupport, MouseInteractionSupport, FocusSupport):
                     self._unactive_command()
 
 class TextButton(Button, TextSupport):
+    """TextButton are button that can display a textual content."""
 
     def __init__(
         self,
