@@ -1,12 +1,10 @@
 """The Jukebox class is used to manage the musics."""
 
 import pygame
-from ...io_.utils import get_file
+from ..file import get_file, MusicFile
 import json
-from ...io_.file.music import MusicFile
 
 SETTINGS_PATH = 'settings.json'
-
 
 class Jukebox:
     """The Jukebox is used to manage the musics."""

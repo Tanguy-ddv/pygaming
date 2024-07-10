@@ -1,7 +1,7 @@
 """A phase is one step of the game."""
 import pygame
-from .ui.frame import Frame
-from .ui.inputs import Inputs
+from .frame import Frame
+from .inputs import Inputs
 
 class Phase():
     """

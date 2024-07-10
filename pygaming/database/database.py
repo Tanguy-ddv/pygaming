@@ -4,7 +4,7 @@ The Database is used to address queries to the database.
 import sqlite3 as sql
 import os
 import json
-from ..utils import get_file
+from ..file.file import get_file
 
 __DB_PATH = get_file('data','sql/db.sqlite')
 __TABLE_PATH = get_file('data', 'sql/tables.sql')

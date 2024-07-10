@@ -1,7 +1,6 @@
 """The Sound class is used to store sounds, the SoundBox class is used to manage them."""
 
-from ...io_.file.sound import SoundFile
-from ...io_.utils import get_file
+from ..file import SoundFile, get_file
 import json
 
 SETTINGS_PATH = 'settings.json'

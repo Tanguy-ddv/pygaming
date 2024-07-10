@@ -4,12 +4,11 @@ import pygame
 from typing import Callable, Optional, Any
 
 from pygaming.ui.inputs.inputs import Inputs
-from ...io_.file import FontFile, default_font
+from ..file import FontFile, default_font
 from ..utils import make_rounded_rectangle
 
 from ...utils.color import Color, blue, cyan, white
 from .base_widget import BaseWidget
-from .supports import MouseInteractionSupport, TextSupport, DisableSupport, FocusSupport
 
 _DEFAULT_WIDTH = 200
 _DEFAULT_CURSOR_RADIUS = 15

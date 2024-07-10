@@ -1,6 +1,6 @@
 from .widget.base_widget import BaseWidget
 import pygame
-from ..utils.color import Color, white
+from .utils import Color, white
 from .inputs import Inputs
 from .positionable import Positionable
 

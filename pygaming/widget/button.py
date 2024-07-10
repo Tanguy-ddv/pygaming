@@ -4,11 +4,9 @@ import pygame
 
 from pygaming.ui.inputs.inputs import Inputs
 from .base_widget import BaseWidget
-from .supports import MouseInteractionSupport, TextSupport, DisableSupport, FocusSupport
 from typing import Optional, Callable
-from ...utils.color import Color, black
-from ...io_.file import FontFile
-from ..utils import make_background
+from ..file import FontFile
+from ..utils.draw import make_background
 
 class Button(BaseWidget, DisableSupport, MouseInteractionSupport, FocusSupport):
     """Button are widgets that can be clicked."""
@@ -20,10 +18,10 @@ class Button(BaseWidget, DisableSupport, MouseInteractionSupport, FocusSupport):
         y: int,
         width: int,
         height: int,
-        background: pygame.Surface | Color,
-        focus_background: pygame.Surface | Color | None = None,
-        active_background: Optional[pygame.Surface | Color] = None,
-        disabled_background: Optional[pygame.Surface | Color] = None,
+        background: pygame.Surface | pygame.Color,
+        focus_background: pygame.Surface | pygame.Color | None = None,
+        active_background: Optional[pygame.Surface | pygame.Color] = None,
+        disabled_background: Optional[pygame.Surface | pygame.Color] = None,
         layer: int = 0,
         on_click_command: Callable = None,
         on_unclick_command: Callable = None,
@@ -99,15 +97,15 @@ class TextButton(Button, TextSupport):
         x: int,
         y: int,
         text: str,
-        background: pygame.Surface | Color,
-        focus_background: pygame.Surface | Color | None = None,
-        active_background: pygame.Surface | Color | None = None,
-        disabled_background: pygame.Surface | Color | None = None,
+        background: pygame.Surface | pygame.Color,
+        focus_background: pygame.Surface | pygame.Color | None = None,
+        active_background: pygame.Surface | pygame.Color | None = None,
+        disabled_background: pygame.Surface | pygame.Color | None = None,
         layer: int = 0,
         margin_x: int = 10,
         margin_y: int = 3,
         font_size: int = 15,
-        font_color: Color = black,
+        font_color: pygame.Color = pygame.color.THECOLORS['black'],
         font_file: FontFile = None,
         italic: bool = False,
         bold: bool = False,

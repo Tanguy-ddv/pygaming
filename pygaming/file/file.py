@@ -1,7 +1,22 @@
-from typing import Literal
+from abc import ABC, abstractmethod
+from typing import Any, Literal
+
 import sys
 import os
 import json
+
+class File(ABC):
+    """Represent any type of file that would be loaded for the game: image, sounds, etc."""
+
+    def __init__(self, path: str) -> None:
+        self.path = path
+        self.full_path = None
+
+    @abstractmethod
+    def get(self) -> Any:
+        """Get the object in the proper format to be used by the game."""
+
+
 
 def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fonts'], file: str, dynamic : bool = False):
     """
