@@ -2,7 +2,7 @@
 
 import pygame
 from dataclasses import dataclass
-from .key_mapper import KeyMapper
+from .controls import Controls
 from string import ascii_letters, digits, punctuation 
 _ACCEPTED_LETTERS = ascii_letters + digits + punctuation + " "
 
@@ -14,7 +14,7 @@ class Inputs:
 
     def __init__(self) -> None:
         
-        self._key_mapper = KeyMapper()
+        self._controls = Controls()
         self.clear_mouse_velocity()
         self.event_list: list[pygame.event.Event] = []
     
@@ -77,7 +77,7 @@ class Inputs:
         types = [event.key for event in self.event_list if event.type == pygame.KEYDOWN]
         return {
             action : any(int(key) in types for key in keys)
-            for action, keys in self._key_mapper.reverse_mapping.items()}
+            for action, keys in self._controls.reverse_mapping.items()}
 
     def get_arrows(self):
         return [(event.type, event.key) for event in self.event_list if hasattr(event, 'key') and event.key in [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT]]

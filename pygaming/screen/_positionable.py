@@ -1,7 +1,5 @@
-from abc import ABC
-
-class Positionable:
-    """Positionable is an abstract class for everything having a position"""
+class Positionable():
+    """Positionable is an abstract class for everything having a position: widgets, actors, decors, frames."""
 
     def __init__(self, x: int, y: int, layer: int = 0) -> None:
         self.x = x
@@ -22,3 +20,6 @@ class Positionable:
     def send_to_the_front(self):
         self.layer += 1
     
+    @property
+    def coordinate(self):
+        return (self.x, self.y)

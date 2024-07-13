@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from .file import File
-from ..utils import get_file
+from .file import File, get_file
 
 class DataFile(File, ABC):
     """
@@ -12,7 +11,8 @@ class DataFile(File, ABC):
     """
 
     def __init__(self, path: str, dynamic: bool = False) -> None:
-        super().__init__(path)
+        File.__init__(self, path)
+        ABC.__init__(self)
         self.full_path = get_file('data', path, dynamic)
     
     @abstractmethod

@@ -4,6 +4,12 @@ import pygame
 from ..file import get_file, MusicFile
 import json
 
+# TODO: add a update(self, settings.) function to update the volumes.
+# TODO: do the same for the soundbox, keymapper
+# TODO: do the same with the texts but with update_with_config and update_with_settings
+# TODO: do the same with the screen but with update_with_config and update_with_settings, create a screen class.
+# TODO: rename the keymapper class controls
+
 SETTINGS_PATH = 'settings.json'
 
 class Jukebox:
