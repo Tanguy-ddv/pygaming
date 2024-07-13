@@ -1,30 +1,25 @@
 """The Jukebox class is used to manage the musics."""
 
 import pygame
-from ..file import get_file, MusicFile
+from ..file import MusicFile
 import json
+from .._settings import Settings
 
-# TODO: add a update(self, settings.) function to update the volumes.
 # TODO: do the same for the soundbox, keymapper
 # TODO: do the same with the texts but with update_with_config and update_with_settings
 # TODO: do the same with the screen but with update_with_config and update_with_settings, create a screen class.
 # TODO: rename the keymapper class controls
-
-SETTINGS_PATH = 'settings.json'
 
 class Jukebox:
     """The Jukebox is used to manage the musics."""
 
     def __init__(self) -> None:
         
-        with open(get_file('data', SETTINGS_PATH, dynamic=True)) as f:
-            volumes = json.load(f)['volume']
-            self.main_volume = volumes['main']
-            self.music_volume = volumes['music']
+        self.volume = 1
         self._loop_instant = 0
         self._playing = False
     
-        pygame.mixer.music.set_volume(self.main_volume*self.music_volume)
+        pygame.mixer.music.set_volume(self.volume)
     
     def stop(self):
         """Stop the music currently playing."""
@@ -43,26 +38,7 @@ class Jukebox:
         if not pygame.mixer.music.get_busy() and self._playing:
             pygame.mixer.music.play(0, self.loop_instant)
     
-    def _save_volumes(self):
-        """Save the volumes in the config file."""
-
-        with open(get_file('data', SETTINGS_PATH, dynamic=True)) as f:
-            config = json.load(f)
-            config['volume']['main'] = self.main_volume
-            config['volume']['music'] = self.music_volume
-
-        with open(get_file('data', SETTINGS_PATH, dynamic=True), 'w') as f:
-            json.dump(config, f)
-
-    def set_main_volume(self, volume):
-        """Set the new main volume."""
-        self.main_volume = volume
-        pygame.mixer.music.set_volume(self.main_volume*self.music_volume)
-        self._save_volumes()
-
-    def set_music_volume(self, volume):
-        """Set the new musique volume."""
-        self.music_volume = volume
-        pygame.mixer.music.set_volume(self.main_volume*self.music_volume)
-        self._save_volumes()
-
+    def update_settings(self, settings: Settings):
+        """Update the volume with the settings."""
+        volumes = settings.volumes
+        self.volume = volumes['main']*volumes['music']

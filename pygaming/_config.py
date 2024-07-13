@@ -1,5 +1,5 @@
 """The config class is used to interact with the config file."""
-from file import get_file
+from .file import get_file
 import json
 
 class Config:

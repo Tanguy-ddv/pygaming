@@ -1,5 +1,4 @@
-from ..utils import get_file
-from .file import File
+from .file import File, get_file
 import json
 
 class MusicFile(File):

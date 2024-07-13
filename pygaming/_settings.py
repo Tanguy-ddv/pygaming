@@ -21,27 +21,27 @@ class Settings:
     def link_jukebox(self, jukebox):
         """Link the jukebox to the settings."""
         self._jukebox = jukebox
-        self._jukebox.update(self)
+        self._jukebox.update_settings(self)
     
     def link_soundbox(self, soundbox):
         """Link the soundbox."""
         self._soundbox = soundbox
-        self._soundbox.update(self)
+        self._soundbox.update_settings(self)
     
     def link_controls(self, keymapper):
         """Link the controls."""
         self._controls = keymapper
-        self._controls.update(self)
+        self._controls.update_settings(self)
     
     def link_texts(self, texts):
         """Link the texts."""
         self._texts = texts
-        self._texts.update_with_settings(self)
+        self._texts.update_settings(self)
     
     def link_screen(self, screen):
         """Link the screen."""
         self._screen = screen
-        self._screen.update(self)
+        self._screen.update_settings(self)
 
     def get(self, attribute: str):
         """Get the value of the settings attribute"""
@@ -50,19 +50,19 @@ class Settings:
         return None
     
     @property
-    def language(self):
+    def language(self) -> str:
         return self._data['current_language']
     
     @property
-    def fullscreen(self):
+    def fullscreen(self) -> bool:
         return self._data['full_screen']
     
     @property
-    def controls(self):
+    def controls(self) -> dict[str, str]:
         return self._data['controls']
     
     @property
-    def volumes(self):
+    def volumes(self) -> dict[str, Any]:
         return self._data['volumes']
 
     def set_volumes(self, volumes: dict[str, Any]):
@@ -83,15 +83,15 @@ class Settings:
                 raise PygamingException(f"The category {key} is not defined in the settings files.")
         self._data['volumes'] = volumes
         if self._jukebox is not None:
-            self._jukebox.update(self)
+            self._jukebox.update_settings(self)
         if self._soundbox is not None:
-            self._soundbox.update(self)
+            self._soundbox.update_settings(self)
 
     def set_language(self, language: str):
         """Set the new language."""
         self._data['current_language'] = language
         if self._texts is not None:
-            self._texts.update_with_settings(self)
+            self._texts.update_settings(self)
         
     def set_controls(self, controls: dict[str, str]):
         """Set the new keymap."""
@@ -103,13 +103,13 @@ class Settings:
                 raise PygamingException(f"the action {key} does not exists.")
         self._data['controls'] = controls
         if self._controls is not None:
-            self._controls.update(self)
+            self._controls.update_settings(self)
     
     def set_full_screen(self, full_screen : bool):
         """Set the full screen."""
         self._data['full_screen'] = full_screen
         if self._screen is not None:
-            self._screen.update_with_settings(self)
+            self._screen.update_settings(self)
 
     def set_attribute(self, attribute: str, value: Any):
         """Set the new value for a given attribute."""

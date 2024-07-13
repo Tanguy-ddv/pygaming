@@ -1,9 +1,7 @@
 """The Sound class is used to store sounds, the SoundBox class is used to manage them."""
 
-from ..file import SoundFile, get_file
-import json
-
-SETTINGS_PATH = 'settings.json'
+from ..file import SoundFile
+from .._settings import Settings
 
 class Sound:
     """The Sound class represent a sound, it load the category and the file from a SoundFile object."""
@@ -24,32 +22,15 @@ class SoundBox:
 
     def __init__(self) -> None:
 
-        with open(get_file('data', SETTINGS_PATH, dynamic=True)) as f:
-            self.volumes = json.load(f)['volume']['sounds']
-            self.main_volume = json.load(f)['volume']['main']
-        self.categories = list(self.volumes.keys())
+        self.main_volume = 1
+        self.volumes = {'unavailable' : 1}
     
-    def set_sound_volumes(self, sounds_dict: dict) -> None:
-        """Set the volume of all the sounds."""
-        with open(get_file('data', SETTINGS_PATH, dynamic=True)) as f:
-            data = json.load(f)
-            current_volumes = data['volume']['sounds']
-            if sorted(sounds_dict.keys()) == sorted(current_volumes.keys()):
-                data['volume']['sounds'] = sounds_dict
-            else:
-                raise ValueError("The categories do not correspond.")
-        with open(get_file('data', SETTINGS_PATH, dynamic=True), 'w') as f:
-            json.dump(data, f)
-        self.volumes = sounds_dict
-    
-    def set_main_volume(self, main_volume):
-        """Set the main volume."""
-        self.main_volume = main_volume
-        with open(get_file('data', SETTINGS_PATH, dynamic=True)) as f:
-            data = json.load(f)
-            data['volume']['main'] = main_volume
-        with open(get_file('data', SETTINGS_PATH, dynamic=True), 'w') as f:
-            json.dump(data, f)
+    def update_settings(self, settings: Settings):
+        """Update the volumes with the settings."""
+        volumes = settings.volumes
+        self.main_volume = volumes['main']
+        self.volumes = volumes['sounds']
+        self.volumes['unavailable'] = 1
     
     def play_sound(self, sound: Sound):
         """Play the sound with the proper volume."""

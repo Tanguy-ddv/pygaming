@@ -1,5 +1,4 @@
-from ..utils import get_file
-from .file import File
+from .file import File, get_file
 import pygame
 import json
 
@@ -14,7 +13,7 @@ class SoundFile(File):
             if path in categories:
                 self.category = categories[path]
             else:
-                self.category = None
+                self.category = "unavailable"
 
     def get(self):
         return pygame.mixer.Sound(self.full_path), self.category
