@@ -5,7 +5,7 @@ from typing import Union, List
 from ._draw import make_background, make_rounded_rectangle
 
 BackgroundLike = Union[str, pygame.Surface, pygame.Color]
-BackgroundsLike = List[BackgroundLike]
+BackgroundsLike = Union[List[BackgroundLike], BackgroundLike]
 
 class Backgrounds:
     """
@@ -16,9 +16,9 @@ class Backgrounds:
         self,
         width: int,
         height: int,
-        backgrounds: BackgroundsLike | BackgroundLike,
-        focus_backgrounds: BackgroundsLike | BackgroundLike | None = None,
-        disable_backgrounds: BackgroundsLike | BackgroundLike | None = None,
+        backgrounds: BackgroundsLike,
+        focus_backgrounds: BackgroundsLike | None = None,
+        disable_backgrounds: BackgroundsLike | None = None,
         other_backgrounds: dict[str, BackgroundLike | BackgroundsLike] = {},
         can_be_focused: bool = True,
         can_be_disabled: bool = True,
@@ -31,26 +31,26 @@ class Backgrounds:
         ----
         width: int, the width of the object.
         height: int, the hieght of the object.
-        backgrounds: BackgroundsLike | BackgroundLike, The backgrounds of the objects.
+        backgrounds: BackgroundsLike, The backgrounds of the objects.
         if only one element is given, it is treated as a list of length 1
         If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
         If it is a (list of) surface, resize the surface with (width, height)
         Can be a list of colors and surfaces, str
-        focus_backgrounds: BackgroundsLike | BackgroundLike | None, The backgrounds of the objects when it is focused.
+        focus_backgrounds: BackgroundsLike | None, The backgrounds of the objects when it is focused.
         if only one element is given, it is treated as a list of length 1
         If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
         If it is a (list of) surface, resize the surface with (width, height)
         If it is a (list of) None, copy the background.
         Can be a list of color, surfaces, str and None.
         If the list have not the same size as 'background', the list is resized
-        disable_backgrounds: BackgroundsLike | BackgroundLike | None, The backgrounds of the objects when it is disabled.
+        disable_backgrounds: BackgroundsLike | None, The backgrounds of the objects when it is disabled.
         if only one element is given, it is treated as a list of length 1        
         If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
         If it is a (list of) surface, resize the surface with (width, height)
         If it is a (list of) None, copy the background.
         Can be a list of color, surfaces, str and None.
         If the list have not the same size as 'background', the list is resized
-        other_backgrounds: BackgroundsLike | BackgroundLike | None, other backgrounds for the object, accessible with a str key.
+        other_backgrounds: BackgroundsLike | None, other backgrounds for the object, accessible with a str key.
         if only one element is given for a key, it is treated as a list of length 1        
         If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
         If it is a (list of) surface, resize the surface with (width, height)

@@ -1,2 +1,2 @@
-from .inputs import Click, KeyMapper, Inputs
-__all__ = ["Click", "KeyMapper", "Inputs"]
+from .inputs import Click, Controls, Inputs
+__all__ = ["Click", "Controls", "Inputs"]

@@ -7,39 +7,19 @@ from ._error import PygamingException
 class Settings:
     """The settings class is used to interact with the settings file."""
 
-    def __init__(self) -> None:
+    def __init__(self, jukebox, soundbox, controls, texts, screen, ) -> None:
         self._path = get_file('data', 'settings.json', False)
         file = open(self._path, 'r', encoding='utf-8')
         self._data = json.load(file)
         file.close()
-        self._jukebox = None # Link the jukebox to give it directly the volumes
-        self._soundbox = None # Link the soundbox to give it directly the volumes
-        self._controls = None # Link the controls to give it directly the key mapping
-        self._texts = None # Link the texts to give it direc
-        self._screen = None
-    
-    def link_jukebox(self, jukebox):
-        """Link the jukebox to the settings."""
-        self._jukebox = jukebox
+        self._jukebox = jukebox # Link the jukebox to give it directly the volumes
         self._jukebox.update_settings(self)
-    
-    def link_soundbox(self, soundbox):
-        """Link the soundbox."""
-        self._soundbox = soundbox
+        self._soundbox = soundbox # Link the soundbox to give it directly the volumes
         self._soundbox.update_settings(self)
-    
-    def link_controls(self, keymapper):
-        """Link the controls."""
-        self._controls = keymapper
+        self._controls = controls # Link the controls to give it directly the key mapping
         self._controls.update_settings(self)
-    
-    def link_texts(self, texts):
-        """Link the texts."""
-        self._texts = texts
+        self._texts = texts # Link the texts to give the current language.
         self._texts.update_settings(self)
-    
-    def link_screen(self, screen):
-        """Link the screen."""
         self._screen = screen
         self._screen.update_settings(self)
 
@@ -82,10 +62,8 @@ class Settings:
             if key not in self._data['volumes']['sounds']:
                 raise PygamingException(f"The category {key} is not defined in the settings files.")
         self._data['volumes'] = volumes
-        if self._jukebox is not None:
-            self._jukebox.update_settings(self)
-        if self._soundbox is not None:
-            self._soundbox.update_settings(self)
+        self._jukebox.update_settings(self)
+        self._soundbox.update_settings(self)
 
     def set_language(self, language: str):
         """Set the new language."""
@@ -102,14 +80,12 @@ class Settings:
             if key not in self.controls.values():
                 raise PygamingException(f"the action {key} does not exists.")
         self._data['controls'] = controls
-        if self._controls is not None:
-            self._controls.update_settings(self)
+        self._controls.update_settings(self)
     
     def set_full_screen(self, full_screen : bool):
         """Set the full screen."""
         self._data['full_screen'] = full_screen
-        if self._screen is not None:
-            self._screen.update_settings(self)
+        self._screen.update_settings(self)
 
     def set_attribute(self, attribute: str, value: Any):
         """Set the new value for a given attribute."""
