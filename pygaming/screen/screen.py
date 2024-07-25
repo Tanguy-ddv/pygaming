@@ -1,6 +1,6 @@
 """The screen is the surface of the window."""
 
-from .._settings import Settings
+from ..settings import Settings
 from ..phase import Phase
 import pygame
 
@@ -23,8 +23,7 @@ class Screen:
         
     def blit_phase(self, phase: Phase):
         """Blit the Frame on the screen."""
-        for frame in sorted(phase.frames, key= lambda f: f.layer):
-            self.screen.blit(frame.get_surface(), frame.top_left)
+        self.screen.blit(phase.get_surface(self._width, self._height), (0,0))
 
     def update(self):
         """Update the screen"""

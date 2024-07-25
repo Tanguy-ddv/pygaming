@@ -1,8 +1,8 @@
 """The settings class is used to interact with the settings file."""
-from file import get_file
+from .file import get_file
 import json
 from typing import Any
-from ._error import PygamingException
+from .error import PygamingException
 
 class Settings:
     """The settings class is used to interact with the settings file."""

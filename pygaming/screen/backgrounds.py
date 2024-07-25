@@ -1,10 +1,9 @@
 """Contains a class to manage the backgrounds of a widget or any object."""
 
 import pygame
-from typing import Union, List
-from ._draw import make_background, make_rounded_rectangle
-
-BackgroundLike = Union[str, pygame.Surface, pygame.Color]
+from typing import Union, List, Optional
+from ..file import ImageFile
+BackgroundLike = Union[str, pygame.Surface, pygame.Color, ImageFile]
 BackgroundsLike = Union[List[BackgroundLike], BackgroundLike]
 
 class Backgrounds:
@@ -126,6 +125,7 @@ class Backgrounds:
         disabled: bool = False. If True, return the disable_background.
         key: str | None = None. If not None, return the other_background[key]
         """
+        index = index%self._n_bg
         if key is not None:
             return self._other_backgrounds[key][index]
         if focus and self._can_be_focused:
@@ -134,3 +134,49 @@ class Backgrounds:
             return self._disable_backgrounds[index]
         return self._backgrounds[index]
         
+def make_background(background: Optional[BackgroundLike], width: int, height: int, reference: pygame.Surface | None):
+    """
+    Create a background:
+    if background is a Surface or an ImageFile, return the rescaled surface.
+    if the background is a Color, return a rectangle of this color.
+    if the background is None, return a copy of the reference.
+    if the reference and the background are None, raise an Error.
+    We assume here that the reference have the shape (width, height)
+    """
+
+    if isinstance(background, str):
+        if background in pygame.color.THECOLORS:
+            background = pygame.color.THECOLORS[background]
+        else:
+            background = pygame.Color(0,0,0,255)
+
+    if background is None:
+        if reference is None:
+            background = pygame.Color(0,0,0,255)
+        else:
+            return pygame.transform.scale(reference, (width, height))
+    if isinstance(background, ImageFile):
+        background = ImageFile.get()
+
+    if isinstance(background, pygame.Color):
+        bg = pygame.Surface((width, height), pygame.SRCALPHA)
+        bg.fill(background)
+        return bg
+
+    else:
+        return pygame.transform.scale(background, (width, height))
+
+def make_rounded_rectangle(color: pygame.Color | str, width: int, height: int, reference=None):
+    """Make a rectange with half circles at the start and end."""
+    if isinstance(color, str):
+        if color in pygame.color.THECOLORS:
+            color = pygame.color.THECOLORS[color]
+        else:
+            color = pygame.Color(0,0,0,255)
+
+    background = pygame.Surface((width, height), pygame.SRCALPHA)
+    rect = pygame.Rect(height//2, 0, width - height, height)
+    pygame.draw.rect(background, color, rect)
+    pygame.draw.circle(background, color, (height//2, height//2), height//2)
+    pygame.draw.circle(background, color, (width - height//2, height//2), height//2)
+    return background

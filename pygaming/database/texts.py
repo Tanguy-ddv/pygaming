@@ -1,7 +1,7 @@
 """The Texts class is used to manage the texts of the game."""
 
 from .database import Database
-from .._settings import Settings
+from ..settings import Settings
 
 
 class Texts:

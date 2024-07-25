@@ -1,21 +1,38 @@
-from ._backgrounds import Backgrounds, BackgroundsLike
+from .backgrounds import Backgrounds, BackgroundsLike
 import pygame
 from ..inputs import Inputs
-from ._positionable import Positionable
+from .element import Element
 
-class Frame(Positionable):
+class Frame(Element):
 
-    def __init__(self, master, x: int, y :int, width: int, height: int, background: BackgroundsLike, layer: int = 0) -> None:
-        self.children: list[Positionable] = []
-        Positionable.__init__(self, x, y, layer)
+    def __init__(self, master, x: int, y :int, width: int, height: int, background: BackgroundsLike, layer: int = 0, gif_duration: int = 10) -> None:
+        """
+        Create the frame.
+
+        Params:
+        ----
+        master: Another Frame or a phase.
+        x, y: the coordinate of the top left of the frame, in its master.
+        width, height: the dimension of the frame.
+        background: A BackgroundsLike object. If it is a Color, create a surface of this color. RGBA colors are possible.
+        if it is a str, and this str is in the pygame.colors.THECOLORS dict, find the color with the dict.
+        if it is Surface, reshape the surface.
+        if it is an ImageFile, get the surface from it.
+        If it is a list of one of them, create a list of surfaces. The background is then changed every gif_duration
+        layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
+        gif_duration (s): If a list is provided as background, the background of the frame is change every gif_duration.
+        """
+        self.children: list[Element] = []
+        Element.__init__(self, master, background, x, y, width, height, layer, gif_duration)
         self.width = width
         self.height = height
-        self.focus = False
+        self.focused = False
         self.visible = True
         self._current_object_focus = None
         self.backgrounds = Backgrounds(width, height, background)
         self.master = master
         self.master.add_child(self)
+
     
     @property
     def shape(self):
@@ -29,7 +46,7 @@ class Frame(Positionable):
     def rect(self):
         return pygame.rect.Rect(self.x, self.y, self.width, self.height)
 
-    def add_child(self, child: Positionable):
+    def add_child(self, child: Element):
         self.children.append(child)
     
     def update_focus(self, click_x, click_y):
@@ -73,19 +90,20 @@ class Frame(Positionable):
         for child in self.children:
             child.unfocus()
     
-    def __update_objects(self, inputs: Inputs, loop_duration: int):
+    def _update_objects(self, inputs: Inputs, loop_duration: int):
         """Update all the children."""
         for object in self.children:
             object.update(inputs, loop_duration, self.x, self.y)
         
     def get_surface(self):
-        background = self.backgrounds.get_background().copy()
-        for object in sorted(self.objects, key= lambda w: w.layer):
-            x = object.x
-            y = object.y
-            surface = object.get_surface()
+        background = self.backgrounds.get_background(self._gif_index).copy()
+        for child in sorted(self.children, key= lambda w: w.layer):
+            x = child.x
+            y = child.y
+            surface = child.get_surface()
             background.blit(surface, (x,y))
         return background
 
     def update(self, inputs: Inputs, loop_duration: int):
-        self.__update_objects(inputs, loop_duration)
+        self._update_animation(loop_duration)
+        self._update_objects(inputs, loop_duration)

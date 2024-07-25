@@ -2,13 +2,7 @@
 
 import pygame
 from ..file import MusicFile
-import json
-from .._settings import Settings
-
-# TODO: do the same for the soundbox, keymapper
-# TODO: do the same with the texts but with update_with_config and update_with_settings
-# TODO: do the same with the screen but with update_with_config and update_with_settings, create a screen class.
-# TODO: rename the keymapper class controls
+from ..settings import Settings
 
 class Jukebox:
     """The Jukebox is used to manage the musics."""
@@ -18,7 +12,6 @@ class Jukebox:
         self.volume = 1
         self._loop_instant = 0
         self._playing = False
-    
         pygame.mixer.music.set_volume(self.volume)
     
     def stop(self):

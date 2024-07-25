@@ -1,6 +1,6 @@
 """The logger is used to log in-game actions to replay matches after."""
 
-from .file.file import get_file
+from .file import get_file
 import time
 import os
 import json

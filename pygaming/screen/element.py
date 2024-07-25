@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 import pygame
 from ..inputs import Inputs
-from ._backgrounds import BackgroundsLike, Backgrounds
+from .backgrounds import BackgroundsLike, Backgrounds
 
-class Positionable(ABC):
-    """Positionable is the abstract class for everything having a position: widgets, actors, decors, frames."""
+class Element(ABC):
+    """Element is the abstract class for everything having a position: widgets, actors, decors, frames."""
 
-    def __init__(self, master, backgrounds: BackgroundsLike, x: int, y: int, width: int, height: int, layer: int = 0) -> None:
+    def __init__(self, master, backgrounds: BackgroundsLike, x: int, y: int, width: int, height: int, layer: int = 0, gif_duration = 0) -> None:
         """
-        Create an object.
+        Create an Element.
 
         Params:
         ----
@@ -23,13 +23,19 @@ class Positionable(ABC):
         self.layer = layer
         self.visible = True
         self.can_be_focused = False
+        self.focused = False
         self.can_be_disabled = False
+        self.disabled = False
         self.width = width
         self.height = height
         self.backgrounds = Backgrounds(width, height, backgrounds, can_be_focused=self.can_be_focused, can_be_disabled=self.can_be_disabled)
         ABC.__init__(self)
-        self.frame = master
-        master.add_positionable(self)
+        self.master = master
+        self.master.add_child(self)
+
+        self._time_since_last_gif_chg = 0
+        self._gif_index = 0
+        self._gif_duration = gif_duration
     
     @property
     def absolute_x(self):
@@ -48,6 +54,15 @@ class Positionable(ABC):
     def update(self, inputs: Inputs, loop_duration: int, x: int, y: int):
         """Update the widget with the inputs."""
         raise NotImplementedError()
+    
+    def _update_animation(self, loop_duration: int):
+        self._time_since_last_gif_chg += loop_duration
+        if self._time_since_last_gif_chg < self._gif_duration:
+            self._gif_index += 1
+
+    def reset_animation(self):
+        """Reset the animation to the first frame."""
+        self._gif_index = 0
     
     def move(self, new_x: int, new_y: int):
         """Move the object."""
@@ -101,3 +116,11 @@ class Positionable(ABC):
     @property
     def absolute_coordinate(self):
         return (self.absolute_x, self.absolute_y)
+
+    @property
+    def relative_rect(self):
+        return pygame.rect.Rect(self.x, self.y, self.width, self.height)
+
+    @property
+    def absolute_rect(self):
+        return pygame.rect.Rect(self.absolute_x, self.absolute_y, self.width, self.height)

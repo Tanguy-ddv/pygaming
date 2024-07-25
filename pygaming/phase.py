@@ -6,9 +6,11 @@ from .inputs import Inputs
 
 class Phase(ABC):
     """
-    A Phase is a step in these. Each game should have a few phases.
+    A Phase is a step in the game. Each game should have a few phases.
     Exemple of phases: menus, lobby, stages, ...
-    A phase is composed by a set of frames
+    Create a subclass of phase to do whatever you need by
+    rewriting the _init, _update and _end method.
+
     """
 
     def __init__(self) -> None:
@@ -20,6 +22,9 @@ class Phase(ABC):
     def add_child(self, frame: Frame):
         """Add a new frame to the phase."""
         self.frames.append(frame)
+    
+    def _init(self):
+        pass
     
     def __update_focus(self, inputs: Inputs):
         """Update the focus of all the frames."""
@@ -44,8 +49,21 @@ class Phase(ABC):
         self._update(inputs, loop_duration)
         self.__update_focus()
         for frame in self.frames:
-            frame.update()
+            frame.update(inputs, loop_duration)
 
-    @abstractmethod
     def _update(self, inputs: Inputs, loop_duration: int):
         """Update the phase."""
+    
+    def get_surface(self, width, height):
+        bg = pygame.Surface((width, height), pygame.SRCALPHA)
+        for frame in self.frames:
+            surf = frame.get_surface()
+            bg.blit(surf, (frame.x, frame.y))
+        return surf
+    
+    def end(self, **kwargs):
+        """Execute this when you change the frame for another one."""
+        self._end(**kwargs)
+
+    def _end(self, **kwargs):
+        """Action to do when the phase is ended."""

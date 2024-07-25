@@ -1,7 +1,7 @@
 """The Sound class is used to store sounds, the SoundBox class is used to manage them."""
 
 from ..file import SoundFile
-from .._settings import Settings
+from ..settings import Settings
 
 class Sound:
     """The Sound class represent a sound, it load the category and the file from a SoundFile object."""

@@ -1,7 +1,7 @@
 """The Controls class is used to map inputs into mapper values."""
 
 import pygame
-from .._settings import Settings
+from ..settings import Settings
 
 class Controls:
     """
