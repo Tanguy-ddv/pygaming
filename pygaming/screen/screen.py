@@ -21,7 +21,7 @@ class Screen:
         else:
             self.screen = pygame.display.set_mode((self._width, self._height))
         
-    def blit_phase(self, phase: Phase):
+    def display_phase(self, phase: Phase):
         """Blit the Frame on the screen."""
         self.screen.blit(phase.get_surface(self._width, self._height), (0,0))
 

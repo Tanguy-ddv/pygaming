@@ -5,7 +5,17 @@ from .element import Element
 
 class Frame(Element):
 
-    def __init__(self, master, x: int, y :int, width: int, height: int, background: BackgroundsLike, layer: int = 0, gif_duration: int = 10) -> None:
+    def __init__(
+        self, 
+        master, 
+        x: int, 
+        y :int, 
+        width: int, 
+        height: int, 
+        background: BackgroundsLike, 
+        layer: int = 0, 
+        gif_duration: int = 1000
+    ) -> None:
         """
         Create the frame.
 
@@ -20,19 +30,14 @@ class Frame(Element):
         if it is an ImageFile, get the surface from it.
         If it is a list of one of them, create a list of surfaces. The background is then changed every gif_duration
         layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
-        gif_duration (s): If a list is provided as background, the background of the frame is change every gif_duration.
+        gif_duration (ms): If a list is provided as background, the background of the frame is change every gif_duration.
         """
         self.children: list[Element] = []
         Element.__init__(self, master, background, x, y, width, height, layer, gif_duration)
         self.width = width
         self.height = height
-        self.focused = False
-        self.visible = True
         self._current_object_focus = None
         self.backgrounds = Backgrounds(width, height, background)
-        self.master = master
-        self.master.add_child(self)
-
     
     @property
     def shape(self):
@@ -95,9 +100,13 @@ class Frame(Element):
         for object in self.children:
             object.update(inputs, loop_duration, self.x, self.y)
         
+    @property
+    def visible_children(self):
+        return sorted(filter(lambda ch: ch.visible, self.children), key= lambda w: w.layer)
+        
     def get_surface(self):
         background = self.backgrounds.get_background(self._gif_index).copy()
-        for child in sorted(self.children, key= lambda w: w.layer):
+        for child in self.visible_children:
             x = child.x
             y = child.y
             surface = child.get_surface()

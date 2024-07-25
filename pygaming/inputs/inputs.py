@@ -25,7 +25,8 @@ class Inputs:
         """Return all the letter characters a-z, digits 0-9, whitespace and punctuation."""
         return [event.unicode for event in self.event_list if event.type == pygame.KEYDOWN and event.unicode and event.unicode in _ACCEPTED_LETTERS + extra_characters]
 
-    def get_quit(self):
+    @property
+    def quit(self):
         return any(event.type == pygame.QUIT for event in self.event_list)
 
     def get_clicks(self, frame_x: int = 0, frame_y: int = 0):

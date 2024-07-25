@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 import pygame
 from ..inputs import Inputs
 from .backgrounds import BackgroundsLike, Backgrounds
@@ -6,7 +7,19 @@ from .backgrounds import BackgroundsLike, Backgrounds
 class Element(ABC):
     """Element is the abstract class for everything having a position: widgets, actors, decors, frames."""
 
-    def __init__(self, master, backgrounds: BackgroundsLike, x: int, y: int, width: int, height: int, layer: int = 0, gif_duration = 0) -> None:
+    def __init__(
+            self,
+            master,
+            backgrounds: BackgroundsLike,
+            x: int,
+            y: int,
+            width: int,
+            height: int,
+            layer: int = 0,
+            gif_duration = 1000, # [ms]
+            hover_surface: Optional[pygame.Surface] = None,
+            hover_cursor: Optional[pygame.Cursor] = None,
+        ) -> None:
         """
         Create an Element.
 
@@ -36,6 +49,9 @@ class Element(ABC):
         self._time_since_last_gif_chg = 0
         self._gif_index = 0
         self._gif_duration = gif_duration
+
+        self.hover_cursor = hover_cursor
+        self.hover_surface = hover_surface
     
     @property
     def absolute_x(self):
@@ -56,9 +72,11 @@ class Element(ABC):
         raise NotImplementedError()
     
     def _update_animation(self, loop_duration: int):
+        """Update the current gif index."""
         self._time_since_last_gif_chg += loop_duration
-        if self._time_since_last_gif_chg < self._gif_duration:
+        if self._time_since_last_gif_chg > self._gif_duration:
             self._gif_index += 1
+            self._time_since_last_gif_chg = 0
 
     def reset_animation(self):
         """Reset the animation to the first frame."""
