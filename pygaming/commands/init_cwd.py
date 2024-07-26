@@ -70,6 +70,8 @@ def init_cwd():
         
         os.mkdir('data')
         os.mkdir('data/sql')
+        os.mkdir('data/saves')
+        os.mkdir('data/logs')
 
         # create the 'tables.sql' file that will be used to generate the files.
         shutil.copyfile(
