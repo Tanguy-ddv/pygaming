@@ -14,11 +14,12 @@ class Inputs:
 
     def __init__(self) -> None:
         
-        self._controls = Controls()
+        self.controls = Controls()
         self.clear_mouse_velocity()
         self.event_list: list[pygame.event.Event] = []
     
     def update(self):
+        """Get the current events."""
         self.event_list = pygame.event.get()
 
     def get_characters(self, extra_characters: str = ''):
@@ -78,7 +79,7 @@ class Inputs:
         types = [event.key for event in self.event_list if event.type == pygame.KEYDOWN]
         return {
             action : any(int(key) in types for key in keys)
-            for action, keys in self._controls.reverse_mapping.items()}
+            for action, keys in self.controls.reverse_mapping.items()}
 
     def get_arrows(self):
         return [(event.type, event.key) for event in self.event_list if hasattr(event, 'key') and event.key in [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT]]

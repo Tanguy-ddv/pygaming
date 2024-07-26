@@ -14,7 +14,9 @@ class Frame(Element):
         height: int, 
         background: BackgroundsLike, 
         layer: int = 0, 
-        gif_duration: int = 1000
+        gif_duration: int = 1000,
+        hover_surface: pygame.Surface | None = None,
+        hover_cursor: pygame.Cursor | None = None,
     ) -> None:
         """
         Create the frame.
@@ -33,7 +35,7 @@ class Frame(Element):
         gif_duration (ms): If a list is provided as background, the background of the frame is change every gif_duration.
         """
         self.children: list[Element] = []
-        Element.__init__(self, master, background, x, y, width, height, layer, gif_duration)
+        Element.__init__(self, master, background, x, y, width, height, layer, gif_duration, hover_surface, hover_cursor)
         self.width = width
         self.height = height
         self._current_object_focus = None
@@ -54,16 +56,30 @@ class Frame(Element):
     def add_child(self, child: Element):
         self.children.append(child)
     
+    def update_hover(self, hover_x, hover_y) -> tuple[bool, pygame.Surface | None]:
+        """Update the hovering."""
+        hover_x -= self.x
+        hover_y -= self.y
+        is_one_hovered = False
+        for child in self.children:
+            if child.visible:
+                if child.x < hover_x < child.x + child.width and child.y < hover_y < child.y + child.height:
+                    is_child_hovered, surf = child.update_hover(hover_x, hover_y)
+                    if is_child_hovered:
+                        is_one_hovered = True
+                        self.current_hover_surface = surf
+        return is_one_hovered, self.current_hover_surface
+    
     def update_focus(self, click_x, click_y):
-        """Update the focus of all the objects in the phase."""
+        """Update the focus of all the children in the frame."""
         click_x -= self.x
         click_y -= self.y
-        self.focus = True
+        self.focused = True
         one_is_clicked = False
-        for (i,object) in enumerate(self.children):
-            if object.visible and object.can_be_focused:
-                if object.x < click_x < object.x + object.width and object.y < click_y < object.y + object.height:
-                    object.focus()
+        for (i,child) in enumerate(self.children):
+            if child.visible and child.can_be_focused:
+                if child.x < click_x < child.x + child.width and child.y < click_y < child.y + child.height:
+                    child.focus()
                     self._current_object_focus = i
                     one_is_clicked = True
                 else:

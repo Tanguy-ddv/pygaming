@@ -3,6 +3,8 @@ import pygame
 from abc import ABC, abstractmethod
 from .screen.frame import Frame
 from .inputs import Inputs
+from .config import Config
+from .game import Game
 
 class Phase(ABC):
     """
@@ -12,11 +14,18 @@ class Phase(ABC):
     rewriting the _init, the __init__, _update and/or _end method.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, game: Game) -> None:
+        """
+        Create the phase.
+
+        Game: the game instance
+        """
         ABC.__init__(self)
+        self.game = game
         self.frames: list[Frame] = []
         self.absolute_x = 0
         self.absolute_y = 0
+        self.current_hover_surface = None
         self._init()
     
     def add_child(self, frame: Frame):
@@ -43,11 +52,29 @@ class Phase(ABC):
             for frame in self.frames:
                 if frame.focused:
                     frame.next_object_focus()
+                
+    def __update_hover(self, inputs: Inputs, config: Config):
+        """Update the cursor and the over hover surface based on whether we are above one element or not."""
+        clicks = inputs.get_clicks()
+        is_one_hovered = False
+        if 0 in clicks:
+            x = clicks[0].x
+            y = clicks[0].y
+            for frame in self.frames:
+                if frame.x < x < frame.x + frame.width and frame.y < y < frame.y + frame.height:
+                    is_frame_hovered, surf = frame.update_hover(x, y)
+                    if is_frame_hovered:
+                        is_one_hovered = True
+                        self.current_hover_surface = surf
+
+        if not is_one_hovered:
+            pygame.mouse.set_cursor(config.get_cursor())
     
     def update(self, inputs: Inputs, loop_duration: int):
         """Update the phase."""
         self._update(inputs, loop_duration)
         self.__update_focus(inputs)
+        self.__update_hover(inputs, )
         for frame in self.frames:
             frame.update(inputs, loop_duration)
 

@@ -18,8 +18,11 @@ class Settings:
         self._soundbox.update_settings(self)
         self._controls = controls # Link the controls to give it directly the key mapping
         self._controls.update_settings(self)
-        self._texts = texts # Link the texts to give the current language.
-        self._texts.update_settings(self)
+        if texts is not None:
+            self._texts = texts # Link the texts to give the current language.
+            self._texts.update_settings(self)
+        else:
+            self._texts = None
         self._screen = screen
         self._screen.update_settings(self)
 
