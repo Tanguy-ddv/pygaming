@@ -123,7 +123,8 @@ class Database:
 
     def get_texts(self, language: str):
         """Return all the texts of the game.
-        If the text is not avaiable in the chosen language, get the text in the default language."""
+        If the text is not avaiable in the chosen language, get the text in the default language.
+        """
 
         return self._execute_select_query(
             f"""SELECT position, text_value
@@ -138,6 +139,29 @@ class Database:
                 AND position NOT IN (
                     SELECT position
                     FROM localizations
+                    WHERE language_code = '{language}'
+            )"""
+        )
+    
+    def get_speeches(self, language: str):
+        """
+        Return all the specches of the game of the given language.
+        If the speech is not available in the given language, get it in the default language
+        """
+
+        return self._execute_select_query(
+            f"""SELECT position, sound_path
+                FROM speeches
+                WHERE language_code = '{language}'
+
+                UNION
+
+                SELECT position, sound_path
+                FROM speeches
+                WHERE language_code = '{self.default_language}'
+                AND position NOT IN (
+                    SELECT position
+                    FROM speeches
                     WHERE language_code = '{language}'
             )"""
         )

@@ -9,7 +9,7 @@ class ImageFile(File):
         self.full_path = get_file(folder='images', file=path)
         self._image = pygame.image.load(self.full_path).convert_alpha()
 
-    def get(self, size: tuple[int, int] = None, rotation: float = 0) -> pygame.Surface:
+    def get(self, size: tuple[int, int] | None = None, rotation: float = 0) -> pygame.Surface:
         surface = pygame.transform.rotate(self._image, rotation)
         if size is None:
             return surface

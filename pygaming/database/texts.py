@@ -1,4 +1,4 @@
-"""The Texts class is used to manage the texts of the game."""
+"""The Texts class is used to manage the texts of the game by returning strings taking automatically into account the language."""
 
 from .database import Database
 from ..settings import Settings

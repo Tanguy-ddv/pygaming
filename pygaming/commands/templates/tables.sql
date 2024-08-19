@@ -6,6 +6,12 @@ CREATE TABLE localizations (
     text_value TEXT NOT NULL -- The value itself
 );
 
+CREATE TABLE speeches (
+    position TEXT NOT NULL,
+    language_code TEXT,
+    sound_path TEXT NOT NULL,
+);
+
 -- Exemple of table to store the users:
 
 CREATE TABLE player(
