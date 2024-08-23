@@ -12,7 +12,7 @@ class MusicFile(File):
             if name in all_loop_times:
                 self.loop_time = all_loop_times[name]
             else:
-                self.loop_time = 0
+                self.loop_time = None
     
     def get(self):
         return self.full_path, self.loop_time

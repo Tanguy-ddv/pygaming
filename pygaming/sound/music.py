@@ -12,7 +12,6 @@ class Jukebox:
         self.volume = 1
         self._loop_instant = 0
         self._playing = False
-        pygame.mixer.music.set_volume(self.volume)
     
     def stop(self):
         """Stop the music currently playing."""
@@ -28,10 +27,11 @@ class Jukebox:
 
     def update(self):
         """This function should be called at the end of every gameloop to make the function loop."""
-        if not pygame.mixer.music.get_busy() and self._playing:
+        if not pygame.mixer.music.get_busy() and self._playing and self.loop_instant is not None:
             pygame.mixer.music.play(0, self.loop_instant)
     
     def update_settings(self, settings: Settings):
         """Update the volume with the settings."""
         volumes = settings.volumes
         self.volume = volumes['main']*volumes['music']
+        pygame.mixer.music.set_volume(self.volume)
