@@ -5,7 +5,7 @@ from ..phase import Phase
 import pygame
 
 class Screen:
-    """The screen class is used to store the screen of the game."""
+    """The screen class is used to represent the screen of the game."""
 
     def __init__(self, width: int, height: int) -> None:
         self._width = width

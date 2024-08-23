@@ -8,18 +8,21 @@ class Element(ABC):
     """Element is the abstract class for everything having a position: widgets, actors, decors, frames."""
 
     def __init__(
-            self,
-            master,
-            backgrounds: BackgroundsLike,
-            x: int,
-            y: int,
-            width: int,
-            height: int,
-            layer: int = 0,
-            gif_duration = 1000, # [ms]
-            hover_surface: Optional[pygame.Surface] = None,
-            hover_cursor: Optional[pygame.Cursor] = None,
-        ) -> None:
+        self,
+        master,
+        backgrounds: BackgroundsLike,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        layer: int = 0,
+        image_duration: int | list[int] = 200,
+        image_introduction: int = 0,
+        hover_surface: Optional[pygame.Surface] = None,
+        hover_cursor: Optional[pygame.Cursor] = None,
+        can_be_disabled: bool = True,
+        can_be_focused: bool = True
+    ) -> None:
         """
         Create an Element.
 
@@ -34,21 +37,19 @@ class Element(ABC):
         self.x = x
         self.y = y
         self.layer = layer
+
         self.visible = True
-        self.can_be_focused = False
+        self.can_be_focused = can_be_focused
         self.focused = False
-        self.can_be_disabled = False
+        self.can_be_disabled = can_be_disabled
         self.disabled = False
+
         self.width = width
         self.height = height
-        self.backgrounds = Backgrounds(width, height, backgrounds, can_be_focused=self.can_be_focused, can_be_disabled=self.can_be_disabled)
+        self.backgrounds = Backgrounds(width, height, backgrounds, image_duration, image_introduction)
         ABC.__init__(self)
         self.master = master
         self.master.add_child(self)
-
-        self._time_since_last_gif_chg = 0
-        self._gif_index = 0
-        self._gif_duration = gif_duration
 
         self.hover_cursor = hover_cursor
         self.hover_surface = hover_surface
@@ -70,17 +71,6 @@ class Element(ABC):
     def update(self, inputs: Inputs, loop_duration: int, x: int, y: int):
         """Update the widget with the inputs."""
         raise NotImplementedError()
-    
-    def _update_animation(self, loop_duration: int):
-        """Update the current gif index."""
-        self._time_since_last_gif_chg += loop_duration
-        if self._time_since_last_gif_chg > self._gif_duration:
-            self._gif_index += 1
-            self._time_since_last_gif_chg = 0
-
-    def reset_animation(self):
-        """Reset the animation to the first frame."""
-        self._gif_index = 0
     
     def move(self, new_x: int, new_y: int):
         """Move the object."""
@@ -128,7 +118,7 @@ class Element(ABC):
             self.focused = False
     
     @property
-    def coordinate(self):
+    def relative_coordinate(self):
         return (self.x, self.y)
 
     @property
@@ -142,3 +132,39 @@ class Element(ABC):
     @property
     def absolute_rect(self):
         return pygame.rect.Rect(self.absolute_x, self.absolute_y, self.width, self.height)
+    
+    @property
+    def shape(self):
+        return (self.width, self.height)
+
+    @property
+    def relative_right(self):
+        return self.x + self.width
+
+    @property
+    def absolute_right(self):
+        return self.absolute_x + self.width
+    
+    @property
+    def relative_bottom(self):
+        return self.y + self.height
+
+    @property
+    def absolute_bottom(self):
+        return self.absolute_y + self.height
+
+    @property
+    def relative_left(self):
+        return self.x
+    
+    @property
+    def absolute_left(self):
+        return self.absolute_x
+    
+    @property
+    def relative_top(self):
+        return self.y
+    
+    @property
+    def absolute_top(self):
+        return self.absolute_y

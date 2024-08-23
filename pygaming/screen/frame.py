@@ -10,11 +10,13 @@ class Frame(Element):
         master, 
         x: int, 
         y :int, 
-        width: int, 
-        height: int, 
-        background: BackgroundsLike, 
-        layer: int = 0, 
-        gif_duration: int = 1000,
+        width: int,
+        height: int,
+        background: BackgroundsLike,
+        focus_background: BackgroundsLike,
+        layer: int = 0,
+        image_duration: int = 1000,
+        image_introduction: int = 0,
         hover_surface: pygame.Surface | None = None,
         hover_cursor: pygame.Cursor | None = None,
     ) -> None:
@@ -32,26 +34,16 @@ class Frame(Element):
         if it is an ImageFile, get the surface from it.
         If it is a list of one of them, create a list of surfaces. The background is then changed every gif_duration
         layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
-        gif_duration (ms): If a list is provided as background, the background of the frame is change every gif_duration.
+        frame_duration (ms): If a list is provided as background, the background of the frame is change every gif_duration.
         """
         self.children: list[Element] = []
-        Element.__init__(self, master, background, x, y, width, height, layer, gif_duration, hover_surface, hover_cursor)
+        Element.__init__(self, master, background, x, y, width, height, layer, image_duration, image_introduction, hover_surface, hover_cursor)
         self.width = width
         self.height = height
+        self.focused = False
         self._current_object_focus = None
-        self.backgrounds = Backgrounds(width, height, background)
+        self.focus_background = Backgrounds(width, height, focus_background, image_duration, image_introduction, 0)
     
-    @property
-    def shape(self):
-        return (self.width, self.height)
-
-    @property
-    def top_left(self):
-        return (self.x, self.y)
-
-    @property
-    def rect(self):
-        return pygame.rect.Rect(self.x, self.y, self.width, self.height)
 
     def add_child(self, child: Element):
         self.children.append(child)
@@ -83,9 +75,9 @@ class Frame(Element):
                     self._current_object_focus = i
                     one_is_clicked = True
                 else:
-                    object.unfocus()
+                    child.unfocus()
             else:
-                object.unfocus()
+                child.unfocus()
         if not one_is_clicked:
             self._current_object_focus = None
         
@@ -121,7 +113,8 @@ class Frame(Element):
         return sorted(filter(lambda ch: ch.visible, self.children), key= lambda w: w.layer)
         
     def get_surface(self):
-        background = self.backgrounds.get_background(self._gif_index).copy()
+
+        background = self.backgrounds.get().copy()
         for child in self.visible_children:
             x = child.x
             y = child.y

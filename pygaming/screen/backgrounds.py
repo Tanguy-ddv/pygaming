@@ -1,27 +1,22 @@
 """Contains a class to manage the backgrounds of a widget or any object."""
 
 import pygame
-from typing import Union, List, Optional
+from typing import Union, List, Iterable
 from ..file import ImageFile
+from error import PygamingException
 BackgroundLike = Union[str, pygame.Surface, pygame.Color, ImageFile]
 BackgroundsLike = Union[List[BackgroundLike], BackgroundLike]
 
 class Backgrounds:
-    """
-    The backgrounds class is used to store all the backgrounds of a frame.
-    """
+    """The backgrounds of an element is set of surfaces to display as the image, or the background image of an element."""
 
     def __init__(
         self,
         width: int,
         height: int,
         backgrounds: BackgroundsLike,
-        focus_backgrounds: BackgroundsLike | None = None,
-        disable_backgrounds: BackgroundsLike | None = None,
-        other_backgrounds: dict[str, BackgroundLike | BackgroundsLike] = {},
-        can_be_focused: bool = True,
-        can_be_disabled: bool = True,
-        rounded_background: bool = False
+        image_duration: int | list[int] = 100, # [ms]
+        image_introduction: int = 0
     ) -> None:
         """
         Create the backgrounds
@@ -35,106 +30,59 @@ class Backgrounds:
         If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
         If it is a (list of) surface, resize the surface with (width, height)
         Can be a list of colors and surfaces, str
-        focus_backgrounds: BackgroundsLike | None, The backgrounds of the objects when it is focused.
-        if only one element is given, it is treated as a list of length 1
-        If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
-        If it is a (list of) surface, resize the surface with (width, height)
-        If it is a (list of) None, copy the background.
-        Can be a list of color, surfaces, str and None.
-        If the list have not the same size as 'background', the list is resized
-        disable_backgrounds: BackgroundsLike | None, The backgrounds of the objects when it is disabled.
-        if only one element is given, it is treated as a list of length 1        
-        If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
-        If it is a (list of) surface, resize the surface with (width, height)
-        If it is a (list of) None, copy the background.
-        Can be a list of color, surfaces, str and None.
-        If the list have not the same size as 'background', the list is resized
-        other_backgrounds: BackgroundsLike | None, other backgrounds for the object, accessible with a str key.
-        if only one element is given for a key, it is treated as a list of length 1        
-        If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
-        If it is a (list of) surface, resize the surface with (width, height)
-        If it is a (list of) None, copy the background.
-        Can be a list of color, surfaces, str and None.
-        The lists can have any size.
-        can_be_focused: If False, the get_background never returns the focus bakcground.
-        can_be_disabled: If False, the get_background never returns the disable background.
+        image_duration: If several backgrounds are given, as a list of str, color, ImageFile or Surface, the frame duration is the amount of time
+        each frame is displayed before. If it is a list, it must be the same length than backgrounds.
+        image_introduction: int, default 0. If an integer is given (< length of backgrounds), the loop does not go back to the first image but to this one.
+        ex: In a platformer, the 5 first frames are the character standing in the right direction, then he walks. For this, we use a image_introduction=5
         """
-        
-        self._can_be_focused = can_be_focused
-        self._can_be_disabled = can_be_disabled
-        
-        self._n_bg = len(backgrounds)
-        if rounded_background:
-            f = make_rounded_rectangle
-        else:
-            f = make_background
+                
+        self._index = 0
+        self._image_introduction = image_introduction
+        self._introduction_done = False
+        self._time_since_last_change = 0
 
-        # Create the backgrounds
-        if not isinstance(backgrounds, list):
+        if not isinstance(backgrounds, Iterable):
             backgrounds = [backgrounds]
-
         self._backgrounds: list[pygame.Surface] = []
         for bg in backgrounds:
-            self._backgrounds.append(f(bg, width, height, None))
-        
-        # Create the focus backgrounds
-        if focus_backgrounds is None:
-            self._focus_backgrounds = [bg.copy() for bg in self._backgrounds]
-        else:
-            if not isinstance(focus_backgrounds, list):
-                focus_backgrounds = [focus_backgrounds]
-            while len(focus_backgrounds) < self._n_bg:
-                focus_backgrounds.extend(focus_backgrounds)
-            focus_backgrounds[:self._n_bg]
+            self._backgrounds.append(make_background(bg, width, height, None))
+        self._n_bg = len(backgrounds)
 
-            self._focus_backgrounds = []
-            for (i,bg) in enumerate(focus_backgrounds):
-                self._focus_backgrounds.append(f(bg, width, height, self._backgrounds[i]))
+        if not isinstance(image_duration, Iterable):
+            image_duration = [image_duration]*self._n_bg
+        elif len(image_duration) != self._n_bg:
+            raise PygamingException(f"The length of the frame duration list ({len(image_duration)}) does not match the len of the backroung list ({self._n_bg}))")
+        self._image_durations = image_duration
+        if self._image_introduction > self._n_bg:
+            raise PygamingException(f"The image introduction parameters must be between 0 and {self._n_bg}, but got {self._image_introduction}")
 
-        # Create the disable backgrounds
-        if disable_backgrounds is None:
-            self._disable_backgrounds = [bg.copy() for bg in self._backgrounds]
-        else:
-            if not isinstance(disable_backgrounds, list):
-                disable_backgrounds = [disable_backgrounds]
-            while len(disable_backgrounds) < self._n_bg:
-                disable_backgrounds.extend(disable_backgrounds)
-            disable_backgrounds[:self._n_bg]
+    def update_animation(self, loop_duration: float):
+        """Update the background"""
+        if self._n_bg > 1:
+            self._time_since_last_change += loop_duration
+            if self._time_since_last_change >= self._image_durations[self._index]:
+                self._time_since_last_change = 0
+                if not self._introduction_done:
+                    self._index = (self._index+1)%self._n_bg
+                    if self._index > self._image_durations:
+                        self._introduction_done = True
+                else:
+                    self._index = (self._index+1)%(self._n_bg - self._image_introduction) + self._image_introduction
 
-            self._disable_backgrounds = []
-            for (i,bg) in enumerate(disable_backgrounds):
-                self._disable_backgrounds.append(f(bg, width, height, self._backgrounds[i]))
+    def reset(self):
+        """Reset the counts of the animations."""
+        self._index = 0
+        self._introduction_done = False
+        self._time_since_last_change = 0
 
-        # Create the other backgrounds
-        self._other_backgrounds: dict[str, list] = {}
-        for key, o_bgs in other_backgrounds.items():
-            if not isinstance(o_bgs, list):
-                o_bgs = [o_bgs]
-            self._other_backgrounds[key] = []
-            for (i,bg) in enumerate(o_bgs):
-                self._other_backgrounds[key].append(f(bg, width, height, self._backgrounds[i%self._n_bg]))
-
-    def get_background(self, index=0, focus: bool = False, disabled: bool = False, key: str | None = None):
+    def get(self):
         """
         Return the background.
-        
-        Params:
-        ---
-        index: int = 0, the index of the background in its list.
-        focus: bool = False. If True, return the focus_background.
-        disabled: bool = False. If True, return the disable_background.
-        key: str | None = None. If not None, return the other_background[key]
         """
-        index = index%self._n_bg
-        if key is not None:
-            return self._other_backgrounds[key][index]
-        if focus and self._can_be_focused:
-            return self._focus_backgrounds[index]
-        if disabled and self._can_be_disabled:
-            return self._disable_backgrounds[index]
-        return self._backgrounds[index]
+        self._index = self._index%self._n_bg
+        return self._backgrounds[self._index]
         
-def make_background(background: Optional[BackgroundLike], width: int, height: int, reference: pygame.Surface | None):
+def make_background(background: BackgroundLike, width: int, height: int):
     """
     Create a background:
     if background is a Surface or an ImageFile, return the rescaled surface.
@@ -147,26 +95,26 @@ def make_background(background: Optional[BackgroundLike], width: int, height: in
     if isinstance(background, str):
         if background in pygame.color.THECOLORS:
             background = pygame.color.THECOLORS[background]
+        elif background.startswith('#'):
+            background = pygame.Color(background)
         else:
+            print(f"'{background}' is not a color, replaced by white.")
             background = pygame.Color(0,0,0,255)
 
-    if background is None:
-        if reference is None:
-            background = pygame.Color(0,0,0,255)
-        else:
-            return pygame.transform.scale(reference, (width, height))
-    if isinstance(background, ImageFile):
-        background = ImageFile.get()
+    elif isinstance(background, ImageFile):
+        background = ImageFile.get((width, height))
 
     if isinstance(background, pygame.Color):
         bg = pygame.Surface((width, height), pygame.SRCALPHA)
         bg.fill(background)
         return bg
 
-    else:
+    elif isinstance(background, pygame.Surface):
         return pygame.transform.scale(background, (width, height))
+    
+    raise PygamingException(f"Please use a str, pygame.Surface, pygame.Color or an ImageFile for the background, got a {type(background)}")
 
-def make_rounded_rectangle(color: pygame.Color | str, width: int, height: int, reference=None):
+def make_rounded_rectangle(color: pygame.Color | str, width: int, height: int):
     """Make a rectange with half circles at the start and end."""
     if isinstance(color, str):
         if color in pygame.color.THECOLORS:
