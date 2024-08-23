@@ -35,11 +35,12 @@ def install():
         return
 
     path_to_install = path_to_parent_folder + '/' + name
-    # Create the folder where the data, assets and src will e store
+    # Create the folder where the data, assets and src will be store
     modified_path_to_install = path_to_install
     nb_copy = 1
     while os.path.exists(modified_path_to_install):
         modified_path_to_install = path_to_install + f' ({nb_copy})'
+        nb_copy += 1
 
     print("The choosen folder is", modified_path_to_install)
 
@@ -62,14 +63,14 @@ def install():
         os.path.join(base_path, 'assets'),
         modified_path_to_install + '/assets'
     )
-    print('The data assets has been copied.')
+    print('The assets folder has been copied.')
 
     # Copy the src folder
     shutil.copytree(
         os.path.join(base_path, 'src'),
         modified_path_to_install + '/src'
     )
-    print('The src assets has been copied.')
+    print('The src folder has been copied.')
 
  # Copy the server
     if os.path.exists(os.path.join(base_path, 'server')):

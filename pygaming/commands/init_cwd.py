@@ -33,6 +33,7 @@ def init_cwd():
         os.mkdir(os.path.join(cwd, 'assets/sounds'))
         os.mkdir(os.path.join(cwd, 'assets/fonts'))
         os.mkdir(os.path.join(cwd, 'assets/images'))
+        os.mkdir(os.path.join(cwd, 'assets/videos'))
 
         # Copy/paste the icon.ico default file
         shutil.copyfile(
@@ -141,5 +142,5 @@ def init_cwd():
     with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/init_success.txt'), 'r') as f:
         TEXT = ''.join(f.readlines())
 
-    # Reinitialize the color text and print the end of the init
+    # Reinitialize the color text and print the end of the init text
     print(TEXT)

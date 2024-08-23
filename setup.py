@@ -7,7 +7,8 @@ setup(
     install_requires=[
         'pyinstaller',
         'pygame',
-        'numpy'
+        'numpy',
+        'pillow'
     ],
     entry_points={
         'console_scripts': [
