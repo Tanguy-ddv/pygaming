@@ -26,20 +26,24 @@ class Server:
     The server must be unique. It is launched with the server_main function.
     Every player, i.e. every client, connect to this server. This server receive and
     transmit the data to the players.
+    
+    Params:
+    -----
+    nb_max_players: int, the maximum number of players in one game.
     """
-    def __init__(self):
+    def __init__(self, nb_max_player = 8):
 
         host_ip = socket.gethostbyname(socket.gethostname())
         host_port = SERVER_PORT
 
+        self._nb_max_player = nb_max_player
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._client_socket_managers: list[ClientSocketManager] = []
         self._running = True
         self._last_received = []
-        self._is_triggered = False
         print(f"Server launched: {host_ip}, {host_port}")
         self._server_socket.bind((host_ip, host_port))
-        self._server_socket.listen(20)
+        self._server_socket.listen(nb_max_player*2)
         threading.Thread(target=self._accept_clients).start()
         threading.Thread(target=self._broadcast_address, kwargs={'host_port' : host_port, 'host_ip' : host_ip}).start()
 
@@ -68,10 +72,10 @@ class Server:
 
     def _broadcast_address(self, host_ip):
         """Send in the socket.SOCK_DGRAM socket the host_ip and the host port every 5 seconds."""
-        while self._running:
+        while self._running and self.get_nb_players() < self._nb_max_player:
             broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            message = json.dumps({HEADER : BROADCAST_IP, CONTENT:  host_ip})
+            message = json.dumps({HEADER : BROADCAST_IP, CONTENT : host_ip})
             broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
             time.sleep(5)  # Send broadcast every 5 seconds
 
@@ -89,11 +93,15 @@ class Server:
                         client_sck.status = OFFLINE
                 break
     
-    def get_last_receptions(self) -> dict:
+    def get_last_receptions(self) -> list[dict]:
         """Return the last data received."""
         last_receiptions = self._last_received
         self._last_received.clear()
         return last_receiptions
+
+    def get_nb_players(self) -> int:
+        """get the number of player connected to the server."""
+        return len(filter(lambda csm: csm.status == ONLINE, self._client_socket_managers))
 
     def send(self, client_id, data):
         """The data to one client."""
