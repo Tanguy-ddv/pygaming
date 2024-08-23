@@ -37,5 +37,3 @@ class Config:
         if key in self._data:
             return self._data[key]
         return "MyGame"
-
-
