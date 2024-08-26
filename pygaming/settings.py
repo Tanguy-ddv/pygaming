@@ -7,11 +7,12 @@ from .error import PygamingException
 class Settings:
     """The settings class is used to interact with the settings file."""
 
-    def __init__(self, jukebox, soundbox, controls, texts, screen, ) -> None:
+    def __init__(self, jukebox, soundbox, controls, texts, speeches, screen) -> None:
         self._path = get_file('data', 'settings.json', False)
-        file = open(self._path, 'r', encoding='utf-8')
-        self._data = json.load(file)
-        file.close()
+        self._file = open(self._path, 'r', encoding='utf-8')
+        self._data = json.load(self._file)
+        self._file.close()
+        self._file = open(self._path, 'w', encoding='utf-8')
         self._jukebox = jukebox # Link the jukebox to give it directly the volumes
         self._jukebox.update_settings(self)
         self._soundbox = soundbox # Link the soundbox to give it directly the volumes
@@ -23,6 +24,11 @@ class Settings:
             self._texts.update_settings(self)
         else:
             self._texts = None
+        if speeches is not None:
+            self._speeches = speeches
+            self._speeches.update_settings(self)
+        else:
+            self._speeches = None
         self._screen = screen
         self._screen.update_settings(self)
 
@@ -47,6 +53,10 @@ class Settings:
     @property
     def volumes(self) -> dict[str, Any]:
         return self._data['volumes']
+    
+    def save(self) -> None:
+        """Save the current settings."""
+        json.dump(self._data, self._file)
 
     def set_volumes(self, volumes: dict[str, Any]):
         """
@@ -67,12 +77,16 @@ class Settings:
         self._data['volumes'] = volumes
         self._jukebox.update_settings(self)
         self._soundbox.update_settings(self)
+        self.save()
 
     def set_language(self, language: str):
         """Set the new language."""
         self._data['current_language'] = language
         if self._texts is not None:
             self._texts.update_settings(self)
+        if self._speeches is not None:
+            self._speeches.update_settings(self)
+        self.save()
         
     def set_controls(self, controls: dict[str, str]):
         """Set the new keymap."""
@@ -84,11 +98,13 @@ class Settings:
                 raise PygamingException(f"the action {key} does not exists.")
         self._data['controls'] = controls
         self._controls.update_settings(self)
-    
+        self.save()
+
     def set_full_screen(self, full_screen : bool):
         """Set the full screen."""
         self._data['full_screen'] = full_screen
         self._screen.update_settings(self)
+        self.save()
 
     def set_attribute(self, attribute: str, value: Any):
         """Set the new value for a given attribute."""
@@ -97,11 +113,9 @@ class Settings:
         if attribute in ['volumes', 'current_language', 'full_screen', 'controls']:
             raise PygamingException(f"Please set {attribute} with it dedecated setter.")
         self._data[attribute] = value
+        self.save()
 
     def __del__(self):
         """Delete the object at the end of the game."""
-        file = open(self._path, 'r', encoding='utf-8')
-        json.dump(self._data, file)
-        file.close()
-        del self
-    
+        self.save()
+        self._file.close()
