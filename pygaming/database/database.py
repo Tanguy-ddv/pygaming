@@ -6,9 +6,9 @@ import os
 from ..file.file import get_file
 from ..config import Config
 
-__DB_PATH = get_file('data','sql/db.sqlite')
-__TABLE_PATH = get_file('data', 'sql/tables.sql')
-__IG_QUERIES_PATH = get_file('data', 'sql/ig_queries.sql', permanent=False)
+DB_PATH = get_file('data','db.sqlite')
+TABLE_PATH = get_file('data', 'sql/tables.sql')
+IG_QUERIES_PATH = get_file('data', 'sql/ig_queries.sql', permanent=False)
 
 class Database:
     """
@@ -30,32 +30,32 @@ class Database:
 
         self._debug = debug
         # Remove the previous sqlite file if existing.
-        if os.path.isfile(__DB_PATH):
-            os.remove(__DB_PATH)
+        if os.path.isfile(DB_PATH):
+            os.remove(DB_PATH)
         
         # Create and connect to the sqlite file.
-        self._conn = sql.connect(__DB_PATH)
+        self._conn = sql.connect(DB_PATH)
 
         # Initialize the sqlite file with the tables.
-        self._execute_sql_script(__TABLE_PATH)
+        self._execute_sql_script(TABLE_PATH)
 
-        for root, _, files in os.walk(get_file('data', '/')):
+        for root, _, files in os.walk(get_file('data', '/sql')):
             for file in files:
                 complete_path = os.path.join(root, file)
-                if complete_path.endswith('.sql') and complete_path != __TABLE_PATH and complete_path != __IG_QUERIES_PATH:
+                if complete_path.endswith('.sql') and complete_path != TABLE_PATH and complete_path != IG_QUERIES_PATH:
                     if self._debug:
                         print(complete_path)
                     self._execute_sql_script(complete_path)
         
         # Execute the queries previously saved.
-        self._execute_sql_script(__IG_QUERIES_PATH)
+        self._execute_sql_script(IG_QUERIES_PATH)
         self.default_language = config.get_language()
 
     def _execute_select_query(self, query: str):
         """Execute a select query on the database."""
         if not query.startswith("SELECT"):
             print("The query is wrong:\n", query, "\nShould start by 'SELECT'")
-        if not os.path.isfile(__DB_PATH):
+        if not os.path.isfile(DB_PATH):
             print("The database has not been created yet.")
             return None, None
         try:
@@ -73,7 +73,7 @@ class Database:
         if not query.startswith("INSERT INTO"):
             print("The query is wrong:\n", query, "\nShould start by 'INSERT INTO'")
             return None
-        if not os.path.isfile(__DB_PATH):
+        if not os.path.isfile(DB_PATH):
             print("The database has not been created yet.")
             return None
         try:
@@ -106,8 +106,8 @@ class Database:
     def __del__(self):
         """Destroy the Database object. Delete the database file"""
         self._conn.close()
-        if os.path.isfile(__DB_PATH) and not self._debug:
-            os.remove(__DB_PATH)
+        if os.path.isfile(DB_PATH) and not self._debug:
+            os.remove(DB_PATH)
 
     def get_data_by_id(self, id_: int, table: str, return_id: bool = True):
         """Get all the data of one row based on the id and the table."""

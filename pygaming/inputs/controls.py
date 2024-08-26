@@ -16,7 +16,7 @@ class Controls:
         self._key_map_dict: dict[str, str] = {}
         self.reverse_mapping = self._get_reversed_mapping()
 
-    def update(self, settings: Settings):
+    def update_settings(self, settings: Settings):
         """Update the key map dict with the current settings."""
         controls = settings.controls
         self._key_map_dict = {}

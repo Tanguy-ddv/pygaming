@@ -5,9 +5,9 @@ from ..file import SoundFile
 from ..settings import Settings
 from ..error import PygamingException
 
-class Texts:
+class Speeches:
     """
-    The class Texts is used to manage the texts of the game, that might be provided in several languages.
+    The class Speeches is used to manage the texts of the game, that might be provided in several languages.
     """
 
     def __init__(self, database: Database) -> None:
@@ -22,7 +22,7 @@ class Texts:
         """Update the current language."""
         language = settings.language
         speeches_list = self._db.get_speeches(language)
-        self._speeches_dict = {pos : txt for pos, txt in speeches_list}
+        self._speeches_dict = {pos : txt for pos, txt in speeches_list[0]}
     
     def get(self, position):
         """Return a piece of text."""

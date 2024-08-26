@@ -9,13 +9,13 @@ CREATE TABLE localizations (
 CREATE TABLE speeches (
     position TEXT NOT NULL,
     language_code TEXT,
-    sound_path TEXT NOT NULL,
+    sound_path TEXT NOT NULL
 );
 
 -- Exemple of table to store the users:
 
 CREATE TABLE player(
-    id AUTOINCREMENT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     victories INTEGER DEFAULT 0
 )

@@ -3,7 +3,7 @@
 import pygame
 from typing import Union, List, Iterable
 from ..file import ImageFile
-from error import PygamingException
+from ..error import PygamingException
 BackgroundLike = Union[str, pygame.Surface, pygame.Color, ImageFile]
 BackgroundsLike = Union[List[BackgroundLike], BackgroundLike]
 

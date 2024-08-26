@@ -21,7 +21,7 @@ class Texts:
         """Update the current languahe"""
         language = settings.language
         texts_list = self._db.get_texts(language)
-        self._text_dict = {pos : txt for pos, txt in texts_list}
+        self._text_dict = {pos : txt for pos, txt in texts_list[0]}
     
     def get(self, position):
         """Return a piece of text."""
