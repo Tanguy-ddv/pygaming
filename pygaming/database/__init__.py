@@ -1,3 +1,4 @@
 from .database import Database
 from .texts import Texts
-__all__ = ['Texts', 'Database']
+from .speeches import Speeches
+__all__ = ['Texts', 'Database', 'Speeches']
