@@ -12,18 +12,20 @@ class Logger:
     It might be use to compute statitics, replay actions, ...
     Logs are stored as "data/logs/'timestamp'.log
     """
-    def __init__(self) -> None:
+    def __init__(self, debug: bool = False) -> None:
         
-        self.timestamp = datetime.now().strftime("%Y-%m-%d, %H:%M:%S")
+        self.timestamp = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
         dir = get_file('data', 'log', permanent=False)
+        self.debug = debug
         if not os.path.exists(dir):
             os.mkdir(dir)
         self._file = open(get_file('data', f'logs/{self.timestamp}.log', True), 'w', encoding='utf-8')
 
-    def write(self, data: dict):
+    def write(self, data: dict, is_it_debugging: bool = False):
         """Write a new line in the log."""
-        data['timestamp'] = time.time()
-        json.dump(data, self._file)
+        if self.debug or not is_it_debugging:
+            data['timestamp'] = time.time()
+            json.dump(data, self._file)
     
     def new_log(self):
         """Start a new log."""
