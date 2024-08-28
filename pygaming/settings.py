@@ -13,7 +13,7 @@ class Settings:
         self._data = json.load(self._file)
         self._file.close()
         self._file = open(self._path, 'w', encoding='utf-8')
-
+        
     
     def link_others(self, jukebox, soundbox, controls, texts, speeches, screen):
         """Link the objects of the game to the settings."""

@@ -162,6 +162,7 @@ cython_debug/
 #.idea/
 
 test.py
+test2.py
 data/
 assets/
 src/

@@ -69,10 +69,14 @@ class BaseRunnable(ABC):
 
         return next_phase == NO_NEXT
 
+    def stop(self):
+        """Stop the algorithm properly."""
+
     def run(self):
         """Run the game."""
         stop = False
         while not stop:
             stop = self.update()
         self.phases[self.current_phase].end()
+        self.stop()
         pygame.quit()

@@ -19,3 +19,7 @@ class Server(BaseRunnable):
         """Update the server."""
         is_game_over = self.update_phases()
         return is_game_over
+    
+    def stop(self):
+        """Stop the event."""
+        self.network.stop()

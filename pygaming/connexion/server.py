@@ -45,32 +45,38 @@ class Server:
         self._server_socket.bind((host_ip, host_port))
         self._server_socket.listen(nb_max_player*2)
         threading.Thread(target=self._accept_clients).start()
-        threading.Thread(target=self._broadcast_address, kwargs={'host_port' : host_port, 'host_ip' : host_ip}).start()
+        self._stop_event = threading.Event()
+
+        threading.Thread(target=self._broadcast_address, kwargs={'host_ip' : host_ip}).start()
 
     def _accept_clients(self):
         """Accept a new client."""
         while self._running:
-            client_socket, (address, port) = self._server_socket.accept()
-            if address not in [client_socket_m.address for client_socket_m in self._client_socket_managers]:
-                if self._client_socket_managers:
-                    id_ = max(client_socket_m.id_ for client_socket_m in self._client_socket_managers) +1
+            try:
+                client_socket, (address, port) = self._server_socket.accept()
+                if address not in [client_socket_m.address for client_socket_m in self._client_socket_managers]:
+                    if self._client_socket_managers:
+                        id_ = max(client_socket_m.id_ for client_socket_m in self._client_socket_managers) +1
+                    else:
+                        id_ = 1
+                    self._client_socket_managers.append(ClientSocketManager(client_socket, id_, address, port))
+                    print(f"New client connected: {address} has the id {id_}")
                 else:
-                    id_ = 1
-                self._client_socket_managers.append(ClientSocketManager(client_socket, id_, address, port))
-                print(f"New client connected: {address} has the id {id_}")
-            else:
-                for client_socket_m in self._client_socket_managers:
-                    if client_socket_m.address == address:
-                        client_socket_m.status == ONLINE
-                        client_socket_m.port = port
-                        print(f"Client {address} (id={id_}) is now reconnected")
+                    for client_socket_m in self._client_socket_managers:
+                        if client_socket_m.address == address:
+                            client_socket_m.status == ONLINE
+                            client_socket_m.port = port
+                            print(f"Client {address} (id={id_}) is now reconnected")
 
-            welcome_message = {HEADER : NEW_ID, CONTENT : id_}
-            json_message = json.dumps(welcome_message)
-            client_socket.send(json_message.encode())
-            threading.Thread(target=self._handle_client, args=(client_socket, id_)).start()
+                welcome_message = {HEADER : NEW_ID, CONTENT : id_}
+                json_message = json.dumps(welcome_message)
+                client_socket.send(json_message.encode())
+                threading.Thread(target=self._handle_client, args=(client_socket, id_)).start()
+            except OSError:
+                print("Server disconnected.")
+                self.stop()
 
-    def _broadcast_address(self, host_ip):
+    def _broadcast_address(self, host_ip: int):
         """Send in the socket.SOCK_DGRAM socket the host_ip and the host port every 5 seconds."""
         while self._running and self.get_nb_players() < self._nb_max_player:
             broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -101,7 +107,7 @@ class Server:
 
     def get_nb_players(self) -> int:
         """get the number of player connected to the server."""
-        return len(filter(lambda csm: csm.status == ONLINE, self._client_socket_managers))
+        return len(list(filter(lambda csm: csm.status == ONLINE, self._client_socket_managers)))
 
     def send(self, client_id, data):
         """The data to one client."""
@@ -122,9 +128,5 @@ class Server:
         for client_socket in self._client_socket_managers:
             client_socket.socket.close()
 
-if __name__ == '__main__':
-    server = Server()
-    while True:
-        last_received = server.get_last_receptions()
-        for data in last_received:
-            print(data)
+    def __del__(self):
+        self.stop()
