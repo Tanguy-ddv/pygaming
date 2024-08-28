@@ -1,21 +1,19 @@
 import pygame
-from .error import PygamingException
 from .database import Texts, Speeches
 from .connexion import Client
 from .inputs import Inputs
 from .screen.screen import Screen
 from .sound import SoundBox, Jukebox
-from .base import Base, NO_NEXT
+from .base import BaseRunnable
 
-
-class Game(Base):
+class Game(BaseRunnable):
     """
     The game is the instance created and runned by the player.
     It can be online (with a server) or offline.
     """
 
     def __init__(self, width: int, height: int, online: bool = True, debug: bool = False) -> None:
-        Base.__init__(self, debug)
+        BaseRunnable.__init__(self, debug)
         pygame.init()
 
         self.soundbox = SoundBox()

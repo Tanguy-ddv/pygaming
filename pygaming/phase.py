@@ -2,9 +2,11 @@
 import pygame
 from abc import ABC, abstractmethod
 from .screen.frame import Frame
-from .game import Game, NO_NEXT
+from .game import Game
+from .base import BaseRunnable
+from .server import Server
 
-class Phase(ABC):
+class BasePhase(ABC):
     """
     A Phase is a step in the game. Each game should have a few phases.
     Exemple of phases: menus, lobby, stages, ...
@@ -15,28 +17,83 @@ class Phase(ABC):
     and send data based on them to the players via self.game.server.send() (or .send_all()).
     """
 
-    def __init__(self, name, game: Game) -> None:
+    def __init__(self, name, runnable: BaseRunnable) -> None:
         """
         Create the phase.
 
         Game: the game instance
         """
         ABC.__init__(self)
-        self.game = game
-        self.frames: list[Frame] = []
-        self.absolute_x = 0
-        self.absolute_y = 0
-        self.current_hover_surface = None
-        self.game.set_phase(name, self)
-    
-    def add_child(self, frame: Frame):
-        """Add a new frame to the phase."""
-        self.frames.append(frame)
+        self.runnable = runnable
+        self.runnable.set_phase(name, self)
     
     @abstractmethod
     def start(self, **kwargs):
         """This method is called at the start of the phase and might need several arguments."""
         raise NotImplementedError()
+    
+    @abstractmethod
+    def update(self):
+        """This method is called at every loop iteration."""
+        raise NotImplementedError()
+
+    @abstractmethod
+    def next(self):
+        """
+        If the phase is over, return the name of the next phase, if the phase is not, return an empty string.
+        If it is the end of the game, return 'NO_NEXT'
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def _update(self, loop_duration: int):
+        """Update the phase based on the inputs, network communications and the loop_duration. This method is called at every loop iteration."""
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def end(self):
+        """Action to do when the phase is ended."""
+        raise NotImplementedError()
+
+class ServerPhase(BasePhase, ABC):
+
+    def __init__(self, name, server: Server) -> None:
+        ABC.__init__(self)
+        GamePhase.__init__(self, name, server)
+
+    @property
+    def server(self) -> Server:
+        return self.runnable
+    
+    def update(self, loop_duration: int):
+        self._update(loop_duration)
+
+class GamePhase(BasePhase, ABC):
+    
+    def __init__(self, name, game: Game) -> None:
+        ABC.__init__(self)
+        BasePhase.__init__(self, name, game)
+        self.frames: list[Frame] = []
+
+        self.absolute_x = 0
+        self.absolute_y = 0
+        self.current_hover_surface = None
+
+    def add_child(self, frame: Frame):
+        """Add a new frame to the phase."""
+        self.frames.append(frame)
+
+    @property
+    def game(self) -> Game:
+        return self.runnable
+        
+    def update(self, loop_duration: int):
+        """Update the phase."""
+        self._update(loop_duration)
+        self.__update_focus()
+        self.__update_hover()
+        for frame in self.frames:
+            frame.update(loop_duration)    
     
     def __update_focus(self):
         """Update the focus of all the frames."""
@@ -77,27 +134,6 @@ class Phase(ABC):
                 cursor = getattr(pygame, cursor)
             pygame.mouse.set_cursor(cursor)
     
-    def update(self, loop_duration: int):
-        """Update the phase."""
-        self._update(loop_duration)
-        self.__update_focus()
-        self.__update_hover()
-        for frame in self.frames:
-            frame.update(loop_duration)
-
-    @abstractmethod
-    def next(self):
-        """
-        If the phase is over, return the name of the next phase, if the phase is not, return an empty string.
-        If it is the end of the game, return 'NO_NEXT'
-        """
-        raise NotImplementedError()
-
-    @abstractmethod
-    def _update(self, loop_duration: int):
-        """Update the phase based on the inputs, network communications and the loop_duration. This method is called at every loop iteration."""
-        raise NotImplementedError()
-
     @property
     def visible_frames(self):
         return sorted(filter(lambda f: f.visible, self.frames), key= lambda w: w.layer)
@@ -108,8 +144,3 @@ class Phase(ABC):
             surf = frame.get_surface()
             bg.blit(surf, (frame.x, frame.y))
         return bg
-    
-    @abstractmethod
-    def end(self):
-        """Action to do when the phase is ended."""
-        raise NotImplementedError()

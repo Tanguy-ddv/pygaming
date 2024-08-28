@@ -1,7 +1,7 @@
 from .connexion import Server as Network
-from .base import Base
+from .base import BaseRunnable
 
-class Server(Base):
+class Server(BaseRunnable):
     pass
 
     def __init__(self, debug: bool, nb_max_player: bool) -> None:

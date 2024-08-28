@@ -11,7 +11,7 @@ from .error import PygamingException
 import pygame
 from abc import ABC, abstractmethod
 
-class Base(ABC):
+class BaseRunnable(ABC):
 
     def __init__(self, debug: bool) -> None:
         super().__init__()
