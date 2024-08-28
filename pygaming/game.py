@@ -2,6 +2,7 @@ import pygame
 from .database import Texts, Speeches
 from .connexion import Client
 from .inputs import Inputs
+from .settings import Settings
 from .screen.screen import Screen
 from .sound import SoundBox, Jukebox
 from .base import BaseRunnable
@@ -24,6 +25,7 @@ class Game(BaseRunnable):
 
         self.texts = Texts(self.database)
         self.speeches = Speeches(self.database)
+        self.settings = Settings()
 
         self.settings.link_others(self.jukebox, self.soundbox, self.inputs.controls, self.texts, self.speeches, self.screen)
 

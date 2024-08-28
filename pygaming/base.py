@@ -18,7 +18,6 @@ class BaseRunnable(ABC):
         pygame.init()
         self.debug = debug
         self.logger = Logger(debug)
-        self.settings = Settings()
         self.config = Config()
         self.database = Database(self.config)
         self.phases = {}
