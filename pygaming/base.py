@@ -1,10 +1,12 @@
 """A base is an abstract object from which herit the game and the server."""
 
 NO_NEXT = 'no_next'
+from typing import Literal
 
 from .logger import Logger
 from .database import Database
 from .settings import Settings
+
 from .config import Config
 from .error import PygamingException
 
@@ -13,13 +15,13 @@ from abc import ABC, abstractmethod
 
 class BaseRunnable(ABC):
 
-    def __init__(self, debug: bool) -> None:
+    def __init__(self, debug: bool, type: Literal['server', 'game']) -> None:
         super().__init__()
         pygame.init()
         self.debug = debug
         self.logger = Logger(debug)
         self.config = Config()
-        self.database = Database(self.config)
+        self.database = Database(self.config, type)
         self.phases = {}
         self.transitions = {}
         self.current_phase = ""

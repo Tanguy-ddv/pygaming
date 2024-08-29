@@ -1,5 +1,6 @@
 import pygame
 from .database import Texts, Speeches
+from .database.database import SERVER, GAME
 from .connexion import Client
 from .inputs import Inputs
 from .settings import Settings
@@ -14,7 +15,7 @@ class Game(BaseRunnable):
     """
 
     def __init__(self, width: int, height: int, online: bool = True, debug: bool = False) -> None:
-        BaseRunnable.__init__(self, debug)
+        BaseRunnable.__init__(self, debug, GAME)
         pygame.init()
 
         self.soundbox = SoundBox()

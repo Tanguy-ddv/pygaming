@@ -1,4 +1,5 @@
 from .connexion import Server as Network
+from .database.database import SERVER, GAME
 from .base import BaseRunnable
 
 class Server(BaseRunnable):
@@ -12,7 +13,7 @@ class Server(BaseRunnable):
         debug: bool, if True, the database will not delete itself at the end and the logger will also log debug content.
         nb_max_player: The maximum number of player allowed to connect to the game.
         """
-        super().__init__(debug)
+        super().__init__(debug, SERVER)
         self.network = Network(nb_max_player)
     
     def update(self):

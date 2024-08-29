@@ -109,18 +109,19 @@ class Server:
         """get the number of player connected to the server."""
         return len(list(filter(lambda csm: csm.status == ONLINE, self._client_socket_managers)))
 
-    def send(self, client_id, data):
+    def send(self, client_id, header, data):
         """The data to one client."""
         for client_socket in self._client_socket_managers:
-            if client_socket.id_ == client_id:
-                json_data = json.dumps(data)
+            if client_socket.id_ == client_id and client_socket.status == ONLINE:
+                json_data = json.dumps({HEADER : header, CONTENT : data})
                 client_socket.socket.send(json_data.encode())
 
-    def send_all(self, data):
+    def send_all(self, header, data):
         """Send data to all the clients."""
         for client_socket in self._client_socket_managers:
-            json_data = json.dumps(data)
-            client_socket.socket.send(json_data.encode())
+            if client_socket.status == ONLINE:
+                json_data = json.dumps({HEADER : header, CONTENT : data})
+                client_socket.socket.send(json_data.encode())
 
     def stop(self):
         self._running = False
