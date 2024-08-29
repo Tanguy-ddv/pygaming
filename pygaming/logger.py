@@ -15,7 +15,7 @@ class Logger:
     def __init__(self, debug: bool = False) -> None:
         
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
-        dir = get_file('data', 'log', permanent=False)
+        dir = get_file('data', 'logs', permanent=False)
         self.debug = debug
         if not os.path.exists(dir):
             os.mkdir(dir)
