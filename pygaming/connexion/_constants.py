@@ -10,6 +10,7 @@ MAX_COMMUNICATION_LENGTH = 4096
 HEADER = 'header'
 NEW_ID = 'new_id'
 ID = 'id'
+EXIT = 'exit'
 CONTENT = 'content'
 BROADCAST_IP = 'broadcast_ip'
 HOST_PORT = 'host_port'

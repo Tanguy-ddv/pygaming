@@ -1,4 +1,4 @@
-from .connexion import Server as Network
+from .connexion import Server as Network, EXIT
 from .database.database import SERVER, GAME
 from .base import BaseRunnable
 
@@ -23,4 +23,5 @@ class Server(BaseRunnable):
     
     def stop(self):
         """Stop the event."""
+        self.network.send_all(EXIT, '')
         self.network.stop()

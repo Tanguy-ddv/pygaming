@@ -95,7 +95,7 @@ class Server:
             except Exception:
                 for client_sck in self._client_socket_managers:
                     if client_sck.id_ == id_:
-                        print(f"Client {client_sck.address} with id {client_sck.id_} just deconnected.")
+                        print(f"Client {client_sck.address} with id {client_sck.id_} just disconnected.")
                         client_sck.status = OFFLINE
                 break
     

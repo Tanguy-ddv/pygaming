@@ -1,7 +1,7 @@
 import pygame
 from .database import Texts, Speeches
 from .database.database import SERVER, GAME
-from .connexion import Client
+from .connexion import Client, EXIT
 from .inputs import Inputs
 from .settings import Settings
 from .screen.screen import Screen
@@ -34,6 +34,7 @@ class Game(BaseRunnable):
             self.client = Client()
         else:
             self.client = None
+        self.online = online
 
     def update(self) -> bool:
         """Update all the component of the game."""
@@ -41,4 +42,4 @@ class Game(BaseRunnable):
         self.screen.update()
         self.jukebox.update()
         is_game_over = self.update_phases()
-        return self.inputs.quit or is_game_over
+        return self.inputs.quit or is_game_over or (self.online and self.client.last_header == EXIT)
