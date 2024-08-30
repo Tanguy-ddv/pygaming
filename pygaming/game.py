@@ -14,7 +14,7 @@ class Game(BaseRunnable):
     It can be online (with a server) or offline.
     """
 
-    def __init__(self, width: int, height: int, online: bool = True, debug: bool = False) -> None:
+    def __init__(self, online: bool = True, debug: bool = False) -> None:
         BaseRunnable.__init__(self, debug, GAME)
         pygame.init()
 
@@ -22,7 +22,7 @@ class Game(BaseRunnable):
         self.jukebox = Jukebox()
         
         self.inputs = Inputs()
-        self.screen = Screen(width, height)
+        self.screen = Screen(*self.config.get("screen"))
 
         self.texts = Texts(self.database)
         self.speeches = Speeches(self.database)

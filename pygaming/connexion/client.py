@@ -54,6 +54,16 @@ class Client:
 
     def close(self):
         self.client_socket.close()
+    
+    @property
+    def last_header(self):
+        if HEADER in self.last_received:
+            return self.last_received[HEADER]
+    
+    @property
+    def last_content(self):
+        if CONTENT in self.last_received:
+            return self.last_received[CONTENT]
 
     def __del__(self):
         self.close()

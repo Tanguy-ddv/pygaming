@@ -32,23 +32,26 @@ class Database:
             self._db_path = get_file('data','db-server.sqlite')
             self._table_path = get_file('data','sql-server/tables.sql')
             self._ig_queries_path = get_file('data', 'sql-server/ig_queries.sql', permanent=False)
-        else:
-            self._db_path = get_file('data', 'db-game.db')
+            self._sql_folder = get_file('data', 'sql-server')
+        if runnable_type == GAME:
+            self._db_path = get_file('data', 'db-game.sqlite')
             self._table_path = get_file('data','sql-game/tables.sql')
             self._ig_queries_path = get_file('data', 'sql-game/ig_queries.sql', permanent=False)
+            self._sql_folder = get_file('data', 'sql-game')
+
         # Remove the previous sqlite file if existing.
         if os.path.isfile(self._db_path):
             os.remove(self._db_path)
-        
+
         # Create and connect to the sqlite file.
         self._conn = sql.connect(self._db_path)
 
         # Initialize the sqlite file with the tables.
         self._execute_sql_script(self._table_path)
 
-        for root, _, files in os.walk(get_file('data', '/sql')):
+        for root, _, files in os.walk(self._sql_folder):
             for file in files:
-                complete_path = os.path.join(root, file)
+                complete_path = os.path.join(root, file).replace('\\', '/')
                 if complete_path.endswith('.sql') and complete_path != self._table_path and complete_path != self._ig_queries_path:
                     if self._debug:
                         print(complete_path)

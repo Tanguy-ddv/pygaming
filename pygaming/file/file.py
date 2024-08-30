@@ -41,4 +41,4 @@ def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fo
     else:
         base_path = os.path.abspath(".")
 
-    return os.path.join(base_path, folder, file)
+    return os.path.join(base_path, folder, file).replace('\\', '/')

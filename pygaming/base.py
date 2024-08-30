@@ -2,6 +2,7 @@
 
 NO_NEXT = 'no_next'
 from typing import Literal
+import sys
 
 from .logger import Logger
 from .database import Database
@@ -21,7 +22,8 @@ class BaseRunnable(ABC):
         self.debug = debug
         self.logger = Logger(debug)
         self.config = Config()
-        self.database = Database(self.config, type)
+        self.max_fps = self.config.get("max_frame_rate")
+        self.database = Database(self.config, type, debug)
         self.phases = {}
         self.transitions = {}
         self.current_phase = ""
@@ -57,7 +59,7 @@ class BaseRunnable(ABC):
         return self
     
     def update_phases(self):
-        loop_time = self.clock.tick()
+        loop_time = self.clock.tick(self.max_fps)
         self.phases[self.current_phase].update(loop_time)
         next_phase = self.phases[self.current_phase].next()
         if next_phase and next_phase != NO_NEXT:
@@ -81,3 +83,4 @@ class BaseRunnable(ABC):
         self.phases[self.current_phase].end()
         self.stop()
         pygame.quit()
+        sys.exit()
