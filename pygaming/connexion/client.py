@@ -4,7 +4,7 @@ import socket
 import threading
 import json
 from typing import Any
-from ._constants import MAX_COMMUNICATION_LENGTH, DISCOVERY_PORT, CONTENT, HEADER, ID, NEW_ID, SERVER_PORT, BROADCAST_IP
+from ._constants import MAX_COMMUNICATION_LENGTH, DISCOVERY_PORT, CONTENT, HEADER, ID, NEW_ID, SERVER_PORT, BROADCAST_IP, TIMESTAMP, EXIT
 
 class Client:
     """The Client instance is used to communicate with the server. It sends data via the .send()"""
@@ -48,12 +48,17 @@ class Client:
                     if json_data[HEADER] == NEW_ID:
                         self._id = json_data[CONTENT]
                     self.last_received = json_data
-            except Exception as e:
-                print("Error receiving data:", e)
+            except Exception:
                 self.close()
+                break
 
     def close(self):
+        self.last_received = {HEADER : EXIT}
         self.client_socket.close()
+
+    def clean_last(self):
+        """Clean the reception."""
+        self.last_received = {}
     
     @property
     def last_header(self):
@@ -64,6 +69,11 @@ class Client:
     def last_content(self):
         if CONTENT in self.last_received:
             return self.last_received[CONTENT]
+    
+    @property
+    def last_timestamp(self):
+        if TIMESTAMP in self.last_received:
+            return self.last_received[TIMESTAMP]
 
     def __del__(self):
         self.close()

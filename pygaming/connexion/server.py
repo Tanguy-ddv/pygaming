@@ -4,7 +4,7 @@ import socket
 import threading
 import json
 import time
-from ._constants import SERVER_PORT, DISCOVERY_PORT, MAX_COMMUNICATION_LENGTH,  CONTENT, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP
+from ._constants import SERVER_PORT, DISCOVERY_PORT, MAX_COMMUNICATION_LENGTH,  CONTENT, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, TIMESTAMP, NEW_PHASE
 
 class ClientSocketManager():
     """
@@ -64,7 +64,7 @@ class Server:
                 else:
                     for client_socket_m in self._client_socket_managers:
                         if client_socket_m.address == address:
-                            client_socket_m.status == ONLINE
+                            client_socket_m.status = ONLINE
                             client_socket_m.port = port
                             print(f"Client {address} (id={id_}) is now reconnected")
 
@@ -113,14 +113,14 @@ class Server:
         """The data to one client."""
         for client_socket in self._client_socket_managers:
             if client_socket.id_ == client_id and client_socket.status == ONLINE:
-                json_data = json.dumps({HEADER : header, CONTENT : data})
+                json_data = json.dumps({HEADER : header, CONTENT : data, TIMESTAMP : time.time_ns()})
                 client_socket.socket.send(json_data.encode())
 
     def send_all(self, header, data):
         """Send data to all the clients."""
         for client_socket in self._client_socket_managers:
             if client_socket.status == ONLINE:
-                json_data = json.dumps({HEADER : header, CONTENT : data})
+                json_data = json.dumps({HEADER : header, CONTENT : data, TIMESTAMP : time.time_ns()})
                 client_socket.socket.send(json_data.encode())
 
     def stop(self):
