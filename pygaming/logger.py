@@ -9,8 +9,8 @@ from datetime import datetime
 class Logger:
     """
     A logger is used to store the log of a game.
-    It might be use to compute statitics, replay actions, ...
-    Logs are stored as "data/logs/'timestamp'.log
+    It might be used to compute statitics, replay actions, ...
+    Logs are stored as "data/logs/'timestamp'.log"
     """
     def __init__(self, debug: bool = False) -> None:
         
@@ -24,7 +24,7 @@ class Logger:
     def write(self, data: dict, is_it_debugging: bool = False):
         """Write a new line in the log."""
         if self.debug or not is_it_debugging:
-            data['timestamp'] = time.time()
+            data['timestamp'] = time.time_ns()
             json.dump(data, self._file)
     
     def new_log(self):
@@ -36,5 +36,3 @@ class Logger:
     def __del__(self):
         """At the end of the game, close the file."""
         self._file.close()
-    
-
