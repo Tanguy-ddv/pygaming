@@ -24,6 +24,7 @@ class BasePhase(ABC):
         Game: the game instance
         """
         ABC.__init__(self)
+        self._name = name
         self.runnable = runnable
         self.runnable.set_phase(name, self)
     
