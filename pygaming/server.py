@@ -1,4 +1,4 @@
-from .connexion import Server as Network, EXIT
+from .connexion import Server as Network, EXIT, NEW_PHASE
 from .database.database import SERVER, GAME
 from .base import BaseRunnable
 
@@ -18,7 +18,10 @@ class Server(BaseRunnable):
     
     def update(self):
         """Update the server."""
+        previous = self.current_phase
         is_game_over = self.update_phases()
+        if previous != self.current_phase:
+            self.network.send_all(NEW_PHASE, self.current_phase)
         return is_game_over
     
     def stop(self):
