@@ -42,8 +42,8 @@ class Frame(Element):
         self.height = height
         self.focused = False
         self._current_object_focus = None
-        self.focus_background = Backgrounds(width, height, focus_background, image_duration, image_introduction, 0)
-    
+        self.focus_background = Backgrounds(width, height, focus_background, image_duration, image_introduction)
+        self.current_hover_surface = None
 
     def add_child(self, child: Element):
         self.children.append(child)
@@ -103,10 +103,10 @@ class Frame(Element):
         for child in self.children:
             child.unfocus()
     
-    def _update_objects(self, inputs: Inputs, loop_duration: int):
+    def _update_objects(self, loop_duration: int):
         """Update all the children."""
         for object in self.children:
-            object.update(inputs, loop_duration, self.x, self.y)
+            object.update(loop_duration)
         
     @property
     def visible_children(self):
@@ -122,6 +122,5 @@ class Frame(Element):
             background.blit(surface, (x,y))
         return background
 
-    def update(self, inputs: Inputs, loop_duration: int):
-        self._update_animation(loop_duration)
-        self._update_objects(inputs, loop_duration)
+    def update(self, loop_duration: int):
+        self._update_objects(loop_duration)

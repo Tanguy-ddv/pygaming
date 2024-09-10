@@ -62,6 +62,13 @@ class Element(ABC):
     def absolute_y(self):
         return self.master.absolute_y + self.y
 
+    @property
+    def game(self):
+        return self.master.game
+    
+    def update_hover(self, hover_x, hover_y):
+        return False, None
+
     @abstractmethod
     def get_surface(self) -> pygame.Surface:
         """Return the surface to be blitted."""
