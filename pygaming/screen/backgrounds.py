@@ -41,11 +41,11 @@ class Backgrounds:
         self._introduction_done = False
         self._time_since_last_change = 0
 
-        if not isinstance(backgrounds, Iterable):
+        if not isinstance(backgrounds, Iterable) or isinstance(backgrounds, str):
             backgrounds = [backgrounds]
         self._backgrounds: list[pygame.Surface] = []
         for bg in backgrounds:
-            self._backgrounds.append(make_background(bg, width, height, None))
+            self._backgrounds.append(make_background(bg, width, height))
         self._n_bg = len(backgrounds)
 
         if not isinstance(image_duration, Iterable):
@@ -80,7 +80,7 @@ class Backgrounds:
         Return the background.
         """
         self._index = self._index%self._n_bg
-        return self._backgrounds[self._index]
+        return self._backgrounds[self._index].copy()
         
 def make_background(background: BackgroundLike, width: int, height: int):
     """
@@ -99,19 +99,19 @@ def make_background(background: BackgroundLike, width: int, height: int):
             background = pygame.Color(background)
         else:
             print(f"'{background}' is not a color, replaced by white.")
-            background = pygame.Color(0,0,0,255)
+            background = pygame.Color(255,255,255,255)
 
     elif isinstance(background, ImageFile):
-        background = ImageFile.get((width, height))
+        background = background.get((width, height))
 
-    if isinstance(background, pygame.Color):
+    if isinstance(background, (pygame.Color, tuple)):
         bg = pygame.Surface((width, height), pygame.SRCALPHA)
         bg.fill(background)
         return bg
 
     elif isinstance(background, pygame.Surface):
         return pygame.transform.scale(background, (width, height))
-    
+
     raise PygamingException(f"Please use a str, pygame.Surface, pygame.Color or an ImageFile for the background, got a {type(background)}")
 
 def make_rounded_rectangle(color: pygame.Color | str, width: int, height: int):
