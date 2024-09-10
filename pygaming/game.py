@@ -39,6 +39,7 @@ class Game(BaseRunnable):
     def update(self) -> bool:
         """Update all the component of the game."""
         self.inputs.update()
+        self.screen.display_phase(self.phases[self.current_phase])
         self.screen.update()
         self.jukebox.update()
         is_game_over = self.update_phases()
