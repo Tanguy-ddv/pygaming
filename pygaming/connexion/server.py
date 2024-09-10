@@ -31,7 +31,7 @@ class Server:
     -----
     nb_max_players: int, the maximum number of players in one game.
     """
-    def __init__(self, nb_max_player = 8):
+    def __init__(self, nb_max_player: int = 8):
 
         host_ip = socket.gethostbyname(socket.gethostname())
         host_port = SERVER_PORT
@@ -45,7 +45,6 @@ class Server:
         self._server_socket.bind((host_ip, host_port))
         self._server_socket.listen(nb_max_player*2)
         threading.Thread(target=self._accept_clients).start()
-        self._stop_event = threading.Event()
 
         threading.Thread(target=self._broadcast_address, kwargs={'host_ip' : host_ip}).start()
 
@@ -66,6 +65,7 @@ class Server:
                         if client_socket_m.address == address:
                             client_socket_m.status = ONLINE
                             client_socket_m.port = port
+                            client_socket_m.socket = client_socket
                             print(f"Client {address} (id={id_}) is now reconnected")
 
                 welcome_message = {HEADER : NEW_ID, CONTENT : id_}
@@ -101,7 +101,7 @@ class Server:
     
     def get_last_receptions(self) -> list[dict]:
         """Return the last data received."""
-        last_receiptions = self._last_received
+        last_receiptions = self._last_received.copy()
         self._last_received.clear()
         return last_receiptions
 
@@ -109,19 +109,25 @@ class Server:
         """get the number of player connected to the server."""
         return len(list(filter(lambda csm: csm.status == ONLINE, self._client_socket_managers)))
 
+    def is_player_online(self, id_) -> int:
+        return len(list(filter(lambda csm: csm.status == ONLINE and csm.id_ == id_, self._client_socket_managers))) == 1
+
     def send(self, client_id, header, data):
         """The data to one client."""
         for client_socket in self._client_socket_managers:
             if client_socket.id_ == client_id and client_socket.status == ONLINE:
-                json_data = json.dumps({HEADER : header, CONTENT : data, TIMESTAMP : time.time_ns()})
+                json_data = json.dumps({HEADER : header, CONTENT : data, TIMESTAMP : time.time()})
                 client_socket.socket.send(json_data.encode())
 
     def send_all(self, header, data):
         """Send data to all the clients."""
         for client_socket in self._client_socket_managers:
             if client_socket.status == ONLINE:
-                json_data = json.dumps({HEADER : header, CONTENT : data, TIMESTAMP : time.time_ns()})
-                client_socket.socket.send(json_data.encode())
+                try:
+                    json_data = json.dumps({HEADER : header, CONTENT : data, TIMESTAMP : time.time()})
+                    client_socket.socket.send(json_data.encode())
+                except ConnectionResetError:
+                    client_socket.status = OFFLINE
 
     def stop(self):
         self._running = False
