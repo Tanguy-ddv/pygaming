@@ -10,13 +10,13 @@ class Client:
     """The Client instance is used to communicate with the server. It sends data via the .send()"""
     def __init__(self):
         self.last_received = {}
-        self._id = None
+        self.id = None
         server_ip = self._discover_server()
         self._connect_to_server(server_ip)
 
     def send(self, content: Any, header: str):
         """Send the content to the server, specifying the header."""
-        message = {ID : self._id, HEADER : header, CONTENT : content}
+        message = {ID : self.id, HEADER : header, CONTENT : content}
         json_data = json.dumps(message)
         self.client_socket.send(json_data.encode())
 
@@ -46,7 +46,7 @@ class Client:
                 if data:
                     json_data = json.loads(data.decode())
                     if json_data[HEADER] == NEW_ID:
-                        self._id = json_data[CONTENT]
+                        self.id = json_data[CONTENT]
                     self.last_received = json_data
             except Exception:
                 self.close()
