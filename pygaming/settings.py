@@ -9,12 +9,10 @@ class Settings:
 
     def __init__(self) -> None:
         self._path = get_file('data', 'settings.json', False)
-        self._file = open(self._path, 'r', encoding='utf-8')
-        self._data = json.load(self._file)
-        self._file.close()
-        self._file = open(self._path, 'w', encoding='utf-8')
-        
-    
+        file = open(self._path, 'r', encoding='utf-8')
+        self._data = json.load(file)
+        file.close()
+
     def link_others(self, jukebox, soundbox, controls, texts, speeches, screen):
         """Link the objects of the game to the settings."""
         if jukebox is not None:
@@ -65,7 +63,9 @@ class Settings:
     
     def save(self) -> None:
         """Save the current settings."""
-        json.dump(self._data, self._file)
+        file = open(self._path, 'w', encoding='utf-8')
+        json.dump(self._data, file)
+        file.close()
 
     def set_volumes(self, volumes: dict[str, Any]):
         """
@@ -125,8 +125,3 @@ class Settings:
             raise PygamingException(f"Please set {attribute} with it dedecated setter.")
         self._data[attribute] = value
         self.save()
-
-    def __del__(self):
-        """Delete the object at the end of the game."""
-        self.save()
-        self._file.close()
