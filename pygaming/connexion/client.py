@@ -3,8 +3,9 @@
 import socket
 import threading
 import json
+import time
 from typing import Any
-from ._constants import MAX_COMMUNICATION_LENGTH, DISCOVERY_PORT, CONTENT, HEADER, ID, NEW_ID, SERVER_PORT, BROADCAST_IP, TIMESTAMP, EXIT
+from ._constants import MAX_COMMUNICATION_LENGTH, DISCOVERY_PORT, CONTENT, HEADER, ID, NEW_ID, SERVER_PORT, BROADCAST_IP, TIMESTAMP, EXIT, TIMESTAMP
 
 class Client:
     """The Client instance is used to communicate with the server. It sends data via the .send()"""
@@ -14,9 +15,9 @@ class Client:
         server_ip = self._discover_server()
         self._connect_to_server(server_ip)
 
-    def send(self, content: Any, header: str):
+    def send(self, header: str, content: Any, ):
         """Send the content to the server, specifying the header."""
-        message = {ID : self.id, HEADER : header, CONTENT : content}
+        message = {ID : self.id, HEADER : header, CONTENT : content, TIMESTAMP : time.time()}
         json_data = json.dumps(message)
         self.client_socket.send(json_data.encode())
 
