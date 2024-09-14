@@ -3,7 +3,8 @@
 import pygame
 from dataclasses import dataclass
 from .controls import Controls
-from string import ascii_letters, digits, punctuation 
+from string import ascii_letters, digits, punctuation
+from ..settings import Settings
 _ACCEPTED_LETTERS = ascii_letters + digits + punctuation + " "
 
 class Inputs:
@@ -12,9 +13,9 @@ class Inputs:
     check if the user clicked somewhere or if a key have been pressed by using this class.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, settings: Settings) -> None:
         
-        self.controls = Controls()
+        self.controls = Controls(settings)
         self.clear_mouse_velocity()
         self.event_list: list[pygame.event.Event] = []
     

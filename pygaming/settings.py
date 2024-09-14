@@ -13,32 +13,6 @@ class Settings:
         self._data = json.load(file)
         file.close()
 
-    def link_others(self, jukebox, soundbox, controls, texts, speeches, screen):
-        """Link the objects of the game to the settings."""
-        if jukebox is not None:
-            self._jukebox = jukebox # Link the jukebox to give it directly the volumes
-            self._jukebox.update_settings(self)
-        
-        if soundbox is not None:
-            self._soundbox = soundbox # Link the soundbox to give it directly the volumes
-            self._soundbox.update_settings(self)
-        
-        if controls is not None:
-            self._controls = controls # Link the controls to give it directly the key mapping
-            self._controls.update_settings(self)
-
-        if texts is not None:
-            self._texts = texts # Link the texts to give the current language.
-            self._texts.update_settings(self)
-
-        if speeches is not None:
-            self._speeches = speeches
-            self._speeches.update_settings(self)
-
-        if screen is not None:
-            self._screen = screen
-            self._screen.update_settings(self)
-
     def get(self, attribute: str):
         """Get the value of the settings attribute"""
         if attribute in self._data:
@@ -92,19 +66,11 @@ class Settings:
             if key not in self._data['volumes']['sounds']:
                 raise PygamingException(f"The category {key} is not defined in the settings files.")
         self._data['volumes'] = volumes
-        if self._jukebox is not None:
-            self._jukebox.update_settings(self)
-        if self._soundbox is not None:
-            self._soundbox.update_settings(self)
         self.save()
 
     def set_language(self, language: str):
         """Set the new language."""
         self._data['current_language'] = language
-        if self._texts is not None:
-            self._texts.update_settings(self)
-        if self._speeches is not None:
-            self._speeches.update_settings(self)
         self.save()
         
     def set_controls(self, controls: dict[str, str]):
@@ -116,13 +82,11 @@ class Settings:
             if key not in self.controls.values():
                 raise PygamingException(f"the action {key} does not exists.")
         self._data['controls'] = controls
-        self._controls.update_settings(self)
         self.save()
 
-    def set_full_screen(self, full_screen : bool):
+    def set_full_screen(self, fullscreen : bool):
         """Set the full screen."""
-        self._data['full_screen'] = full_screen
-        self._screen.update_settings(self)
+        self._data['fullscreen'] = fullscreen
         self.save()
 
     def set_attribute(self, attribute: str, value: Any):

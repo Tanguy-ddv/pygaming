@@ -11,11 +11,13 @@ class Controls:
     The current mapping is store in the dynamic data/keymap.json file.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, settings: Settings) -> None:
 
         self._key_map_dict: dict[str, str] = {}
         self.reverse_mapping = self._get_reversed_mapping()
 
+
+    # TODO: fuse these two
     def update_settings(self, settings: Settings):
         """Update the key map dict with the current settings."""
         controls = settings.controls

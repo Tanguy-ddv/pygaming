@@ -18,17 +18,15 @@ class Game(BaseRunnable):
         BaseRunnable.__init__(self, debug, GAME)
         pygame.init()
 
-        self.soundbox = SoundBox()
-        self.jukebox = Jukebox()
-        
-        self.inputs = Inputs()
-        self.screen = Screen(self.config)
-
-        self.texts = Texts(self.database)
-        self.speeches = Speeches(self.database)
         self.settings = Settings()
+        self.soundbox = SoundBox(self.settings)
+        self.jukebox = Jukebox(self.settings)
+        
+        self.inputs = Inputs(self.settings)
+        self.screen = Screen(self.config, self.settings)
 
-        self.settings.link_others(self.jukebox, self.soundbox, self.inputs.controls, self.texts, self.speeches, self.screen)
+        self.texts = Texts(self.database, self.settings)
+        self.speeches = Speeches(self.database, self.speeches)
 
         if online:
             self.client = Client(self.config)
