@@ -5,11 +5,13 @@ import threading
 import json
 import time
 from typing import Any
-from ._constants import MAX_COMMUNICATION_LENGTH, DISCOVERY_PORT, CONTENT, HEADER, ID, NEW_ID, SERVER_PORT, BROADCAST_IP, TIMESTAMP, EXIT, TIMESTAMP
+from ._constants import DISCOVERY_PORT, CONTENT, HEADER, ID, NEW_ID, BROADCAST_IP, TIMESTAMP, EXIT, TIMESTAMP
+from ..config import Config
 
 class Client:
     """The Client instance is used to communicate with the server. It sends data via the .send()"""
-    def __init__(self):
+    def __init__(self, config: Config):
+        self._config = config
         self._reception_buffer = []
         self.last_receptions = []
         self.id = None
@@ -28,7 +30,7 @@ class Client:
         discovery_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         discovery_socket.bind(('', DISCOVERY_PORT))
         while True:
-            data, addr = discovery_socket.recvfrom(MAX_COMMUNICATION_LENGTH)
+            data, addr = discovery_socket.recvfrom(self._config.max_communication_length)
             message = json.loads(data.decode())
             if HEADER not in message or message[HEADER] != BROADCAST_IP:
                 continue
@@ -38,13 +40,13 @@ class Client:
     
     def _connect_to_server(self, server_ip):
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client_socket.connect((server_ip, SERVER_PORT))
+        self.client_socket.connect((server_ip, self._config.server_port))
         threading.Thread(target=self._receive).start()
 
     def _receive(self):
         while True:
             try:
-                data = self.client_socket.recv(MAX_COMMUNICATION_LENGTH)
+                data = self.client_socket.recv(self._config.max_communication_length)
                 if data:
                     json_data = json.loads(data.decode())
                     if json_data[HEADER] == NEW_ID:

@@ -31,7 +31,7 @@ class Game(BaseRunnable):
         self.settings.link_others(self.jukebox, self.soundbox, self.inputs.controls, self.texts, self.speeches, self.screen)
 
         if online:
-            self.client = Client()
+            self.client = Client(self.config)
         else:
             self.client = None
         self.online = online

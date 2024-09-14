@@ -4,7 +4,8 @@ import socket
 import threading
 import json
 import time
-from ._constants import SERVER_PORT, DISCOVERY_PORT, MAX_COMMUNICATION_LENGTH,  CONTENT, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, TIMESTAMP, NEW_PHASE
+from ..config import Config
+from ._constants import DISCOVERY_PORT,  CONTENT, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, TIMESTAMP
 
 class ClientSocketManager():
     """
@@ -31,10 +32,10 @@ class Server:
     -----
     nb_max_players: int, the maximum number of players in one game.
     """
-    def __init__(self, nb_max_player: int = 8):
+    def __init__(self, config: Config, nb_max_player: int = 8):
 
         host_ip = socket.gethostbyname(socket.gethostname())
-        host_port = SERVER_PORT
+        self.config = config
 
         self._nb_max_player = nb_max_player
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -42,8 +43,8 @@ class Server:
         self._running = True
         self._reception_buffer = []
         self.last_receptions = []
-        print(f"Server launched: {host_ip}, {host_port}")
-        self._server_socket.bind((host_ip, host_port))
+        print(f"Server launched: {host_ip}, {self.config.server_port}")
+        self._server_socket.bind((host_ip, self.config.server_port))
         self._server_socket.listen(nb_max_player*2)
         threading.Thread(target=self._accept_clients).start()
 
@@ -89,7 +90,7 @@ class Server:
     def _handle_client(self, client_socket: socket.socket, id_: int):
         while self._running:
             try:
-                data = client_socket.recv(MAX_COMMUNICATION_LENGTH)
+                data = client_socket.recv(self.config.max_communication_length)
                 if data:
                     json_data = json.loads(data.decode())
                     self._reception_buffer.append(json_data)
