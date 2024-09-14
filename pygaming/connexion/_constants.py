@@ -1,9 +1,7 @@
 """This file contains the constants for the connexion module."""
 
 # Ports and communication constants
-SERVER_PORT = 50505
 DISCOVERY_PORT = 37020
-MAX_COMMUNICATION_LENGTH = 4096
 
 # Communication protocol
 
