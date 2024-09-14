@@ -48,10 +48,18 @@ class Settings:
     @property
     def language(self) -> str:
         return self._data['current_language']
+
+    @property
+    def antialias(self) -> bool:
+        if 'antialias' in self._data:
+            return self._data['antialias']
+        return True
     
     @property
     def fullscreen(self) -> bool:
-        return self._data['full_screen']
+        if "fullscreen" in self._data:
+            return self._data['fullscreen']
+        return False
     
     @property
     def controls(self) -> dict[str, str]:

@@ -12,8 +12,8 @@ class FontFile(File):
         else:
             self.full_path = get_file(folder='fonts', file=name + '.ttf')
 
-    def get(self, size: int, color: pygame.Color, italic: bool = False, bold: bool = False, underline: bool = False, antialias: bool = True) -> pygame.font.Font:
-        return Font(self.full_path, size, color, bold, italic, underline, antialias)
+    def get(self, size: int, color: pygame.Color, settings, italic: bool = False, bold: bool = False, underline: bool = False) -> pygame.font.Font:
+        return Font(self.full_path, size, color, settings, bold, italic, underline)
 
 default_font = FontFile("")
 default_font.full_path = None
