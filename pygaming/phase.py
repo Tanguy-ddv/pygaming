@@ -28,6 +28,22 @@ class BasePhase(ABC):
         self.runnable = runnable
         self.runnable.set_phase(name, self)
     
+    @property
+    def database(self):
+        return self.runnable.database
+    
+    @property
+    def logger(self):
+        return self.runnable.logger
+    
+    @property
+    def config(self):
+        return self.runnable.config
+    
+    @property
+    def debug(self):
+        return self.runnable.debug
+    
     @abstractmethod
     def start(self, **kwargs):
         """This method is called at the start of the phase and might need several arguments."""
@@ -66,6 +82,10 @@ class ServerPhase(BasePhase, ABC):
     def server(self) -> Server:
         return self.runnable
     
+    @property
+    def network(self):
+        return self.server.network
+    
     def update(self, loop_duration: int):
         self._update(loop_duration)
 
@@ -87,6 +107,30 @@ class GamePhase(BasePhase, ABC):
     @property
     def game(self) -> Game:
         return self.runnable
+
+    @property
+    def settings(self):
+        return self.game.settings
+    
+    @property
+    def screnn(self):
+        return self.game.screen
+    
+    @property
+    def soundbox(self):
+        return self.game.soundbox
+
+    @property
+    def jukebox(self):
+        return self.game.jukebox
+
+    @property
+    def inputs(self):
+        return self.game.inputs
+    
+    @property
+    def network(self):
+        return self.game.client
         
     def update(self, loop_duration: int):
         """Update the phase."""
