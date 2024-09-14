@@ -41,7 +41,7 @@ class Server:
         self._client_socket_managers: list[ClientSocketManager] = []
         self._running = True
         self._reception_buffer = []
-        self.last_receiptions = []
+        self.last_receptions = []
         print(f"Server launched: {host_ip}, {host_port}")
         self._server_socket.bind((host_ip, host_port))
         self._server_socket.listen(nb_max_player*2)
@@ -102,7 +102,7 @@ class Server:
     
     def update(self) -> list[dict]:
         """Return the last data received."""
-        self.last_receiptions = self._reception_buffer.copy()
+        self.last_receptions = self._reception_buffer.copy()
         self._reception_buffer.clear()
 
     def get_nb_players(self) -> int:
