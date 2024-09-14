@@ -165,6 +165,7 @@ test*
 data/
 assets/
 src/
+!pygaming/commands/templates/*
 game.exe
 player.exe
 setup.exe
