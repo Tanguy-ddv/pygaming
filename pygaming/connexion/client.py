@@ -10,7 +10,8 @@ from ._constants import MAX_COMMUNICATION_LENGTH, DISCOVERY_PORT, CONTENT, HEADE
 class Client:
     """The Client instance is used to communicate with the server. It sends data via the .send()"""
     def __init__(self):
-        self.last_received = {}
+        self._reception_buffer = []
+        self.last_receptions = []
         self.id = None
         server_ip = self._discover_server()
         self._connect_to_server(server_ip)
@@ -48,33 +49,26 @@ class Client:
                     json_data = json.loads(data.decode())
                     if json_data[HEADER] == NEW_ID:
                         self.id = json_data[CONTENT]
-                    self.last_received = json_data
+                    self._reception_buffer.append(json_data)
             except Exception:
                 self.close()
                 break
 
     def close(self):
-        self.last_received = {HEADER : EXIT}
+        self._reception_buffer = [{HEADER : EXIT}]
         self.client_socket.close()
 
     def clean_last(self):
         """Clean the reception."""
-        self.last_received = {}
+        self._reception_buffer = {}
     
-    @property
-    def last_header(self):
-        if HEADER in self.last_received:
-            return self.last_received[HEADER]
-    
-    @property
-    def last_content(self):
-        if CONTENT in self.last_received:
-            return self.last_received[CONTENT]
-    
-    @property
-    def last_timestamp(self):
-        if TIMESTAMP in self.last_received:
-            return self.last_received[TIMESTAMP]
+    def is_server_killed(self):
+        """Verify if the server sent EXIT because it is killed."""
+        return any(lr[HEADER] == EXIT for lr in self.last_receptions)
+
+    def update(self):
+        self.last_receptions = self._reception_buffer.copy()
+        self._reception_buffer.clear()
 
     def __del__(self):
         self.close()

@@ -18,6 +18,7 @@ class Server(BaseRunnable):
     
     def update(self):
         """Update the server."""
+        self.network.update()
         previous = self.current_phase
         is_game_over = self.update_phases()
         if previous != self.current_phase:

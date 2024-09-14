@@ -40,7 +40,8 @@ class Server:
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._client_socket_managers: list[ClientSocketManager] = []
         self._running = True
-        self._last_received = []
+        self._reception_buffer = []
+        self.last_receiptions = []
         print(f"Server launched: {host_ip}, {host_port}")
         self._server_socket.bind((host_ip, host_port))
         self._server_socket.listen(nb_max_player*2)
@@ -91,7 +92,7 @@ class Server:
                 data = client_socket.recv(MAX_COMMUNICATION_LENGTH)
                 if data:
                     json_data = json.loads(data.decode())
-                    self._last_received.append(json_data)
+                    self._reception_buffer.append(json_data)
             except Exception:
                 for client_sck in self._client_socket_managers:
                     if client_sck.id_ == id_:
@@ -99,11 +100,10 @@ class Server:
                         client_sck.status = OFFLINE
                 break
     
-    def get_last_receptions(self) -> list[dict]:
+    def update(self) -> list[dict]:
         """Return the last data received."""
-        last_receiptions = self._last_received.copy()
-        self._last_received.clear()
-        return last_receiptions
+        self.last_receiptions = self._reception_buffer.copy()
+        self._reception_buffer.clear()
 
     def get_nb_players(self) -> int:
         """get the number of player connected to the server."""

@@ -42,5 +42,7 @@ class Game(BaseRunnable):
         self.screen.display_phase(self.phases[self.current_phase])
         self.screen.update()
         self.jukebox.update()
+        if self.online:
+            self.client.update()
         is_game_over = self.update_phases()
-        return self.inputs.quit or is_game_over or (self.online and self.client.last_header == EXIT)
+        return self.inputs.quit or is_game_over or (self.online and self.client.is_server_killed())
