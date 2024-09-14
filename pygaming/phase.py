@@ -160,7 +160,7 @@ class GamePhase(BasePhase, ABC):
                 
     def __update_hover(self):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
-        clicks = self.game.inputs.get_clicks()
+        clicks = self.inputs.get_clicks()
         is_one_hovered = False
         if 0 in clicks:
             x = clicks[0].x
@@ -174,7 +174,7 @@ class GamePhase(BasePhase, ABC):
                         break
 
         if not is_one_hovered:
-            cursor = self.game.config.get_cursor()
+            cursor = self.config.default_cursor
             if hasattr(pygame, cursor):
                 cursor = getattr(pygame, cursor)
             pygame.mouse.set_cursor(cursor)

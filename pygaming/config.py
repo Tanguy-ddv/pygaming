@@ -18,6 +18,14 @@ class Config:
         return None
     
     @property
+    def dimension(self):
+        """Return the dimension of the window in px x px."""
+        key = "screen"
+        if key in self._data:
+            return self._data[key]
+        return (800, 600)
+    
+    @property
     def default_language(self):
         """Return the default language."""
         key = "default_language"

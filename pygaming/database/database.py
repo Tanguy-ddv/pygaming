@@ -59,7 +59,7 @@ class Database:
         
         # Execute the queries previously saved.
         self._execute_sql_script(self._ig_queries_path)
-        self.default_language = config.get_language()
+        self.default_language = config.default_language
 
     def _execute_select_query(self, query: str):
         """Execute a select query on the database."""

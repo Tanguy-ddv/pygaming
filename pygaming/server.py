@@ -14,7 +14,7 @@ class Server(BaseRunnable):
         nb_max_player: The maximum number of player allowed to connect to the game.
         """
         super().__init__(debug, SERVER)
-        self.network = Network(nb_max_player)
+        self.network = Network(self.config, nb_max_player)
     
     def update(self):
         """Update the server."""

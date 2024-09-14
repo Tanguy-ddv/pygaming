@@ -1,16 +1,19 @@
 """The screen is the surface of the window."""
 
 from ..settings import Settings
+from ..config import Config
+from ..file import get_file
 import pygame
 
 class Screen:
     """The screen class is used to represent the screen of the game."""
 
-    def __init__(self, width: int, height: int) -> None:
-        self._width = width
-        self._height = height
+    def __init__(self, config: Config) -> None:
+        self._width, self._height = config.dimension
         self._fullscreen = False
         self.screen = pygame.display.set_mode((self._width, self._height))
+        pygame.display.set_caption(config.game_name)
+        pygame.display.set_icon(pygame.image.load(get_file('', 'icon.ico', True)))
 
     def update_settings(self, settings: Settings):
         """Update the screen with the settings."""

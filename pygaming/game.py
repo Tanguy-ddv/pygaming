@@ -22,7 +22,7 @@ class Game(BaseRunnable):
         self.jukebox = Jukebox()
         
         self.inputs = Inputs()
-        self.screen = Screen(*self.config.get("screen"))
+        self.screen = Screen(self.config)
 
         self.texts = Texts(self.database)
         self.speeches = Speeches(self.database)
