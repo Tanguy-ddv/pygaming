@@ -80,7 +80,7 @@ class Inputs:
         types = [event.key for event in self.event_list if event.type == pygame.KEYDOWN]
         return {
             action : any(int(key) in types for key in keys)
-            for action, keys in self.controls.reverse_mapping.items()}
+            for action, keys in self.controls.get_reverse_mapping().items()}
 
     def get_arrows(self):
         return [(event.type, event.key) for event in self.event_list if hasattr(event, 'key') and event.key in [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT]]
