@@ -18,8 +18,15 @@ class Controls:
         self._settings = settings
         self._previous_controls = self._settings.controls
         self._update_settings()
-    
+
     def get_reverse_mapping(self):
+        """
+        Get the reverse control mapping.
+
+        Returns:
+        -----
+        reverse_mapping: dict[str, list[str]]. The keys are the actions, the values the list of event that would trigger it.
+        """
         if self._previous_controls != self._settings.controls:
             self._update_settings()
         return self._reverse_mapping
@@ -45,4 +52,3 @@ class Controls:
             else:
                 reversed_mapping[action] = [key]
         return reversed_mapping
-        

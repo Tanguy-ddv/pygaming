@@ -1,3 +1,4 @@
+"""The file module store all the file classes."""
 from .font import FontFile, default_font
 from .data import DataFile
 from .image import ImageFile

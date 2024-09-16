@@ -1,9 +1,9 @@
 """Contains a class to manage the backgrounds of a widget or any object."""
-
-import pygame
 from typing import Union, List, Iterable
+import pygame
 from ..file import ImageFile
 from ..error import PygamingException
+
 BackgroundLike = Union[str, pygame.Surface, pygame.Color, ImageFile]
 BackgroundsLike = Union[List[BackgroundLike], BackgroundLike]
 
@@ -30,12 +30,11 @@ class Backgrounds:
         If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
         If it is a (list of) surface, resize the surface with (width, height)
         Can be a list of colors and surfaces, str
-        image_duration: If several backgrounds are given, as a list of str, color, ImageFile or Surface, the frame duration is the amount of time
-        each frame is displayed before. If it is a list, it must be the same length than backgrounds.
+        image_duration: If several backgrounds are given, as a list of str, color, ImageFile or Surface,
+        the frame duration is the amount of time each frame is displayed before. If it is a list, it must be the same length than backgrounds.
         image_introduction: int, default 0. If an integer is given (< length of backgrounds), the loop does not go back to the first image but to this one.
         ex: In a platformer, the 5 first frames are the character standing in the right direction, then he walks. For this, we use a image_introduction=5
-        """
-                
+        """     
         self._index = 0
         self._image_introduction = image_introduction
         self._introduction_done = False
@@ -51,10 +50,14 @@ class Backgrounds:
         if not isinstance(image_duration, Iterable):
             image_duration = [image_duration]*self._n_bg
         elif len(image_duration) != self._n_bg:
-            raise PygamingException(f"The length of the frame duration list ({len(image_duration)}) does not match the len of the backroung list ({self._n_bg}))")
+            raise PygamingException(
+                f"The length of the frame duration list ({len(image_duration)}) does not match the len of the backroung list ({self._n_bg}))"
+            )
         self._image_durations = image_duration
         if self._image_introduction > self._n_bg:
-            raise PygamingException(f"The image introduction parameters must be between 0 and {self._n_bg}, but got {self._image_introduction}")
+            raise PygamingException(
+                f"The image introduction parameters must be between 0 and {self._n_bg}, but got {self._image_introduction}"
+            )
 
     def update_animation(self, loop_duration: float):
         """Update the background"""
@@ -81,7 +84,7 @@ class Backgrounds:
         """
         self._index = self._index%self._n_bg
         return self._backgrounds[self._index].copy()
-        
+
 def make_background(background: BackgroundLike, width: int, height: int):
     """
     Create a background:

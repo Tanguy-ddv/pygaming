@@ -15,11 +15,11 @@ class Texts:
         self._last_language = settings.language
         texts_list = self._db.get_texts(self._last_language)
         self._text_dict = {pos : txt for pos, txt in texts_list[0]}
-    
+
     def get_positions(self):
         """Return all the positions (text keys)."""
         return list(self._text_dict.keys())
-    
+
     def get(self, position):
         """Return a piece of text."""
         if self._settings.language != self._last_language:

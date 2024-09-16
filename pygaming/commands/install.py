@@ -1,3 +1,6 @@
+"""
+The install module is the code executed by the installer.
+"""
 import os
 import json
 import sys
@@ -19,6 +22,7 @@ def install():
     It already have the data, assets and src in the temporary folder sys._MEIPASS
     """
     # get the data
+    #pylint: disable=protected-access
     base_path = sys._MEIPASS
 
     # Get the name
@@ -28,7 +32,7 @@ def install():
         config = json.load(f)
         # Get the name of the game stored here by the build function
         name: str = config['name']
-    
+
     # Ask for a place to place the game
     path_to_parent_folder = ask_directory()
     if path_to_parent_folder is None:
@@ -47,11 +51,11 @@ def install():
     # save the config file with the folder where the data are saved.
     # This is useful then, bc you can move the .exe files without causing any issue.
     config['path'] = modified_path_to_install
-        
+
     with open(config_path, 'w', encoding='utf-8') as f:
         json.dump(config, f)
 
-    
+
     # Copy the data folder
     shutil.copytree(
         os.path.join(base_path, 'data'),

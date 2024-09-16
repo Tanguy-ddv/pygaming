@@ -1,6 +1,6 @@
 """A phase is one step of the game."""
-import pygame
 from abc import ABC, abstractmethod
+import pygame
 from .screen.frame import Frame
 from .game import Game
 from .base import BaseRunnable
@@ -21,36 +21,40 @@ class BasePhase(ABC):
         """
         Create the phase.
 
-        Game: the game instance
+        Runnable: the game or server instance
         """
         ABC.__init__(self)
         self._name = name
         self.runnable = runnable
         self.runnable.set_phase(name, self)
-    
+
     @property
     def database(self):
+        """Alias for self.game.database or self.server.database"""
         return self.runnable.database
-    
+
     @property
     def logger(self):
+        """Alias for self.game.database or self.server.logger"""
         return self.runnable.logger
-    
+
     @property
     def config(self):
+        """Alias for self.game.config or self.server.config"""
         return self.runnable.config
-    
+
     @property
     def debug(self):
+        """Alias for self.game.debug or self.server.debug"""
         return self.runnable.debug
-    
+
     @abstractmethod
     def start(self, **kwargs):
         """This method is called at the start of the phase and might need several arguments."""
         raise NotImplementedError()
-    
+
     @abstractmethod
-    def update(self):
+    def update(self, loop_duration: int):
         """This method is called at every loop iteration."""
         raise NotImplementedError()
 
@@ -64,33 +68,41 @@ class BasePhase(ABC):
 
     @abstractmethod
     def _update(self, loop_duration: int):
-        """Update the phase based on the inputs, network communications and the loop_duration. This method is called at every loop iteration."""
+        """
+        Update the phase based on loop duration, inputs and network (via the game instance)
+        This method is called at every loop iteration.
+        """
         raise NotImplementedError()
-    
+
     @abstractmethod
     def end(self):
         """Action to do when the phase is ended."""
         raise NotImplementedError()
 
 class ServerPhase(BasePhase, ABC):
+    """The ServerPhase is a game phase to be add to the server only."""
 
     def __init__(self, name, server: Server) -> None:
         ABC.__init__(self)
-        GamePhase.__init__(self, name, server)
+        BasePhase.__init__(self, name, server)
 
     @property
     def server(self) -> Server:
+        """Alias for the server."""
         return self.runnable
-    
+
     @property
     def network(self):
+        """Alias for self.server.network"""
         return self.server.network
-    
+
     def update(self, loop_duration: int):
+        """Update the phase every loop iteraton."""
         self._update(loop_duration)
 
 class GamePhase(BasePhase, ABC):
-    
+    """The ServerPhase is a game phase to be add to the game only."""
+
     def __init__(self, name, game: Game) -> None:
         ABC.__init__(self)
         BasePhase.__init__(self, name, game)
@@ -106,40 +118,42 @@ class GamePhase(BasePhase, ABC):
 
     @property
     def game(self) -> Game:
+        """Alias for the game."""
         return self.runnable
 
     @property
     def settings(self):
+        """Alias for self.game.settings"""
         return self.game.settings
-    
-    @property
-    def screnn(self):
-        return self.game.screen
-    
+
     @property
     def soundbox(self):
+        """Alias for self.game.soundbox"""
         return self.game.soundbox
 
     @property
     def jukebox(self):
+        """Alias for self.game.jukebox"""
         return self.game.jukebox
 
     @property
     def inputs(self):
+        """Alias for self.game.inputs"""
         return self.game.inputs
-    
+
     @property
     def network(self):
+        """Alias for self.game.network"""
         return self.game.client
-        
+
     def update(self, loop_duration: int):
         """Update the phase."""
         self._update(loop_duration)
         self.__update_focus()
         self.__update_hover()
         for frame in self.frames:
-            frame.update(loop_duration)    
-    
+            frame.update(loop_duration)
+
     def __update_focus(self):
         """Update the focus of all the frames."""
         clicks = self.game.inputs.get_clicks()
@@ -151,13 +165,13 @@ class GamePhase(BasePhase, ABC):
                     frame.update_focus(x, y)
                 else:
                     frame.remove_focus()
-        
+
         actions = self.game.inputs.get_actions()
         if "next widget focus" in actions and actions["next widget focus"]:
             for frame in self.frames:
                 if frame.focused:
                     frame.next_object_focus()
-                
+
     def __update_hover(self):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         clicks = self.inputs.get_clicks()
@@ -178,12 +192,14 @@ class GamePhase(BasePhase, ABC):
             if hasattr(pygame, cursor):
                 cursor = getattr(pygame, cursor)
             pygame.mouse.set_cursor(cursor)
-    
+
     @property
     def visible_frames(self):
+        """Return all the visible frames sorted by increasing layer."""
         return sorted(filter(lambda f: f.visible, self.frames), key= lambda w: w.layer)
-    
+
     def get_surface(self, width, height):
+        """Return the surface to be displayed by the phase."""
         bg = pygame.Surface((width, height), pygame.SRCALPHA)
         for frame in self.visible_frames:
             surf = frame.get_surface()

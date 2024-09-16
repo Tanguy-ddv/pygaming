@@ -1,15 +1,20 @@
+"""
+The transition modules are used to make a transition from one phase to another
+by extracting the arguments for the .start method of the new phase
+"""
+from typing import Any
 from abc import ABC, abstractmethod
 from .game import Game
 from .server import Server
 from .phase import GamePhase, ServerPhase
-from typing import Any
 
 class GameTransition(ABC):
+    """The GameTransition is to be used to make a transition between two GamePhases."""
 
     def __init__(self, game: Game, previous_phase: str, next_phase: str) -> None:
         ABC.__init__(self)
         game.set_transition(previous_phase, next_phase, self)
-    
+
     @abstractmethod
     def apply(self, phase: GamePhase) -> dict[str, Any]:
         """
@@ -33,11 +38,12 @@ class GameTransition(ABC):
         raise NotImplementedError()
 
 class ServerTransition(ABC):
+    """The GameTransition is to be used to make a transition between two GamePhases."""
 
     def __init__(self, server: Server, previous_phase: str, next_phase: str) -> None:
         ABC.__init__(self)
         server.set_transition(previous_phase, next_phase, self)
-    
+
     @abstractmethod
     def apply(self, phase: ServerPhase) -> dict[str, Any]:
         """

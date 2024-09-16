@@ -1,3 +1,4 @@
+"""The data submodule of file is an abstract class used to represent the different types of data stored by the game."""
 from abc import ABC, abstractmethod
 from .file import File, get_file
 
@@ -14,7 +15,7 @@ class DataFile(File, ABC):
         File.__init__(self, path)
         ABC.__init__(self)
         self.full_path = get_file('data', path, dynamic)
-    
+
     @abstractmethod
     def get(self):
         """Return the object transformed with the file."""

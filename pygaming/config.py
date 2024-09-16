@@ -1,6 +1,6 @@
 """The config class is used to interact with the config file."""
-from .file import get_file
 import json
+from .file import get_file
 
 class Config:
     """The config class is used to interact with the config file."""
@@ -16,7 +16,7 @@ class Config:
         if key in self._data:
             return self._data[key]
         return None
-    
+
     @property
     def dimension(self):
         """Return the dimension of the window in px x px."""
@@ -24,7 +24,7 @@ class Config:
         if key in self._data:
             return self._data[key]
         return (800, 600)
-    
+
     @property
     def default_language(self):
         """Return the default language."""
@@ -32,7 +32,7 @@ class Config:
         if key in self._data:
             return self._data[key]
         return "en_US"
-    
+
     @property
     def default_cursor(self):
         """Return the default cursor."""
@@ -56,7 +56,7 @@ class Config:
         if key in self._data:
             return self._data[key]
         return 50505
-    
+
     @property
     def max_communication_length(self):
         """Return the maximum length of a communication of the game."""

@@ -7,7 +7,7 @@ import time
 from ..config import Config
 from ._constants import DISCOVERY_PORT,  CONTENT, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, TIMESTAMP
 
-class ClientSocketManager():
+class ClientSocketManager:
     """
     This class is used to store the client socked object along with its id, address and port.
 
@@ -94,13 +94,13 @@ class Server:
                 if data:
                     json_data = json.loads(data.decode())
                     self._reception_buffer.append(json_data)
-            except Exception:
+            except ConnectionError:
                 for client_sck in self._client_socket_managers:
                     if client_sck.id_ == id_:
                         print(f"Client {client_sck.address} with id {client_sck.id_} just disconnected.")
                         client_sck.status = OFFLINE
                 break
-    
+
     def update(self) -> list[dict]:
         """Return the last data received."""
         self.last_receptions = self._reception_buffer.copy()
@@ -111,6 +111,7 @@ class Server:
         return len(list(filter(lambda csm: csm.status == ONLINE, self._client_socket_managers)))
 
     def is_player_online(self, id_) -> int:
+        """Return True if the player with this id is currently online."""
         return len(list(filter(lambda csm: csm.status == ONLINE and csm.id_ == id_, self._client_socket_managers))) == 1
 
     def send(self, client_id, header, data):
@@ -131,6 +132,7 @@ class Server:
                     client_socket.status = OFFLINE
 
     def stop(self):
+        """Stop the server when the process is finished."""
         self._running = False
         self._server_socket.close()
         for client_socket in self._client_socket_managers:

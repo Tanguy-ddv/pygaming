@@ -12,11 +12,11 @@ class Sound:
     def set_volume(self, volume):
         """Set the volume of the osund"""
         self._sound.set_volume(volume)
-    
+
     def play(self, loop, maxtime, fade_ms):
         """Play the sound once."""
         self._sound.play(loop, maxtime, fade_ms)
-    
+
 class SoundBox:
     """The Sound box is used to play all the sounds."""
 

@@ -1,9 +1,9 @@
 """The inputs class is used to manage the inputs."""
 
-import pygame
 from dataclasses import dataclass
-from .controls import Controls
 from string import ascii_letters, digits, punctuation
+import pygame
+from .controls import Controls
 from ..settings import Settings
 _ACCEPTED_LETTERS = ascii_letters + digits + punctuation + " "
 
@@ -14,21 +14,26 @@ class Inputs:
     """
 
     def __init__(self, settings: Settings) -> None:
-        
         self.controls = Controls(settings)
         self.clear_mouse_velocity()
         self.event_list: list[pygame.event.Event] = []
-    
+        self.mouse_x = 0
+        self.mouse_y = 0
+
     def update(self):
         """Get the current events."""
         self.event_list = pygame.event.get()
 
     def get_characters(self, extra_characters: str = ''):
         """Return all the letter characters a-z, digits 0-9, whitespace and punctuation."""
-        return [event.unicode for event in self.event_list if event.type == pygame.KEYDOWN and event.unicode and event.unicode in _ACCEPTED_LETTERS + extra_characters]
+        return [
+            event.unicode for event in self.event_list
+            if event.type == pygame.KEYDOWN and event.unicode and event.unicode in _ACCEPTED_LETTERS + extra_characters
+        ]
 
     @property
     def quit(self):
+        """Return True if the user quited the pygame window."""
         return any(event.type == pygame.QUIT for event in self.event_list)
 
     def get_clicks(self, frame_abs_x: int = 0, frame_abs_y: int = 0):
@@ -44,7 +49,7 @@ class Inputs:
         """Remove the history of mouse velocity."""
         self.mouse_x = None
         self.mouse_y = None
-    
+
     def get_keydown(self, key: int):
         """Return true if the key is just pressed down."""
         for event in self.event_list:
@@ -83,14 +88,16 @@ class Inputs:
             for action, keys in self.controls.get_reverse_mapping().items()}
 
     def get_arrows(self):
-        return [(event.type, event.key) for event in self.event_list if hasattr(event, 'key') and event.key in [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT]]
-
-
+        """Return the events involving an arrow."""
+        return [
+            (event.type, event.key) for event in self.event_list
+            if hasattr(event, 'key') and event.key in [pygame.K_DOWN, pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT]
+        ]
 
 @dataclass
 class Click:
     """Represent a click with the mouse."""
 
     x: int # The position of the mouse on the click
-    y: int 
+    y: int
     up: bool # True if it is a button up, False if it is a button down

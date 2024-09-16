@@ -3,9 +3,10 @@ The Database is used to address queries to the database.
 """
 import sqlite3 as sql
 import os
+from typing import Literal
+
 from ..file.file import get_file
 from ..config import Config
-from typing import Literal
 
 SERVER = 'server'
 GAME = 'game'
@@ -56,7 +57,7 @@ class Database:
                     if self._debug:
                         print(complete_path)
                     self._execute_sql_script(complete_path)
-        
+
         # Execute the queries previously saved.
         self._execute_sql_script(self._ig_queries_path)
         self.default_language = config.default_language
@@ -74,12 +75,12 @@ class Database:
             return result, description
         except sql.Error as error:
             print("An error occured while querying the database with:\n",query,"\n",error)
+            return None, None
 
-    def _execute_insert_query(self, query: str):
+    def execute_insert_query(self, query: str):
         """Execute an insert query on the database."""
         if not query.startswith("INSERT INTO"):
             print("The query is wrong:\n", query, "\nShould start by 'INSERT INTO'")
-            return None
         try:
             # Execute the query on the Database
             cur = self._conn.cursor()
@@ -102,9 +103,9 @@ class Database:
                 cur.executescript(script)
                 self._conn.commit()
                 cur.close()
-                
+
         except sql.Error as error:
-            print("An error occured while querying the database with the script located at\n",script_path,"\n",error)            
+            print("An error occured while querying the database with the script located at\n",script_path,"\n",error)
 
     def __del__(self):
         """Destroy the Database object. Delete the database file"""
@@ -117,7 +118,7 @@ class Database:
         query = f"SELECT * FROM {table} WHERE {table}_id = {id_} LIMIT 1"
         result, description = self._execute_select_query(query)
         return {key : value for key,value in zip(description, result[0]) if (key != f"{table}_id" or return_id)}
-    
+
     def get_collection_joined_by_id(self, id_, table: str, join_table: str, return_id: bool = True) -> list:
         """Get all the row of a the table 'table' having has foreign key for the table 'join_table' the id id_"""
         query = f"SELECT * FROM {table} WHERE {join_table}_id = {id_}"
@@ -145,7 +146,7 @@ class Database:
                     WHERE language_code = '{language}'
             )"""
         )
-    
+
     def get_speeches(self, language: str):
         """
         Return all the specches of the game of the given language.

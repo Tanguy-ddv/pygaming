@@ -1,3 +1,4 @@
+"""The connexion module contains the client and server classes as well as some useful constants."""
 from .client import Client
 from .server import Server
 from ._constants import ID, HEADER, CONTENT, EXIT, NEW_PHASE, DISCONNECTION, TIMESTAMP

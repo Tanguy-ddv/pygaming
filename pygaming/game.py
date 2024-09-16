@@ -1,7 +1,8 @@
+"""The game module contains the game class which is used to represent every game."""
 import pygame
 from .database import Texts, Speeches
-from .database.database import SERVER, GAME
-from .connexion import Client, EXIT
+from .database.database import GAME
+from .connexion import Client
 from .inputs import Inputs
 from .settings import Settings
 from .screen.screen import Screen
@@ -16,17 +17,18 @@ class Game(BaseRunnable):
 
     def __init__(self, online: bool = True, debug: bool = False) -> None:
         BaseRunnable.__init__(self, debug, GAME)
+        #pylint: disable=no-member
         pygame.init()
 
         self.settings = Settings()
         self.soundbox = SoundBox(self.settings)
         self.jukebox = Jukebox(self.settings)
-        
+
         self.inputs = Inputs(self.settings)
-        self.screen = Screen(self.config, self.settings)
+        self._screen = Screen(self.config, self.settings)
 
         self.texts = Texts(self.database, self.settings)
-        self.speeches = Speeches(self.database, self.speeches)
+        self.speeches = Speeches(self.database, self.settings)
 
         if online:
             self.client = Client(self.config)
@@ -37,8 +39,8 @@ class Game(BaseRunnable):
     def update(self) -> bool:
         """Update all the component of the game."""
         self.inputs.update()
-        self.screen.display_phase(self.phases[self.current_phase])
-        self.screen.update()
+        self._screen.display_phase(self.phases[self.current_phase])
+        self._screen.update()
         self.jukebox.update()
         if self.online:
             self.client.update()

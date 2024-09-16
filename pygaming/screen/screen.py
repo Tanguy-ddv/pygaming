@@ -1,9 +1,9 @@
 """The screen is the surface of the window."""
 
+import pygame
 from ..settings import Settings
 from ..config import Config
 from ..file import get_file
-import pygame
 
 class Screen:
     """The screen class is used to represent the screen of the game."""

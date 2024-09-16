@@ -1,7 +1,7 @@
 """The settings class is used to interact with the settings file."""
-from .file import get_file
 import json
 from typing import Any
+from .file import get_file
 from .error import PygamingException
 
 class Settings:
@@ -18,31 +18,36 @@ class Settings:
         if attribute in self._data:
             return self._data[attribute]
         return None
-    
+
     @property
     def language(self) -> str:
+        """Return the current language setting."""
         return self._data['current_language']
 
     @property
     def antialias(self) -> bool:
+        """Return the antialias setting."""
         if 'antialias' in self._data:
             return self._data['antialias']
         return True
-    
+
     @property
     def fullscreen(self) -> bool:
+        """Return the fullscreen setting."""
         if "fullscreen" in self._data:
             return self._data['fullscreen']
         return False
-    
+
     @property
     def controls(self) -> dict[str, str]:
+        """Return the controls."""
         return self._data['controls']
-    
+
     @property
     def volumes(self) -> dict[str, Any]:
+        """Return the volumes."""
         return self._data['volumes']
-    
+
     def save(self) -> None:
         """Save the current settings."""
         file = open(self._path, 'w', encoding='utf-8')
@@ -72,7 +77,7 @@ class Settings:
         """Set the new language."""
         self._data['current_language'] = language
         self.save()
-        
+
     def set_controls(self, controls: dict[str, str]):
         """Set the new keymap."""
         for key in self.controls.values():
