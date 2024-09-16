@@ -30,4 +30,5 @@ class Jukebox:
 
         pygame.mixer.music.set_volume(self._settings.volumes['main']*self._settings.volumes['music'])
         if not pygame.mixer.music.get_busy() and self._playing and self._loop_instant is not None:
-            pygame.mixer.music.play(0, self._loop_instant)
+            pygame.mixer.music.play(0, self._loop_instant/1000)
+            print('here')
