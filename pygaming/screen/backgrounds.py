@@ -1,10 +1,10 @@
 """Contains a class to manage the backgrounds of a widget or any object."""
 from typing import Union, List, Iterable
 import pygame
-from ..file import ImageFile
+from ..file import ImageFile, GIFFile
 from ..error import PygamingException
 
-BackgroundLike = Union[str, pygame.Surface, pygame.Color, ImageFile]
+BackgroundLike = Union[str, pygame.Surface, pygame.Color, ImageFile, GIFFile]
 BackgroundsLike = Union[List[BackgroundLike], BackgroundLike]
 
 class Backgrounds:
@@ -34,14 +34,17 @@ class Backgrounds:
         the frame duration is the amount of time each frame is displayed before. If it is a list, it must be the same length than backgrounds.
         image_introduction: int, default 0. If an integer is given (< length of backgrounds), the loop does not go back to the first image but to this one.
         ex: In a platformer, the 5 first frames are the character standing in the right direction, then he walks. For this, we use a image_introduction=5
-        """     
+        """
         self._index = 0
         self._image_introduction = image_introduction
         self._introduction_done = False
         self._time_since_last_change = 0
 
+        if isinstance(backgrounds, GIFFile):
+            backgrounds, image_duration = backgrounds.get((width, height))
         if not isinstance(backgrounds, Iterable) or isinstance(backgrounds, str):
             backgrounds = [backgrounds]
+
         self._backgrounds: list[pygame.Surface] = []
         for bg in backgrounds:
             self._backgrounds.append(make_background(bg, width, height))
@@ -67,10 +70,11 @@ class Backgrounds:
                 self._time_since_last_change = 0
                 if not self._introduction_done:
                     self._index = (self._index+1)%self._n_bg
-                    if self._index > self._image_durations:
+                    if self._index > self._image_introduction:
                         self._introduction_done = True
                 else:
-                    self._index = (self._index+1)%(self._n_bg - self._image_introduction) + self._image_introduction
+                    self._index = (self._index+1 - self._image_introduction)%(self._n_bg - self._image_introduction) + self._image_introduction
+                    print(self._index)
 
     def reset(self):
         """Reset the counts of the animations."""

@@ -16,12 +16,12 @@ class GIFFile(File):
         self.full_path = get_file('images', path)
         gif = Image.open(self.full_path)
         gif.seek(0)
-        self._images: list[pygame.Surface] = [pygame.image.fromstring(gif.convert('RGBA').tobytes())]
-        self._frame_durations = []
+        self._images: list[pygame.Surface] = [pygame.image.fromstring(gif.convert('RGBA').tobytes(), gif.size, 'RGBA')]
+        self._frame_durations = [gif.info['duration']]
         while True:
             try:
                 gif.seek(gif.tell()+1)
-                self._images.append(pygame.image.fromstring(gif.convert('RGBA').tobytes()))
+                self._images.append(pygame.image.fromstring(gif.convert('RGBA').tobytes(), gif.size, 'RGBA'))
                 self._frame_durations.append(gif.info['duration'])
             except EOFError:
                 break

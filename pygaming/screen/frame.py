@@ -67,7 +67,8 @@ class Frame(Element):
             image_duration,
             image_introduction,
             hover_surface,
-            hover_cursor
+            hover_cursor,
+            False
         )
         self.width = width
         self.height = height
@@ -105,6 +106,7 @@ class Frame(Element):
         click_x -= self.x
         click_y -= self.y
         self.focused = True
+        self.backgrounds.reset()
         one_is_clicked = False
         for (i,child) in enumerate(self.children):
             if child.visible and child.can_be_focused:
@@ -138,6 +140,7 @@ class Frame(Element):
     def remove_focus(self):
         """Remove the focus of all the children."""
         self.focused = False
+        self.focus_background.reset()
         for child in self.children:
             child.unfocus()
 
@@ -153,7 +156,10 @@ class Frame(Element):
 
     def get_surface(self):
         """Return the surface of the frame as a pygame.Surface"""
-        background = self.backgrounds.get().copy()
+        if self.focused:
+            background = self.focus_background.get()
+        else:
+            background = self.backgrounds.get()
         for child in self.visible_children:
             x = child.x
             y = child.y
@@ -163,4 +169,5 @@ class Frame(Element):
 
     def update(self, loop_duration: int):
         """Update the frame."""
+        self.backgrounds.update_animation(loop_duration)
         self._update_objects(loop_duration)

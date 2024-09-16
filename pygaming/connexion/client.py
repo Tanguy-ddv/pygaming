@@ -52,7 +52,7 @@ class Client:
                     if json_data[HEADER] == NEW_ID:
                         self.id = json_data[CONTENT]
                     self._reception_buffer.append(json_data)
-            except ConnectionError:
+            except (ConnectionError, json.JSONDecodeError):
                 self.close()
                 break
 
