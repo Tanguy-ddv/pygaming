@@ -1,9 +1,11 @@
-from .file import File, get_file
+"""Font files represent the file of a font."""
 import pygame
+
+from .file import File, get_file
 from ..font import Font
 
 class FontFile(File):
-    """Represent the file of a font."""
+    """Represent the file of a font stored in the assets/font folder."""
 
     def __init__(self, name: str) -> None:
         super().__init__(name)
@@ -12,8 +14,27 @@ class FontFile(File):
         else:
             self.full_path = get_file(folder='fonts', file=name + '.ttf')
 
-    def get(self, size: int, color: pygame.Color, italic: bool = False, bold: bool = False, underline: bool = False, antialias: bool = True) -> pygame.font.Font:
-        return Font(self.full_path, size, color, bold, italic, underline, antialias)
+    #pylint: disable=arguments-differ
+    def get(
+            self,
+            size: int,
+            color: pygame.Color,
+            settings,
+            italic: bool = False,
+            bold: bool = False,
+            underline: bool = False
+        ) -> pygame.font.Font:
+        """
+        Get the font
+        
+        Params:
+        ----
+        size: int, the size of the font.
+        color: pygame.Color: the color of the Font
+        settings: Settings, the self.settings of the Game
+        italic, bold, underline: bools, flags for the font.
+        """
+        return Font(self.full_path, size, color, settings, bold, italic, underline)
 
 default_font = FontFile("")
 default_font.full_path = None

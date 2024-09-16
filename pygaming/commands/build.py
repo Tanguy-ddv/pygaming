@@ -4,6 +4,7 @@ import json
 import subprocess
 import shutil
 import platform
+from ..error import PygamingException
 
 def build(name: str):
     """
@@ -33,10 +34,10 @@ def build(name: str):
         json.dump(config, f)
 
     print("The config file has been modified successfully")
-    
+
     cwd= os.getcwd()
     this_dir = os.path.dirname(__name__)
-    
+
     game_options = [
         '--onefile',
         f"--icon={os.path.join(cwd, 'assets', 'icon.ico')}",
@@ -55,22 +56,22 @@ def build(name: str):
     # Build the game file
     if os.path.exists(os.path.join(cwd, "src", "game.py")):
         command = ['pyinstaller'] + game_options + ['--windowed'] + [os.path.join(cwd, "src", "game.py")]
-        subprocess.run(command, capture_output=True, text=True)
+        subprocess.run(command, capture_output=True, text=True, check=False)
         installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'game.exe')}{sep}game")
         print("The game has been built successfully")
     else:
-        raise Exception("You need a game.py file as main file of the game")
+        raise PygamingException("You need a game.py file as main file of the game")
 
     # Build the server file
     if os.path.exists(os.path.join(cwd, "src", "server.py")):
         command = ['pyinstaller'] + game_options + [os.path.join(cwd, "src", "server.py")]
-        subprocess.run(command, capture_output=True, text=True)
+        subprocess.run(command, capture_output=True, text=True, check=False)
         installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'server.exe')}{sep}server")
         print("The server has been built successfully")
 
     # Create the installer
     command = ['pyinstaller'] + installer_options + [os.path.join(os.path.abspath(this_dir), 'pygaming', 'commands/install.py')]
-    subprocess.run(command, capture_output=True, text=True)
+    subprocess.run(command, capture_output=True, text=True, check=False)
 
     # Copy paste it on the root.
     try:

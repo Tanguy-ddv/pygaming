@@ -1,0 +1,9 @@
+{
+    "default_language": "fr_FR", 
+    "name": "My Game", 
+    "default_cursor": "SYSTEM_CURSOR_ARROW", 
+    "screen": [800, 600], 
+    "max_frame_rate": 30,
+    "server_port" : 50505,
+    "max_communication_length" : 2048
+}

@@ -1,52 +1,58 @@
 """The settings class is used to interact with the settings file."""
-from .file import get_file
 import json
 from typing import Any
+from .file import get_file
 from .error import PygamingException
 
 class Settings:
     """The settings class is used to interact with the settings file."""
 
-    def __init__(self, jukebox, soundbox, controls, texts, screen, ) -> None:
+    def __init__(self) -> None:
         self._path = get_file('data', 'settings.json', False)
         file = open(self._path, 'r', encoding='utf-8')
         self._data = json.load(file)
         file.close()
-        self._jukebox = jukebox # Link the jukebox to give it directly the volumes
-        self._jukebox.update_settings(self)
-        self._soundbox = soundbox # Link the soundbox to give it directly the volumes
-        self._soundbox.update_settings(self)
-        self._controls = controls # Link the controls to give it directly the key mapping
-        self._controls.update_settings(self)
-        if texts is not None:
-            self._texts = texts # Link the texts to give the current language.
-            self._texts.update_settings(self)
-        else:
-            self._texts = None
-        self._screen = screen
-        self._screen.update_settings(self)
 
     def get(self, attribute: str):
         """Get the value of the settings attribute"""
         if attribute in self._data:
             return self._data[attribute]
         return None
-    
+
     @property
     def language(self) -> str:
+        """Return the current language setting."""
         return self._data['current_language']
-    
+
+    @property
+    def antialias(self) -> bool:
+        """Return the antialias setting."""
+        if 'antialias' in self._data:
+            return self._data['antialias']
+        return True
+
     @property
     def fullscreen(self) -> bool:
-        return self._data['full_screen']
-    
+        """Return the fullscreen setting."""
+        if "fullscreen" in self._data:
+            return self._data['fullscreen']
+        return False
+
     @property
     def controls(self) -> dict[str, str]:
+        """Return the controls."""
         return self._data['controls']
-    
+
     @property
     def volumes(self) -> dict[str, Any]:
+        """Return the volumes."""
         return self._data['volumes']
+
+    def save(self) -> None:
+        """Save the current settings."""
+        file = open(self._path, 'w', encoding='utf-8')
+        json.dump(self._data, file)
+        file.close()
 
     def set_volumes(self, volumes: dict[str, Any]):
         """
@@ -65,15 +71,13 @@ class Settings:
             if key not in self._data['volumes']['sounds']:
                 raise PygamingException(f"The category {key} is not defined in the settings files.")
         self._data['volumes'] = volumes
-        self._jukebox.update_settings(self)
-        self._soundbox.update_settings(self)
+        self.save()
 
     def set_language(self, language: str):
         """Set the new language."""
         self._data['current_language'] = language
-        if self._texts is not None:
-            self._texts.update_settings(self)
-        
+        self.save()
+
     def set_controls(self, controls: dict[str, str]):
         """Set the new keymap."""
         for key in self.controls.values():
@@ -83,12 +87,12 @@ class Settings:
             if key not in self.controls.values():
                 raise PygamingException(f"the action {key} does not exists.")
         self._data['controls'] = controls
-        self._controls.update_settings(self)
-    
-    def set_full_screen(self, full_screen : bool):
+        self.save()
+
+    def set_full_screen(self, fullscreen : bool):
         """Set the full screen."""
-        self._data['full_screen'] = full_screen
-        self._screen.update_settings(self)
+        self._data['fullscreen'] = fullscreen
+        self.save()
 
     def set_attribute(self, attribute: str, value: Any):
         """Set the new value for a given attribute."""
@@ -97,11 +101,4 @@ class Settings:
         if attribute in ['volumes', 'current_language', 'full_screen', 'controls']:
             raise PygamingException(f"Please set {attribute} with it dedecated setter.")
         self._data[attribute] = value
-
-    def __del__(self):
-        """Delete the object at the end of the game."""
-        file = open(self._path, 'r', encoding='utf-8')
-        json.dump(self._data, file)
-        file.close()
-        del self
-    
+        self.save()

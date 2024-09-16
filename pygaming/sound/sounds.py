@@ -12,27 +12,19 @@ class Sound:
     def set_volume(self, volume):
         """Set the volume of the osund"""
         self._sound.set_volume(volume)
-    
-    def play(self):
+
+    def play(self, loop, maxtime, fade_ms):
         """Play the sound once."""
-        self._sound.play(0)
-    
+        self._sound.play(loop, maxtime, fade_ms)
+
 class SoundBox:
     """The Sound box is used to play all the sounds."""
 
-    def __init__(self) -> None:
+    def __init__(self, settings: Settings) -> None:
 
-        self.main_volume = 1
-        self.volumes = {'unavailable' : 1}
-    
-    def update_settings(self, settings: Settings):
-        """Update the volumes with the settings."""
-        volumes = settings.volumes
-        self.main_volume = volumes['main']
-        self.volumes = volumes['sounds']
-        self.volumes['unavailable'] = 1
-    
-    def play_sound(self, sound: Sound):
+        self._settings = settings
+
+    def play_sound(self, sound: Sound, loop: int, maxtime: int, fade_ms: int):
         """Play the sound with the proper volume."""
-        sound.set_volume(self.volumes[sound.category]*self.main_volume)
-        sound.play()
+        sound.set_volume(self._settings.volumes["sounds"][sound.category]*self._settings.volumes["main"])
+        sound.play(loop, maxtime, fade_ms)

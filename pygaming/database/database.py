@@ -3,12 +3,13 @@ The Database is used to address queries to the database.
 """
 import sqlite3 as sql
 import os
+from typing import Literal
+
 from ..file.file import get_file
 from ..config import Config
 
-__DB_PATH = get_file('data','sql/db.sqlite')
-__TABLE_PATH = get_file('data', 'sql/tables.sql')
-__IG_QUERIES_PATH = get_file('data', 'sql/ig_queries.sql', permanent=False)
+SERVER = 'server'
+GAME = 'game'
 
 class Database:
     """
@@ -20,44 +21,51 @@ class Database:
     
     """
 
-    def __init__(self, config: Config, debug: bool=False, ) -> None:
+    def __init__(self, config: Config, runnable_type: Literal['server', 'game'] = GAME, debug: bool=False) -> None:
         """
         Initialize an instance of Database.
         
         args:
         debug: when passed to true, the delation of the database is not done at the destruction of the instance.
         """
-
         self._debug = debug
+        if runnable_type == SERVER:
+            self._db_path = get_file('data','db-server.sqlite')
+            self._table_path = get_file('data','sql-server/tables.sql')
+            self._ig_queries_path = get_file('data', 'sql-server/ig_queries.sql', permanent=False)
+            self._sql_folder = get_file('data', 'sql-server')
+        if runnable_type == GAME:
+            self._db_path = get_file('data', 'db-game.sqlite')
+            self._table_path = get_file('data','sql-game/tables.sql')
+            self._ig_queries_path = get_file('data', 'sql-game/ig_queries.sql', permanent=False)
+            self._sql_folder = get_file('data', 'sql-game')
+
         # Remove the previous sqlite file if existing.
-        if os.path.isfile(__DB_PATH):
-            os.remove(__DB_PATH)
-        
+        if os.path.isfile(self._db_path):
+            os.remove(self._db_path)
+
         # Create and connect to the sqlite file.
-        self._conn = sql.connect(__DB_PATH)
+        self._conn = sql.connect(self._db_path)
 
         # Initialize the sqlite file with the tables.
-        self._execute_sql_script(__TABLE_PATH)
+        self._execute_sql_script(self._table_path)
 
-        for root, _, files in os.walk(get_file('data', '/')):
+        for root, _, files in os.walk(self._sql_folder):
             for file in files:
-                complete_path = os.path.join(root, file)
-                if complete_path.endswith('.sql') and complete_path != __TABLE_PATH and complete_path != __IG_QUERIES_PATH:
+                complete_path = os.path.join(root, file).replace('\\', '/')
+                if complete_path.endswith('.sql') and complete_path != self._table_path and complete_path != self._ig_queries_path:
                     if self._debug:
                         print(complete_path)
                     self._execute_sql_script(complete_path)
-        
+
         # Execute the queries previously saved.
-        self._execute_sql_script(__IG_QUERIES_PATH)
-        self.default_language = config.get_language()
+        self._execute_sql_script(self._ig_queries_path)
+        self.default_language = config.default_language
 
     def _execute_select_query(self, query: str):
         """Execute a select query on the database."""
         if not query.startswith("SELECT"):
             print("The query is wrong:\n", query, "\nShould start by 'SELECT'")
-        if not os.path.isfile(__DB_PATH):
-            print("The database has not been created yet.")
-            return None, None
         try:
             cur = self._conn.cursor()
             cur.execute(query)
@@ -67,23 +75,19 @@ class Database:
             return result, description
         except sql.Error as error:
             print("An error occured while querying the database with:\n",query,"\n",error)
+            return None, None
 
-    def _execute_insert_query(self, query: str):
+    def execute_insert_query(self, query: str):
         """Execute an insert query on the database."""
         if not query.startswith("INSERT INTO"):
             print("The query is wrong:\n", query, "\nShould start by 'INSERT INTO'")
-            return None
-        if not os.path.isfile(__DB_PATH):
-            print("The database has not been created yet.")
-            return None
         try:
             # Execute the query on the Database
             cur = self._conn.cursor()
             cur.execute(query)
             self._conn.commit()
             # Save the query on the ig_query file to execute it every time you launch the app.
-            in_game_query_saved = get_file('data', 'sql/ig_queries.sql')
-            with open(in_game_query_saved, 'a', encoding='utf-8') as f:
+            with open(self._ig_queries_path, 'a', encoding='utf-8') as f:
                 f.write(";\n" + query)
             cur.close()
         except sql.Error as error:
@@ -99,22 +103,22 @@ class Database:
                 cur.executescript(script)
                 self._conn.commit()
                 cur.close()
-                
+
         except sql.Error as error:
-            print("An error occured while querying the database with the script located at\n",script_path,"\n",error)            
+            print("An error occured while querying the database with the script located at\n",script_path,"\n",error)
 
     def __del__(self):
         """Destroy the Database object. Delete the database file"""
         self._conn.close()
-        if os.path.isfile(__DB_PATH) and not self._debug:
-            os.remove(__DB_PATH)
+        if os.path.isfile(self._db_path) and not self._debug:
+            os.remove(self._db_path)
 
     def get_data_by_id(self, id_: int, table: str, return_id: bool = True):
         """Get all the data of one row based on the id and the table."""
         query = f"SELECT * FROM {table} WHERE {table}_id = {id_} LIMIT 1"
         result, description = self._execute_select_query(query)
         return {key : value for key,value in zip(description, result[0]) if (key != f"{table}_id" or return_id)}
-    
+
     def get_collection_joined_by_id(self, id_, table: str, join_table: str, return_id: bool = True) -> list:
         """Get all the row of a the table 'table' having has foreign key for the table 'join_table' the id id_"""
         query = f"SELECT * FROM {table} WHERE {join_table}_id = {id_}"
@@ -142,7 +146,7 @@ class Database:
                     WHERE language_code = '{language}'
             )"""
         )
-    
+
     def get_speeches(self, language: str):
         """
         Return all the specches of the game of the given language.

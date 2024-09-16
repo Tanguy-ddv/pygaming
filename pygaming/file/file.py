@@ -1,3 +1,7 @@
+"""
+The file module contains the File class, which is an abstract base for all file objects,
+and the get_file function used in all File class to find the full path of the object
+"""
 from abc import ABC, abstractmethod
 from typing import Any, Literal
 
@@ -32,13 +36,14 @@ def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fo
     if folder != 'data':
         folder = 'assets/' + folder
     if hasattr(sys, '_MEIPASS'):
+        #pylint: disable=protected-access
         base_path = sys._MEIPASS
         if not permanent:
             config_path = os.path.join(base_path, 'data', 'config.json')
-            config_file = open(config_path,'r')
+            config_file = open(config_path,'r', encoding='utf-8')
             base_path = json.load(config_file)['path']
             config_file.close()
     else:
         base_path = os.path.abspath(".")
 
-    return os.path.join(base_path, folder, file)
+    return os.path.join(base_path, folder, file).replace('\\', '/')
