@@ -1,0 +1,3 @@
+graft pygaming/commands/templates
+global-exclude */__pycache__/*
+global-exclude *.pyc

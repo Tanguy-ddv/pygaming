@@ -5,7 +5,7 @@ from pygaming import Server, ServerPhase, ServerTransition
 class ServerLobby(ServerPhase):
     
     def __init__(self, server: Server) -> None:
-        super().__init__("lobby", Server)
+        super().__init__("lobby", server)
     
     def start(self):
         pass
@@ -22,7 +22,7 @@ class ServerLobby(ServerPhase):
 class ServerMacth(ServerPhase):
 
     def __init__(self, server: Server) -> None:
-        super().__init__("match", Server)
+        super().__init__("match", server)
 
     def start(self, color1: str, color2: str):
         pass
@@ -39,7 +39,7 @@ class ServerMacth(ServerPhase):
 class ServerLobbyMatchTransition(ServerTransition):
 
     def __init__(self, server: Server) -> None:
-        super().__init__(Server, "lobby", "match")
+        super().__init__(server, "lobby", "match")
 
     def apply(self, phase: ServerLobby) -> dict[str, Any]:
         return {"color1" : "blue", "color2" : "red"}
