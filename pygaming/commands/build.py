@@ -81,3 +81,11 @@ def build(name: str):
         )
     except FileNotFoundError:
         print("The file has been deleted by your antivirus, find it back and tell your antivirus it is ok")
+
+    # Remove the .spec files
+    if os.path.isfile(os.path.join(cwd, "game.spec")):
+        os.remove(os.path.join(cwd, "game.spec"))
+    if os.path.isfile(os.path.join(cwd, "server.spec")):
+        os.remove(os.path.join(cwd, "server.spec"))
+    if os.path.isfile(os.path.join(cwd, "install.spec")):
+        os.remove(os.path.join(cwd, "install.spec"))
