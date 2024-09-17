@@ -5,7 +5,7 @@ The folder contains several subfolders and files:
 ----
 The default icon is pygaming's icon, rememeber to replace this file with your own icon.
 To create a .icon file, use the image software you want (e.g : microsoft paint) to create your own icon,
-then convert into an .ico file (you can use online converters)
+then convert into an .ico file (you can use online converters) and be sure to name it 'icon.ico'.
 ----
 The musics, sounds, fonts and images folders will be used by you to store the different assets of the game.
 You can load them by using the FontFile, MusicFile, SoundFile and ImageFile to load them in the game.

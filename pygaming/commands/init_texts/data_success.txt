@@ -3,12 +3,15 @@ database files, settings, configs, your own files.
 
 The folder contains several files:
 ---
-The sql folder will contains every files related to the database 
+The sql-game folder will contains every files related to the database 
 At the game launch, the database is create in the temporary folder. 
  - The first script that is executed is tables.sql. This script initialize the tables of the database.
  - Then, every other sql files (but ig_queries.sql) are executed one by one, in the alphabetical order.
  - The localizations.sql file contains the texts, it is used to create a game that can be played in multiple languages.
+ - The speeches.sql file contains the path to the speeches in different languages (like texts but for sounds)
  - The ig_queries.sql is empty at the first game launch, but it might by filled during the game use by insert queries.
+ - All these sql scripts will be executed in the game database.
+The sql-server folder contains the same files but localizations.sql and speeches.sql, they are executed the same way when the server is launched.
 ---
 The settings.json file is used to store the settings.
 This file is modified when the user pause the game to change some settings.
@@ -17,4 +20,5 @@ Fill the file with your own default settings, then call them with the setting cl
 The config.json file is used to store permanent settings, like default values.
 ---
 Use the data folder to store the other data of your game: sessions, players, or objects that requires a complex save.
+You can define custom DataFile classes for this, as children of the DataFile class.
 ------
