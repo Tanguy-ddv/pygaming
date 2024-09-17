@@ -23,7 +23,6 @@ setup(
     url="https://github.com/Tanguy-ddv/pygaming/",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',

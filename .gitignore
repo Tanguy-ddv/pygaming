@@ -171,3 +171,5 @@ player.exe
 setup.exe
 server.exe
 TODO
+
+.pypirc
