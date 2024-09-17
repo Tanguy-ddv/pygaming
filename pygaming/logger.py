@@ -5,6 +5,7 @@ import os
 import json
 from datetime import datetime
 from .file import get_file
+from .config import Config
 
 class Logger:
     """
@@ -12,9 +13,11 @@ class Logger:
     It might be used to compute statitics, replay actions, ...
     Logs are stored as "data/logs/'timestamp'.log"
     """
-    def __init__(self, debug: bool = False) -> None:
+    def __init__(self, config: Config, debug: bool = False) -> None:
 
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+        self.time_since_last_flush = 0
+        self.config = config
         log_dir = get_file('data', 'logs', permanent=False)
         self.debug = debug
         if not os.path.exists(log_dir):
@@ -27,6 +30,12 @@ class Logger:
         if self.debug or not is_it_debugging:
             data['timestamp'] = time.time_ns()
             json.dump(data, self._file)
+    
+    def update(self, loop_duration: int):
+        """Update the logger at every iteration to flush regularly."""
+        self.time_since_last_flush += loop_duration
+        if self.time_since_last_flush > self.config.get("flush_frequency"):
+            self._file.flush()
 
     def new_log(self):
         """Start a new log."""

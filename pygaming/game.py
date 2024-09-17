@@ -17,7 +17,6 @@ class Game(BaseRunnable):
 
     def __init__(self, online: bool = True, debug: bool = False) -> None:
         BaseRunnable.__init__(self, debug, GAME)
-        #pylint: disable=no-member
         pygame.init()
 
         self.settings = Settings()
@@ -38,11 +37,13 @@ class Game(BaseRunnable):
 
     def update(self) -> bool:
         """Update all the component of the game."""
+        loop_duration = self.clock.tick(self.config.get("max_frame_rate"))
+        self.logger.update(loop_duration)
         self.inputs.update()
         self._screen.display_phase(self.phases[self.current_phase])
         self._screen.update()
         self.jukebox.update()
         if self.online:
             self.client.update()
-        is_game_over = self.update_phases()
+        is_game_over = self.update_phases(loop_duration)
         return self.inputs.quit or is_game_over or (self.online and self.client.is_server_killed())
