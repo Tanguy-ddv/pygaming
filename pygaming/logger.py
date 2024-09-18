@@ -30,7 +30,7 @@ class Logger:
         if self.debug or not is_it_debugging:
             data['timestamp'] = time.time_ns()
             json.dump(data, self._file)
-    
+
     def update(self, loop_duration: int):
         """Update the logger at every iteration to flush regularly."""
         self.time_since_last_flush += loop_duration

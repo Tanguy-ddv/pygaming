@@ -1,38 +1,37 @@
-"""Contains a class to manage the backgrounds of a widget or any object."""
+"""AnimatedSurface is a class use to represent the a Surface that might be animated."""
 from typing import Union, List, Iterable
 import pygame
 from ..file import ImageFile, GIFFile
 from ..error import PygamingException
+from .colored_surface import ColoredSurface
 
-BackgroundLike = Union[str, pygame.Surface, pygame.Color, ImageFile, GIFFile]
-BackgroundsLike = Union[List[BackgroundLike], BackgroundLike]
+SurfaceLike = Union[pygame.Surface, ColoredSurface, ImageFile]
+SurfacesLike = Union[List[SurfaceLike], GIFFile]
 
-class Backgrounds:
-    """The backgrounds of an element is set of surfaces to display as the image, or the background image of an element."""
+class AnimatedSurface:
+    """An AnimatedSurface is a Surface that can be animated."""
 
     def __init__(
         self,
-        width: int,
-        height: int,
-        backgrounds: BackgroundsLike,
+        surfaces: SurfacesLike,
         image_duration: int | list[int] = 100, # [ms]
         image_introduction: int = 0
     ) -> None:
         """
-        Create the backgrounds
+        Create the surfaces
 
         params:
         ----
         width: int, the width of the object.
         height: int, the hieght of the object.
-        backgrounds: BackgroundsLike, The backgrounds of the objects.
+        surfaces: SurfacesLike, The surfaces of the objects.
         if only one element is given, it is treated as a list of length 1
         If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
         If it is a (list of) surface, resize the surface with (width, height)
         Can be a list of colors and surfaces, str
-        image_duration: If several backgrounds are given, as a list of str, color, ImageFile or Surface,
-        the frame duration is the amount of time each frame is displayed before. If it is a list, it must be the same length than backgrounds.
-        image_introduction: int, default 0. If an integer is given (< length of backgrounds), the loop does not go back to the first image but to this one.
+        image_duration: If several surfaces are given, as a list of str, color, ImageFile or Surface,
+        the frame duration is the amount of time each frame is displayed before. If it is a list, it must be the same length than surfaces.
+        image_introduction: int, default 0. If an integer is given (< length of surfaces), the loop does not go back to the first image but to this one.
         ex: In a platformer, the 5 first frames are the character standing in the right direction, then he walks. For this, we use a image_introduction=5
         """
         self._index = 0
@@ -40,15 +39,17 @@ class Backgrounds:
         self._introduction_done = False
         self._time_since_last_change = 0
 
-        if isinstance(backgrounds, GIFFile):
-            backgrounds, image_duration = backgrounds.get((width, height))
-        if not isinstance(backgrounds, Iterable) or isinstance(backgrounds, str):
-            backgrounds = [backgrounds]
+        if isinstance(surfaces, GIFFile):
+            surfaces, image_duration = surfaces.get()
+        if not isinstance(surfaces, Iterable):
+            raise PygamingException("The surface must be an iterable or a GIFFile")
 
-        self._backgrounds: list[pygame.Surface] = []
-        for bg in backgrounds:
-            self._backgrounds.append(make_background(bg, width, height))
-        self._n_bg = len(backgrounds)
+        self._surfaces: list[pygame.Surface] = []
+        for bg in surfaces:
+            if isinstance(bg, ImageFile):
+                bg = bg.get()
+            self._surfaces.append(bg)
+        self._n_bg = len(surfaces)
 
         if not isinstance(image_duration, Iterable):
             image_duration = [image_duration]*self._n_bg
@@ -76,6 +77,16 @@ class Backgrounds:
                     self._index = (self._index+1 - self._image_introduction)%(self._n_bg - self._image_introduction) + self._image_introduction
                     print(self._index)
 
+    @property
+    def height(self):
+        """Return the height of the surface, which is the height of the first surface."""
+        return self._surfaces[0].get_height()
+
+    @property
+    def width(self):
+        """Return the width of the surface, which is the width of the first surface."""
+        return self._surfaces[0].get_width()
+
     def reset(self):
         """Reset the counts of the animations."""
         self._index = 0
@@ -87,39 +98,7 @@ class Backgrounds:
         Return the background.
         """
         self._index = self._index%self._n_bg
-        return self._backgrounds[self._index].copy()
-
-def make_background(background: BackgroundLike, width: int, height: int):
-    """
-    Create a background:
-    if background is a Surface or an ImageFile, return the rescaled surface.
-    if the background is a Color, return a rectangle of this color.
-    if the background is None, return a copy of the reference.
-    if the reference and the background are None, raise an Error.
-    We assume here that the reference have the shape (width, height)
-    """
-
-    if isinstance(background, str):
-        if background in pygame.color.THECOLORS:
-            background = pygame.color.THECOLORS[background]
-        elif background.startswith('#'):
-            background = pygame.Color(background)
-        else:
-            print(f"'{background}' is not a color, replaced by white.")
-            background = pygame.Color(255,255,255,255)
-
-    elif isinstance(background, ImageFile):
-        background = background.get((width, height))
-
-    if isinstance(background, (pygame.Color, tuple)):
-        bg = pygame.Surface((width, height), pygame.SRCALPHA)
-        bg.fill(background)
-        return bg
-
-    elif isinstance(background, pygame.Surface):
-        return pygame.transform.scale(background, (width, height))
-
-    raise PygamingException(f"Please use a str, pygame.Surface, pygame.Color or an ImageFile for the background, got a {type(background)}")
+        return self._surfaces[self._index].copy()
 
 def make_rounded_rectangle(color: pygame.Color | str, width: int, height: int):
     """Make a rectange with half circles at the start and end."""
@@ -129,9 +108,9 @@ def make_rounded_rectangle(color: pygame.Color | str, width: int, height: int):
         else:
             color = pygame.Color(0,0,0,255)
 
-    background = pygame.Surface((width, height), pygame.SRCALPHA)
+    surface = pygame.Surface((width, height), pygame.SRCALPHA)
     rect = pygame.Rect(height//2, 0, width - height, height)
-    pygame.draw.rect(background, color, rect)
-    pygame.draw.circle(background, color, (height//2, height//2), height//2)
-    pygame.draw.circle(background, color, (width - height//2, height//2), height//2)
-    return background
+    pygame.draw.rect(surface, color, rect)
+    pygame.draw.circle(surface, color, (height//2, height//2), height//2)
+    pygame.draw.circle(surface, color, (width - height//2, height//2), height//2)
+    return surface
