@@ -5,5 +5,6 @@
     "screen": [800, 600], 
     "max_frame_rate": 30,
     "server_port" : 50505,
-    "max_communication_length" : 2048
+    "max_communication_length" : 2048,
+    "flush_frequency" : 5000
 }

@@ -2,8 +2,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 import pygame
-from ..inputs import Inputs
-from .backgrounds import BackgroundsLike, Backgrounds
+from .animated_surface import AnimatedSurface
 
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
@@ -11,14 +10,10 @@ class Element(ABC):
     def __init__(
         self,
         master,
-        backgrounds: BackgroundsLike,
+        surface: AnimatedSurface | pygame.Surface,
         x: int,
         y: int,
-        width: int,
-        height: int,
         layer: int = 0,
-        image_duration: int | list[int] = 200,
-        image_introduction: int = 0,
         hover_surface: Optional[pygame.Surface] = None,
         hover_cursor: Optional[pygame.Cursor] = None,
         can_be_disabled: bool = True,
@@ -30,14 +25,14 @@ class Element(ABC):
         Params:
         ----
         master: Frame or Phase, the master of this object.
-        backgrounds: The backgrounds.
+        surface: The surface.
         x, y: the coordinates in the master.
         width, height: the dimension of the object.
         layer: the layer of the object. The smaller the more on the background
         image_duration (ms): If a list is provided as background, the background of the frame is changed every image_duration.
         if image_duration is a list, it must have the same length as background.
         in this case, the i-th image of the background will be displayed image_duration[i] ms.
-        image_introduction: int, if you provided a list for the backgrounds, the background will not cycle back to 0
+        image_introduction: int, if you provided a list for the surface, the background will not cycle back to 0
         but to this index. 
         hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
         frame is hovered by the mouse.
@@ -54,9 +49,12 @@ class Element(ABC):
         self.can_be_disabled = can_be_disabled
         self.disabled = False
 
-        self.width = width
-        self.height = height
-        self.backgrounds = Backgrounds(width, height, backgrounds, image_duration, image_introduction)
+        if isinstance(surface, pygame.Surface):
+            self.surface = AnimatedSurface([surface], 2, 0)
+        else:
+            self.surface = surface
+
+        self.width, self.height = self.surface.width, self.surface.height
         ABC.__init__(self)
         self.master = master
         self.master.add_child(self)
@@ -88,9 +86,14 @@ class Element(ABC):
         """Return the surface to be blitted."""
         raise NotImplementedError()
 
+    def loop(self, loop_duration: int):
+        """Update the element every loop iteration."""
+        self.surface.update_animation(loop_duration)
+        self.update(loop_duration)
+
     @abstractmethod
-    def update(self, inputs: Inputs, loop_duration: int, x: int, y: int):
-        """Update the widget with the inputs."""
+    def update(self, loop_duration: int):
+        """Update the element logic every loop iteration."""
         raise NotImplementedError()
 
     def move(self, new_x: int, new_y: int):

@@ -20,9 +20,8 @@ class BaseRunnable(ABC):
         super().__init__()
         pygame.init()
         self.debug = debug
-        self.logger = Logger(debug)
         self.config = Config()
-        self.max_fps = self.config.get("max_frame_rate")
+        self.logger = Logger(self.config, debug)
         self.database = Database(self.config, runnable_type, debug)
         self.phases = {}
         self.transitions = {}
@@ -59,10 +58,9 @@ class BaseRunnable(ABC):
         self.transitions[(phase1, phase2)] = transition
         return self
 
-    def update_phases(self):
+    def update_phases(self, loop_duration: int):
         """Update the phases of the game."""
-        loop_time = self.clock.tick(self.max_fps)
-        self.phases[self.current_phase].update(loop_time)
+        self.phases[self.current_phase].loop(loop_duration)
         next_phase = self.phases[self.current_phase].next()
         # Verify if the phase is over
         if next_phase and next_phase != NO_NEXT:

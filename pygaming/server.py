@@ -19,9 +19,11 @@ class Server(BaseRunnable):
 
     def update(self):
         """Update the server."""
+        loop_duration = self.clock.tick(self.config.get("max_frame_rate"))
+        self.logger.update(loop_duration)
         self.network.update()
         previous = self.current_phase
-        is_game_over = self.update_phases()
+        is_game_over = self.update_phases(loop_duration)
         if previous != self.current_phase:
             self.network.send_all(NEW_PHASE, self.current_phase)
         return is_game_over

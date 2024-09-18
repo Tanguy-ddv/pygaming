@@ -1,6 +1,6 @@
 """The frame module contain the Frame class, base of all displayed object."""
 import pygame
-from .backgrounds import Backgrounds, BackgroundsLike
+from .animated_surface import AnimatedSurface
 from .element import Element
 
 class Frame(Element):
@@ -14,15 +14,9 @@ class Frame(Element):
         master,
         x: int,
         y :int,
-        width: int,
-        height: int,
-        background: BackgroundsLike,
-        focus_background: BackgroundsLike = None,
+        background: AnimatedSurface | pygame.Surface,
+        focus_background: AnimatedSurface | pygame.Surface = None,
         layer: int = 0,
-        image_duration: list[int] | int = 1000,
-        focus_image_duration: list[int] | int = 1000,
-        image_introduction: int = 0,
-        focus_image_introduction: int = 0,
         hover_surface: pygame.Surface | None = None,
         hover_cursor: pygame.Cursor | None = None,
     ) -> None:
@@ -33,54 +27,34 @@ class Frame(Element):
         ----
         master: Another Frame or a phase.
         x, y: the coordinate of the top left of the frame, in its master.
-        width, height: the dimension of the frame.
-        background: A BackgroundsLike object. If it is a Color, create a surface of this color. RGBA colors are possible.
-        if it is a str, and this str is in the pygame.colors.THECOLORS dict, find the color with the dict.
-        if it is Surface, reshape the surface.
-        if it is an ImageFile, get the surface from it.
-        If it is a list of one of them, create a list of surfaces. The background is then changed every gif_duration.
-        focus_background: Another BackgroundsLike object. Same as 'background' but used when the frame is focused.
+        background: The AnimatedSurface or Surface representing the background of the Frame.
+        focus_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
+        If None, copy the background
         layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
-        image_duration (ms): If a list is provided as background, the background of the frame is changes every image_duration.
-        if image_duration is a list, it must have the same length as background.
-        in this case, the i-th image of the background will be displayed image_duration[i] ms.
-        focus_image_duration: same as image_duration but when the frame is focused.
-        image_introduction: int, if you provided a list for the backgrounds, the background will not cycle back to 0
-        but to this index. 
-        focus_image_introduction: same as image_introduction but when the frame is focused.
         hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
         frame is hovered by the mouse.
         hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the frame.
         """
         self.children: list[Element] = []
-        if focus_background is None:
-            focus_background = background
+
         Element.__init__(
             self,
             master,
             background,
             x,
             y,
-            width,
-            height,
             layer,
-            image_duration,
-            image_introduction,
             hover_surface,
             hover_cursor,
-            False
+            can_be_disabled=False,
+            can_be_focused=True
         )
-        self.width = width
-        self.height = height
         self.focused = False
         self._current_object_focus = None
-        self.focus_background = Backgrounds(
-            width,
-            height,
-            focus_background,
-            focus_image_duration,
-            focus_image_introduction
-        )
+        if focus_background is None:
+            focus_background = background
+        if isinstance(focus_background, pygame.Surface):
+            self.focus_background = AnimatedSurface([focus_background], 4, 0)
         self.current_hover_surface = None
 
     def add_child(self, child: Element):
@@ -106,7 +80,7 @@ class Frame(Element):
         click_x -= self.x
         click_y -= self.y
         self.focused = True
-        self.backgrounds.reset()
+        self.surface.reset()
         one_is_clicked = False
         for (i,child) in enumerate(self.children):
             if child.visible and child.can_be_focused:
@@ -144,10 +118,10 @@ class Frame(Element):
         for child in self.children:
             child.unfocus()
 
-    def _update_objects(self, loop_duration: int):
-        """Update all the children."""
+    def update(self, loop_duration: int):
+        """Update all the children of the frame."""
         for element in self.children:
-            element.update(loop_duration)
+            element.loop(loop_duration)
 
     @property
     def visible_children(self):
@@ -159,15 +133,10 @@ class Frame(Element):
         if self.focused:
             background = self.focus_background.get()
         else:
-            background = self.backgrounds.get()
+            background = self.surface.get()
         for child in self.visible_children:
-            x = child.x
-            y = child.y
+            x = child.relative_left
+            y = child.relative_top
             surface = child.get_surface()
             background.blit(surface, (x,y))
         return background
-
-    def update(self, loop_duration: int):
-        """Update the frame."""
-        self.backgrounds.update_animation(loop_duration)
-        self._update_objects(loop_duration)
