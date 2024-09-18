@@ -54,7 +54,7 @@ class Frame(Element):
         if focus_background is None:
             focus_background = background
         if isinstance(focus_background, pygame.Surface):
-            self.focus_background = AnimatedSurface(focus_background, 4, 0)
+            self.focus_background = AnimatedSurface([focus_background], 4, 0)
         self.current_hover_surface = None
 
     def add_child(self, child: Element):
@@ -118,10 +118,10 @@ class Frame(Element):
         for child in self.children:
             child.unfocus()
 
-    def _update(self, loop_duration: int):
-        """Update all the children fo the frame."""
+    def update(self, loop_duration: int):
+        """Update all the children of the frame."""
         for element in self.children:
-            element.update(loop_duration)
+            element.loop(loop_duration)
 
     @property
     def visible_children(self):

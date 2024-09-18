@@ -54,7 +54,7 @@ class BasePhase(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def update(self, loop_duration: int):
+    def loop(self, loop_duration: int):
         """This method is called at every loop iteration."""
         raise NotImplementedError()
 
@@ -67,7 +67,7 @@ class BasePhase(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def _update(self, loop_duration: int):
+    def update(self, loop_duration: int):
         """
         Update the phase based on loop duration, inputs and network (via the game instance)
         This method is called at every loop iteration.
@@ -96,9 +96,9 @@ class ServerPhase(BasePhase, ABC):
         """Alias for self.server.network"""
         return self.server.network
 
-    def update(self, loop_duration: int):
+    def loop(self, loop_duration: int):
         """Update the phase every loop iteraton."""
-        self._update(loop_duration)
+        self.update(loop_duration)
 
 class GamePhase(BasePhase, ABC):
     """The ServerPhase is a game phase to be add to the game only."""
@@ -146,13 +146,13 @@ class GamePhase(BasePhase, ABC):
         """Alias for self.game.network"""
         return self.game.client
 
-    def update(self, loop_duration: int):
+    def loop(self, loop_duration: int):
         """Update the phase."""
-        self._update(loop_duration)
+        self.update(loop_duration)
         self.__update_focus()
         self.__update_hover()
         for frame in self.frames:
-            frame.update(loop_duration)
+            frame.loop(loop_duration)
 
     def __update_focus(self):
         """Update the focus of all the frames."""

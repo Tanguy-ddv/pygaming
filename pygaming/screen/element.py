@@ -50,7 +50,7 @@ class Element(ABC):
         self.disabled = False
 
         if isinstance(surface, pygame.Surface):
-            self.surface = AnimatedSurface(surface, 2, 0)
+            self.surface = AnimatedSurface([surface], 2, 0)
         else:
             self.surface = surface
 
@@ -86,13 +86,13 @@ class Element(ABC):
         """Return the surface to be blitted."""
         raise NotImplementedError()
 
-    def update(self, loop_duration: int):
+    def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
         self.surface.update_animation(loop_duration)
-        self._udpate(loop_duration)
+        self.update(loop_duration)
 
     @abstractmethod
-    def _udpate(self, loop_duration: int):
+    def update(self, loop_duration: int):
         """Update the element logic every loop iteration."""
         raise NotImplementedError()
 
