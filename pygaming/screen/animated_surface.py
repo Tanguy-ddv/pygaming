@@ -73,7 +73,6 @@ class AnimatedSurface:
                         self._introduction_done = True
                 else:
                     self._index = (self._index+1 - self._image_introduction)%(self._n_bg - self._image_introduction) + self._image_introduction
-                    print(self._index)
 
     @property
     def height(self):
