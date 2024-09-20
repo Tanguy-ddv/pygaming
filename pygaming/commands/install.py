@@ -61,6 +61,8 @@ def install():
         os.path.join(base_path, 'data'),
         modified_path_to_install + '/data'
     )
+
+    os.remove(modified_path_to_install + '/data/config.json')
     print('The data folder has been copied.')
     # Copy the asset folder
     shutil.copytree(
