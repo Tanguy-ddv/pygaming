@@ -17,7 +17,7 @@ from .transition import ServerTransition, GameTransition
 
 from .screen.screen import Screen
 from .screen.frame import Frame
-from .screen.element import Element
+from .screen.element import Element, TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT, BOTTOM_RIGHT
 from .screen.animated_surface import AnimatedSurface, SurfaceLike, SurfacesLike
 
 from .inputs import Inputs, Controls, Click
@@ -33,4 +33,4 @@ __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'Logger', 'ServerPhase', 'GamePh
            'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
            'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches',
-           'commands', 'ColoredSurface']
+           'commands', 'ColoredSurface', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT']
