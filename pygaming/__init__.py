@@ -8,7 +8,7 @@ as well as multi-language support, screen, widgets and frames.
 from .config import Config
 from .font import Font
 from .game import Game
-from .base import NO_NEXT
+from .base import NO_NEXT, STAY
 from .logger import Logger
 from .phase import ServerPhase, GamePhase
 from .server import Server
@@ -17,7 +17,7 @@ from .transition import ServerTransition, GameTransition
 
 from .screen.screen import Screen
 from .screen.frame import Frame
-from .screen.element import Element
+from .screen.element import Element, TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT, BOTTOM_RIGHT
 from .screen.animated_surface import AnimatedSurface, SurfaceLike, SurfacesLike
 
 from .inputs import Inputs, Controls, Click
@@ -28,9 +28,9 @@ from .database import Database, Texts, Speeches
 from . import commands
 from .screen.colored_surface import ColoredSurface
 
-__all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'Logger', 'ServerPhase', 'GamePhase',
+__all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
            'Server', 'Settings', 'ServerTransition', 'GameTransition', 'Screen', 'Frame',
            'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
            'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches',
-           'commands', 'ColoredSurface']
+           'commands', 'ColoredSurface', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT']

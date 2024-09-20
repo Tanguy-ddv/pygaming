@@ -6,5 +6,15 @@
     "max_frame_rate": 30,
     "server_port" : 50505,
     "max_communication_length" : 2048,
-    "flush_frequency" : 5000
+    "flush_frequency" : 5000,
+    "broadcast_frequency" : 5000,
+    "widget_keys" : {
+        "tab": "K_TAB",
+        "return": "K_RETURN",
+        "backspace": "K_BACKSPACE",
+        "left": "K_LEFT",
+        "right": "K_RIGHT",
+        "up": "K_UP",
+        "down": "K_DOWN"
+    }
 }

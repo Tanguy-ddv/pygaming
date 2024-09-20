@@ -64,3 +64,8 @@ class Config:
         if key in self._data:
             return self._data[key]
         return 2048
+
+    def get_widget_key(self, action):
+        """Return the key that would trigger the widget action."""
+        dict_key = "widget_keys"
+        return self._data[dict_key][action]

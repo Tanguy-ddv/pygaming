@@ -2,6 +2,7 @@
 
 import pygame
 from PIL import Image
+from ..screen.animated_surface import AnimatedSurface
 from .file import get_file, File
 
 class GIFFile(File):
@@ -11,17 +12,17 @@ class GIFFile(File):
         super().__init__(path)
         self.full_path = get_file('images', path)
 
-    def get(self, size: tuple[int, int] | None = None, rotation: float = 0):
+    def get(self, size: tuple[int, int] | None = None, rotation: float = 0, image_introduction: int = 0):
         """Get the gif as a list of surfaces and frame durations."""
         gif = Image.open(self.full_path)
         gif.seek(0)
         images: list[pygame.Surface] = [pygame.image.fromstring(gif.convert('RGBA').tobytes(), gif.size, 'RGBA')]
-        frame_durations = [gif.info['duration']]
+        image_durations = [gif.info['duration']]
         while True:
             try:
                 gif.seek(gif.tell()+1)
                 images.append(pygame.image.fromstring(gif.convert('RGBA').tobytes(), gif.size, 'RGBA'))
-                frame_durations.append(gif.info['duration'])
+                image_durations.append(gif.info['duration'])
             except EOFError:
                 break
 
@@ -32,4 +33,4 @@ class GIFFile(File):
                 images_to_return.append(surface)
             else:
                 images_to_return.append(pygame.transform.scale(im, size))
-        return images_to_return, frame_durations
+        return AnimatedSurface(images_to_return, image_durations, image_introduction)

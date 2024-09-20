@@ -4,6 +4,14 @@ from typing import Optional
 import pygame
 from .animated_surface import AnimatedSurface
 
+# Anchors
+
+TOP_RIGHT = 0, 1
+TOP_LEFT = 0, 0
+CENTER = 0.5, 0.5
+BOTTOM_LEFT = 1, 0
+BOTTOM_RIGHT = 1, 1
+
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
 
@@ -13,6 +21,7 @@ class Element(ABC):
         surface: AnimatedSurface | pygame.Surface,
         x: int,
         y: int,
+        anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
         hover_surface: Optional[pygame.Surface] = None,
         hover_cursor: Optional[pygame.Cursor] = None,
@@ -26,7 +35,8 @@ class Element(ABC):
         ----
         master: Frame or Phase, the master of this object.
         surface: The surface.
-        x, y: the coordinates in the master.
+        x, y: the coordinates in the master of the anchor point.
+        anchor: the anchor point in % of the width and height. 
         width, height: the dimension of the object.
         layer: the layer of the object. The smaller the more on the background
         image_duration (ms): If a list is provided as background, the background of the frame is changed every image_duration.
@@ -39,8 +49,7 @@ class Element(ABC):
         hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the frame.
         ca_be_disabled, can_be_focused: Some element could be disabled, like widgets. Some element could be focused.
         """
-        self.x = x
-        self.y = y
+
         self.layer = layer
 
         self.visible = True
@@ -55,6 +64,8 @@ class Element(ABC):
             self.surface = surface
 
         self.width, self.height = self.surface.width, self.surface.height
+        self.x = x - anchor[0]*self.width
+        self.y = y - anchor[1]*self.height
         ABC.__init__(self)
         self.master = master
         self.master.add_child(self)

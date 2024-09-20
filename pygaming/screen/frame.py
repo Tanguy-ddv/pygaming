@@ -1,7 +1,7 @@
 """The frame module contain the Frame class, base of all displayed object."""
 import pygame
 from .animated_surface import AnimatedSurface
-from .element import Element
+from .element import Element, TOP_LEFT
 
 class Frame(Element):
     """
@@ -16,6 +16,7 @@ class Frame(Element):
         y :int,
         background: AnimatedSurface | pygame.Surface,
         focus_background: AnimatedSurface | pygame.Surface = None,
+        anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
         hover_surface: pygame.Surface | None = None,
         hover_cursor: pygame.Cursor | None = None,
@@ -43,6 +44,7 @@ class Frame(Element):
             background,
             x,
             y,
+            anchor,
             layer,
             hover_surface,
             hover_cursor,
