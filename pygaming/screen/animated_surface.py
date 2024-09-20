@@ -1,12 +1,12 @@
 """AnimatedSurface is a class use to represent the a Surface that might be animated."""
 from typing import Union, List, Iterable
 import pygame
-from ..file import ImageFile, GIFFile
+from ..file import ImageFile
 from ..error import PygamingException
 from .colored_surface import ColoredSurface
 
 SurfaceLike = Union[pygame.Surface, ColoredSurface, ImageFile]
-SurfacesLike = Union[List[SurfaceLike], GIFFile]
+SurfacesLike = List[SurfaceLike]
 
 class AnimatedSurface:
     """An AnimatedSurface is a Surface that can be animated."""
@@ -39,10 +39,8 @@ class AnimatedSurface:
         self._introduction_done = False
         self._time_since_last_change = 0
 
-        if isinstance(surfaces, GIFFile):
-            surfaces, image_duration = surfaces.get()
         if not isinstance(surfaces, Iterable):
-            raise PygamingException("The surface must be an iterable or a GIFFile")
+            raise PygamingException("The surfaces must be an iterable")
 
         self._surfaces: list[pygame.Surface] = []
         for bg in surfaces:
