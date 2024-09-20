@@ -85,7 +85,7 @@ class Server:
             broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             message = json.dumps({HEADER : BROADCAST_IP, CONTENT : host_ip})
             broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
-            time.sleep(5)  # Send broadcast every 5 seconds
+            time.sleep(self.config.get("broadcast_frequency")/1000)  # Send broadcast every 5 seconds
 
     def _handle_client(self, client_socket: socket.socket, id_: int):
         while self._running:
