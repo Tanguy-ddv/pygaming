@@ -15,5 +15,6 @@
             "speeches": 1
         }
     },
-    "antialias" : 1
+    "antialias" : 1,
+    "sensibility" : 0.5
 }
