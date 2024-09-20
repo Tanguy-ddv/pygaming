@@ -8,7 +8,7 @@ as well as multi-language support, screen, widgets and frames.
 from .config import Config
 from .font import Font
 from .game import Game
-from .base import NO_NEXT
+from .base import NO_NEXT, STAY
 from .logger import Logger
 from .phase import ServerPhase, GamePhase
 from .server import Server
@@ -28,7 +28,7 @@ from .database import Database, Texts, Speeches
 from . import commands
 from .screen.colored_surface import ColoredSurface
 
-__all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'Logger', 'ServerPhase', 'GamePhase',
+__all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
            'Server', 'Settings', 'ServerTransition', 'GameTransition', 'Screen', 'Frame',
            'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
            'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client',

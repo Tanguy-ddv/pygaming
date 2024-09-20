@@ -10,6 +10,7 @@ from .config import Config
 from .error import PygamingException
 
 NO_NEXT = 'no_next'
+STAY = 'stay'
 
 
 class BaseRunnable(ABC):
@@ -62,7 +63,7 @@ class BaseRunnable(ABC):
         self.phases[self.current_phase].loop(loop_duration)
         next_phase = self.phases[self.current_phase].next()
         # Verify if the phase is over
-        if next_phase and next_phase != NO_NEXT:
+        if next_phase not in [NO_NEXT, STAY]:
             # if it is, end the current phase
             self.phases[self.current_phase].end()
             # get the value for the arguments for the start of the next phase
