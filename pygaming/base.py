@@ -1,5 +1,4 @@
-"""A baseRunnable is an abstract object from which herit the game and the server."""
-import sys
+"""A BaseRunnable is an abstract object from which herit the game and the server."""
 from abc import ABC, abstractmethod
 from typing import Literal, Any
 import pygame
@@ -90,4 +89,3 @@ class BaseRunnable(ABC):
         self.phases[self.current_phase].end()
         self.stop()
         pygame.quit()
-        sys.exit(0)
