@@ -16,7 +16,7 @@ class Frame(Element):
         x: int,
         y: int,
         background: SurfaceLike,
-        focus_background: Optional[SurfaceLike] = None,
+        focused_background: Optional[SurfaceLike] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
         hover_surface: Optional[pygame.Surface] = None,
@@ -30,7 +30,7 @@ class Frame(Element):
         master: Another Frame or a phase.
         x, y: the coordinate of the top left of the frame, in its master.
         background: The AnimatedSurface or Surface representing the background of the Frame.
-        focus_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
+        focused_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
         If None, copy the background
         layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
         hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
@@ -54,10 +54,12 @@ class Frame(Element):
         )
         self.focused = False
         self._current_object_focus = None
-        if focus_background is None:
-            focus_background = background
-        if isinstance(focus_background, pygame.Surface):
-            self.focus_background = AnimatedSurface([focus_background], 4, 0)
+        if focused_background is None:
+            focused_background = self.surface.copy()
+        elif isinstance(focused_background, pygame.Surface):
+            self.focused_background = AnimatedSurface([focused_background], 4, 0)
+        else:
+            self.focused_background = focused_background
         self.current_hover_surface = None
 
     def add_child(self, child: Element):
@@ -98,6 +100,13 @@ class Frame(Element):
         if not one_is_clicked:
             self._current_object_focus = None
 
+    def switch_background(self):
+        """Switch to the focused background or the normal background."""
+        if not self.focused:
+            self.focused_background.reset()
+        else:
+            self.surface.reset()
+
     def next_object_focus(self):
         """Change the focused object."""
         if self._current_object_focus is None:
@@ -117,9 +126,18 @@ class Frame(Element):
     def remove_focus(self):
         """Remove the focus of all the children."""
         self.focused = False
-        self.focus_background.reset()
+        self.focused_background.reset()
         for child in self.children:
             child.unfocus()
+        self.switch_background()
+
+    def loop(self, loop_duration: int):
+        """Update the frame every loop iteration."""
+        if not self.focused:
+            self.surface.update_animation(loop_duration)
+        else:
+            self.focused_background.update_animation(loop_duration)
+        self.update(loop_duration)
 
     def update(self, loop_duration: int):
         """Update all the children of the frame."""

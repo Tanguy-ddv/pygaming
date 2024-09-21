@@ -138,21 +138,32 @@ class Element(ABC):
         """Enable the object if it can be disabled."""
         if self.can_be_disabled:
             self.disabled = False
+            self.switch_background()
 
     def disable(self):
         """disable the object if it can be disabled."""
         if self.can_be_disabled:
             self.disabled = True
+            self.switch_background()
 
     def focus(self):
         """focus the object if it can be focused."""
         if self.can_be_focused:
             self.focused = False
+            self.switch_background()
 
     def unfocus(self):
         """Unfocus the object if it can be focused."""
         if self.can_be_focused:
             self.focused = False
+            self.switch_background()
+
+    def switch_background(self):
+        """
+        Switch background when the widget is disabled, focused, enabled or unfocused.
+        Don't do anything for basic elements, to be overriden by other elements.
+        """
+
 
     @property
     def relative_coordinate(self):
