@@ -23,10 +23,9 @@ The Server is the class that is used to communicate with the several instances o
 
 The library implements easy-to-use clients and servers (both accessible in every game and server phase through `self.network`) to allow the players to communicate with the server in a star-shaped network.
 
-### Inputs and Controls
+### Mouse, Keyboard and Controls
 
-The Inputs class (accessible in every game phase through `self.inputs`) implements the input management. You can easily find the mouse position and velocity,
-as well as define controls that could be modified by the user.
+The players inputs are managed throw the mouse and keyboard classes (accessible in every game phase through `self.keyboard` and `self.mouse`). Use the mouse to know when the player is clicking and with which button. You can also access the mouse position, velocity and the wheel speed. By using the keyboard, you can access to the user keyboard inputs. These inputs are mapped to actions via the control class, taking its values in the settings (for game actions) and config (for widget related actions).
 
 ### Sound and Music
 

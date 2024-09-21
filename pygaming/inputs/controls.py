@@ -2,6 +2,8 @@
 
 import pygame
 from ..settings import Settings
+from ..config import Config
+
 
 class Controls:
     """
@@ -11,11 +13,12 @@ class Controls:
     The current mapping is store in the dynamic data/keymap.json file.
     """
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, config: Config) -> None:
 
         self._key_map_dict: dict[str, str] = {}
         self._reverse_mapping = {}
         self._settings = settings
+        self._config = config
         self._previous_controls = self._settings.controls
         self._update_settings()
 
@@ -33,8 +36,9 @@ class Controls:
 
     def _update_settings(self):
         """Update the key map dict with the current settings."""
-        controls = self._settings.controls
         self._key_map_dict = {}
+
+        controls = self._settings.controls
         for key, action in controls.items():
             if not key.isdigit() and hasattr(pygame, key):
                 self._key_map_dict[str(getattr(pygame, key))] = action
@@ -42,6 +46,13 @@ class Controls:
                 self._key_map_dict[key] = action
 
         self._reverse_mapping = self._get_reversed_mapping()
+
+        controls = self._config.get("widget_keys")
+        for key, action in controls.items():
+            if not key.isdigit() and hasattr(pygame, key):
+                self._key_map_dict[str(getattr(pygame, key))] = action
+            else:
+                self._key_map_dict[key] = action
 
     def _get_reversed_mapping(self):
         """Get all the defined keys and the actions."""
