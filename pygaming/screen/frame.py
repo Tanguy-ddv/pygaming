@@ -1,7 +1,8 @@
 """The frame module contain the Frame class, base of all displayed object."""
+from typing import Optional
 import pygame
 from .animated_surface import AnimatedSurface
-from .element import Element, TOP_LEFT
+from .element import Element, TOP_LEFT, SurfaceLike
 
 class Frame(Element):
     """
@@ -11,15 +12,15 @@ class Frame(Element):
 
     def __init__(
         self,
-        master,
+        master, # Frame or phase, no direct typing to avoid circular import
         x: int,
-        y :int,
-        background: AnimatedSurface | pygame.Surface,
-        focus_background: AnimatedSurface | pygame.Surface = None,
+        y: int,
+        background: SurfaceLike,
+        focus_background: Optional[SurfaceLike] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
-        hover_surface: pygame.Surface | None = None,
-        hover_cursor: pygame.Cursor | None = None,
+        hover_surface: Optional[pygame.Surface] = None,
+        hover_cursor: Optional[pygame.Cursor] = None,
     ) -> None:
         """
         Create the frame.

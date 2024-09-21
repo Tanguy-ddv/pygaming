@@ -1,6 +1,6 @@
 """the element module contains the Element object, which is a base for every object displayed on the game window."""
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 import pygame
 from .animated_surface import AnimatedSurface
 
@@ -12,13 +12,15 @@ CENTER = 0.5, 0.5
 BOTTOM_LEFT = 1, 0
 BOTTOM_RIGHT = 1, 1
 
+SurfaceLike = Union[AnimatedSurface, pygame.Surface]
+
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
 
     def __init__(
         self,
-        master,
-        surface: AnimatedSurface | pygame.Surface,
+        master, # Frame or phase, no direct typing to avoid circular import
+        surface: SurfaceLike,
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
