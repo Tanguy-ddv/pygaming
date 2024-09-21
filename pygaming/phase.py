@@ -137,9 +137,14 @@ class GamePhase(BasePhase, ABC):
         return self.game.jukebox
 
     @property
-    def inputs(self):
-        """Alias for self.game.inputs"""
-        return self.game.inputs
+    def keyboard(self):
+        """Alias for self.game.keyboard"""
+        return self.game.keyboard
+    
+    @property
+    def mouse(self):
+        """Alias for self.game.mouse"""
+        return self.game.mouse
 
     @property
     def network(self):
@@ -156,36 +161,33 @@ class GamePhase(BasePhase, ABC):
 
     def __update_focus(self):
         """Update the focus of all the frames."""
-        clicks = self.game.inputs.get_clicks()
-        if 1 in clicks and not clicks[1].up:
-            x = clicks[1].x
-            y = clicks[1].y
+        ck1 = self.mouse.get_click(1)
+        if ck1:
+            x = ck1.x
+            y = ck1.y
             for frame in self.frames:
-                if frame.x < x < frame.x + frame.width and frame.y < y < frame.y + frame.height:
+                if frame.absolute_left < x < frame.absolute_right and frame.absolute_top < y < frame.absolute_bottom:
                     frame.update_focus(x, y)
                 else:
                     frame.remove_focus()
 
-        actions = self.game.inputs.get_actions()
-        if "next widget focus" in actions and actions["next widget focus"]:
+        actions = self.keyboard.get_actions()
+        if "tab" in actions and actions["tab"]:
             for frame in self.frames:
                 if frame.focused:
                     frame.next_object_focus()
 
     def __update_hover(self):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
-        clicks = self.inputs.get_clicks()
+        x,y = self.mouse.get_position()
         is_one_hovered = False
-        if 0 in clicks:
-            x = clicks[0].x
-            y = clicks[0].y
-            for frame in self.frames:
-                if frame.x < x < frame.x + frame.width and frame.y < y < frame.y + frame.height:
-                    is_frame_hovered, surf = frame.update_hover(x, y)
-                    if is_frame_hovered:
-                        is_one_hovered = True
-                        self.current_hover_surface = surf
-                        break
+        for frame in self.frames:
+            if frame.absolute_left < x < frame.absolute_right and frame.absolute_top < y < frame.absolute_bottom:
+                is_frame_hovered, surf = frame.update_hover(x, y)
+                if is_frame_hovered:
+                    is_one_hovered = True
+                    self.current_hover_surface = surf
+                    break
 
         if not is_one_hovered:
             cursor = self.config.default_cursor
