@@ -15,7 +15,7 @@ class Game(BaseRunnable):
     It can be online (with a server) or offline.
     """
 
-    def __init__(self, online: bool = True, debug: bool = False) -> None:
+    def __init__(self, debug: bool = False) -> None:
         BaseRunnable.__init__(self, debug, GAME)
         pygame.init()
 
@@ -31,11 +31,8 @@ class Game(BaseRunnable):
         self.texts = Texts(self.database, self.settings)
         self.speeches = Speeches(self.database, self.settings)
 
-        if online:
-            self.client = Client(self.config)
-        else:
-            self.client = None
-        self.online = online
+        self.client = None
+        self.online = False
 
     def update(self) -> bool:
         """Update all the component of the game."""
@@ -49,3 +46,14 @@ class Game(BaseRunnable):
             self.client.update()
         is_game_over = self.update_phases(loop_duration)
         return self._inputs.quit or is_game_over or (self.online and self.client.is_server_killed())
+
+    def connect(self) -> bool:
+        """Connect the game to the server."""
+        self.client = Client(self.config)
+        self.online = True
+
+    def disconnect(self) -> bool:
+        """Disconnect the game from the server."""
+        self.client.close()
+        self.client = None
+        self.online = False

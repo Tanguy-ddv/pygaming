@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 import pygame
 from .screen.frame import Frame
+from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
 from .server import Server
@@ -149,7 +150,10 @@ class GamePhase(BasePhase, ABC):
     @property
     def network(self):
         """Alias for self.game.network"""
-        return self.game.client
+        if self.game.online:
+            return self.game.client
+        raise PygamingException("The game is not connected yet, there is no network to reach.")
+
 
     def loop(self, loop_duration: int):
         """Update the phase."""
