@@ -1,12 +1,10 @@
 """AnimatedSurface is a class use to represent the a Surface that might be animated."""
-from typing import Union, List, Iterable
+from typing import List, Iterable
 import pygame
 from ..file import ImageFile
 from ..error import PygamingException
-from .colored_surface import ColoredSurface
 
-SurfaceLike = Union[pygame.Surface, ColoredSurface, ImageFile]
-SurfacesLike = List[SurfaceLike]
+SurfacesLike = List[pygame.Surface | ImageFile]
 
 class AnimatedSurface:
     """An AnimatedSurface is a Surface that can be animated."""
