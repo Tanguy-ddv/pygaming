@@ -20,7 +20,7 @@ from .screen.frame import Frame
 from .screen.element import Element, TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT, BOTTOM_RIGHT
 from .screen.animated_surface import AnimatedSurface, SurfaceLike, SurfacesLike
 
-from .inputs import Inputs, Controls, Click
+from .inputs import Inputs, Controls, Click, Keyboard, Mouse
 from .file import FontFile, DataFile, ImageFile, GIFFile, SoundFile, MusicFile, get_file
 from .connexion import Client, Server as Network, HEADER, ID, CONTENT, TIMESTAMP
 
@@ -31,6 +31,6 @@ from .screen.colored_surface import ColoredSurface
 __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
            'Server', 'Settings', 'ServerTransition', 'GameTransition', 'Screen', 'Frame',
            'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
-           'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client',
+           'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client', 'Keyboard', 'Mouse',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches',
            'commands', 'ColoredSurface', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT']

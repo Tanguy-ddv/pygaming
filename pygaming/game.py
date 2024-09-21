@@ -3,7 +3,7 @@ import pygame
 from .database import Texts, Speeches
 from .database.database import GAME
 from .connexion import Client
-from .inputs import Inputs
+from .inputs import Inputs, Mouse, Keyboard
 from .settings import Settings
 from .screen.screen import Screen
 from .sound import SoundBox, Jukebox
@@ -23,7 +23,9 @@ class Game(BaseRunnable):
         self.soundbox = SoundBox(self.settings)
         self.jukebox = Jukebox(self.settings)
 
-        self.inputs = Inputs(self.settings)
+        self.mouse = Mouse(self.settings)
+        self.keyboard = Keyboard(self.settings, self.config)
+        self._inputs = Inputs(self.mouse, self.keyboard)
         self._screen = Screen(self.config, self.settings)
 
         self.texts = Texts(self.database, self.settings)
@@ -39,11 +41,11 @@ class Game(BaseRunnable):
         """Update all the component of the game."""
         loop_duration = self.clock.tick(self.config.get("max_frame_rate"))
         self.logger.update(loop_duration)
-        self.inputs.update()
+        self._inputs.update(loop_duration)
         self._screen.display_phase(self.phases[self.current_phase])
         self._screen.update()
         self.jukebox.update()
         if self.online:
             self.client.update()
         is_game_over = self.update_phases(loop_duration)
-        return self.inputs.quit or is_game_over or (self.online and self.client.is_server_killed())
+        return self._inputs.quit or is_game_over or (self.online and self.client.is_server_killed())
