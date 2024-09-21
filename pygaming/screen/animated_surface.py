@@ -95,6 +95,10 @@ class AnimatedSurface:
         self._index = self._index%self._n_bg
         return self._surfaces[self._index].copy()
 
+    def copy(self):
+        """Return a copy of the surface."""
+        return AnimatedSurface([s.copy() for s in self._surfaces], self._image_durations.copy(), self._image_introduction)
+
 def make_rounded_rectangle(color: pygame.Color | str, width: int, height: int):
     """Make a rectange with half circles at the start and end."""
     if isinstance(color, str):
