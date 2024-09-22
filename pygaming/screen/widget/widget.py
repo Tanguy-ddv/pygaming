@@ -6,6 +6,20 @@ from pygame import Cursor, Surface
 from ..element import Element, TOP_LEFT, SurfaceLike
 from ..animated_surface import AnimatedSurface
 
+def make_background(background: Optional[SurfaceLike], reference: AnimatedSurface):
+    """
+    Return an AnimatedSurface based on the inputs:
+    If background is None, return a copy of the reference.
+    If background is an animated surface, return it
+    If background is a surface, create an animated surface with it.
+    """
+    if background is None:
+        return reference.copy()
+    elif isinstance(background, Surface):
+        return AnimatedSurface([background], 4, 0)
+    else:
+        return background
+
 class Widget(Element, ABC):
     """
     Widget is an abstract class for all the widgets. They are all element able to get information from the player.
@@ -18,7 +32,7 @@ class Widget(Element, ABC):
         master,
         x: int,
         y: int,
-        background: SurfaceLike,
+        normal_background: SurfaceLike,
         focused_background: Optional[SurfaceLike] = None,
         disabled_background: Optional[SurfaceLike] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
@@ -27,7 +41,7 @@ class Widget(Element, ABC):
         hover_cursor: Cursor | None = None) -> None:
         super().__init__(
             master,
-            background,
+            normal_background,
             x,
             y,
             anchor,
@@ -37,19 +51,8 @@ class Widget(Element, ABC):
             True,
             True
         )
-        if focused_background is None:
-            focused_background = self.surface.copy()
-        if isinstance(focused_background, Surface):
-            self.focused_background = AnimatedSurface([focused_background], 4, 0)
-        else:
-            self.focused_background = focused_background
-
-        if disabled_background is None:
-            disabled_background = self.surface.copy()
-        if isinstance(disabled_background, Surface):
-            self.disabled_background = AnimatedSurface([disabled_background], 4, 0)
-        else:
-            self.disabled_background = disabled_background
+        self.focused_background = make_background(focused_background, self.surface)
+        self.disabled_background = make_background(disabled_background, self.surface)
 
     @property
     def normal_background(self):
@@ -93,7 +96,7 @@ class Widget(Element, ABC):
             self.focused_background.update_animation(loop_duration)
         else:
             self.normal_background.update_animation(loop_duration)
-        
+
         self.update(loop_duration)
 
     def switch_background(self):
