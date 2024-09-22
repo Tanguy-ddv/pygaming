@@ -1,7 +1,6 @@
 """A phase is one step of the game."""
 from abc import ABC, abstractmethod
 import pygame
-from .screen.frame import Frame
 from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
@@ -107,13 +106,13 @@ class GamePhase(BasePhase, ABC):
     def __init__(self, name, game: Game) -> None:
         ABC.__init__(self)
         BasePhase.__init__(self, name, game)
-        self.frames: list[Frame] = []
+        self.frames = [] # list[Frame]
 
         self.absolute_x = 0
         self.absolute_y = 0
         self.current_hover_surface = None
 
-    def add_child(self, frame: Frame):
+    def add_child(self, frame):
         """Add a new frame to the phase."""
         self.frames.append(frame)
 

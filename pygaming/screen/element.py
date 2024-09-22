@@ -1,7 +1,9 @@
 """the element module contains the Element object, which is a base for every object displayed on the game window."""
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 import pygame
+from ..phase import GamePhase
 from .animated_surface import AnimatedSurface
 
 # Anchors
@@ -19,7 +21,7 @@ class Element(ABC):
 
     def __init__(
         self,
-        master, # Frame or phase, no direct typing to avoid circular import
+        master : Union[GamePhase | Element], # Frame or phase, no direct typing of frame to avoid circular import
         surface: SurfaceLike,
         x: int,
         y: int,

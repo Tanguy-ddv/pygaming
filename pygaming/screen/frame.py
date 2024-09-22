@@ -1,7 +1,9 @@
 """The frame module contain the Frame class, base of all displayed object."""
+from __future__ import annotations
 from typing import Optional
 import pygame
 from .animated_surface import AnimatedSurface
+from ..phase import GamePhase
 from .element import Element, TOP_LEFT, SurfaceLike
 
 class Frame(Element):
@@ -12,7 +14,7 @@ class Frame(Element):
 
     def __init__(
         self,
-        master, # Frame or phase, no direct typing to avoid circular import
+        master: GamePhase | Frame, # Frame or phase, no direct typing to avoid circular import
         x: int,
         y: int,
         background: SurfaceLike,
