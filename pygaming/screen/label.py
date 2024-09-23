@@ -20,7 +20,7 @@ class Label(Element):
         y: int,
         anchor = TOP_LEFT,
         layer: int = 0,
-        text_anchor = TEXT_CENTERED
+        justify = TEXT_CENTERED
     ) -> None:
         """
         Create the label
@@ -37,7 +37,7 @@ class Label(Element):
         self.font = font
         self.text = str(text)
         super().__init__(master, background, x, y, anchor, layer, None, None, False, False)
-        self.text_anchor = text_anchor
+        self.justify = justify
         self._bg_width, self._bg_height = self.surface.width, self.surface.height
 
     def set_text(self, text: str):
@@ -53,9 +53,9 @@ class Label(Element):
         rendered_text = self.font.render(self.text)
         text_width, text_height = rendered_text.get_size()
         y = (self._bg_height - text_height)//2
-        if self.text_anchor == TEXT_CENTERED:
+        if self.justify == TEXT_CENTERED:
             x = (self._bg_width - text_width)//2
-        elif self.text_anchor == TEXT_RIGHT:
+        elif self.justify == TEXT_RIGHT:
             x = self._bg_width - text_width
         else:
             x = 0
