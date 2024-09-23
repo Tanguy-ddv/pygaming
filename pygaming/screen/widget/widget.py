@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import Optional
-from pygame import Cursor, Surface
+from pygame import Cursor, Surface, Rect
 from ..element import Element, TOP_LEFT, SurfaceLike
 from ..animated_surface import AnimatedSurface
 
@@ -36,9 +36,12 @@ class Widget(Element, ABC):
         focused_background: Optional[SurfaceLike] = None,
         disabled_background: Optional[SurfaceLike] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
+        active_area: Optional[Rect] = None,
         layer: int = 0,
         hover_surface: Surface | None = None,
-        hover_cursor: Cursor | None = None) -> None:
+        hover_cursor: Cursor | None = None,
+        continue_animation: bool = False
+    ) -> None:
         super().__init__(
             master,
             normal_background,
@@ -51,6 +54,8 @@ class Widget(Element, ABC):
             True,
             True
         )
+        self.active_area = active_area
+        self._continue_animation = continue_animation
         self.focused_background = make_background(focused_background, self.surface)
         self.disabled_background = make_background(disabled_background, self.surface)
 
@@ -90,23 +95,29 @@ class Widget(Element, ABC):
 
     def loop(self, loop_duration: int):
         """Call this method every loop iteration."""
-        if self.disabled:
-            self.disabled_background.update_animation(loop_duration)
-        elif self.focused:
-            self.focused_background.update_animation(loop_duration)
+        if not self._continue_animation:
+            if self.disabled:
+                self.disabled_background.update_animation(loop_duration)
+            elif self.focused:
+                self.focused_background.update_animation(loop_duration)
+            else:
+                self.normal_background.update_animation(loop_duration)
         else:
+            self.disabled_background.update_animation(loop_duration)
+            self.focused_background.update_animation(loop_duration)
             self.normal_background.update_animation(loop_duration)
 
         self.update(loop_duration)
 
     def switch_background(self):
         """Switch to the disabled, focused or normal background."""
-        if self.disabled:
-            self.focused_background.reset()
-            self.normal_background.reset()
-        elif self.focused:
-            self.normal_background.reset()
-            self.disabled_background.reset()
-        else:
-            self.disabled_background.reset()
-            self.focused_background.reset()
+        if not self._continue_animation:
+            if self.disabled:
+                self.focused_background.reset()
+                self.normal_background.reset()
+            elif self.focused:
+                self.normal_background.reset()
+                self.disabled_background.reset()
+            else:
+                self.disabled_background.reset()
+                self.focused_background.reset()

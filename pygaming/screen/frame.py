@@ -23,21 +23,24 @@ class Frame(Element):
         layer: int = 0,
         hover_surface: Optional[pygame.Surface] = None,
         hover_cursor: Optional[pygame.Cursor] = None,
+        continue_animation: bool = False
     ) -> None:
         """
         Create the frame.
 
         Params:
         ----
-        master: Another Frame or a phase.
-        x, y: the coordinate of the top left of the frame, in its master.
-        background: The AnimatedSurface or Surface representing the background of the Frame.
-        focused_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
+        - master: Another Frame or a phase.
+        - x: the coordinate of the left of the frame, in its master.
+        - y: the coordinate of the top of the frame, in its master.
+        - background: The AnimatedSurface or Surface representing the background of the Frame.
+        - focused_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
         If None, copy the background
-        layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
-        hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
+        - layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
+        - hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
         frame is hovered by the mouse.
-        hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the frame.
+        - hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the frame.
+        - continue_animation: bool. If set to False, switching from focused to unfocused will reset the animations.
         """
         self.children: list[Element] = []
 
@@ -54,6 +57,8 @@ class Frame(Element):
             can_be_disabled=False,
             can_be_focused=True
         )
+        self._continue_animation = continue_animation
+
         self.focused = False
         self._current_object_focus = None
         if focused_background is None:
@@ -104,10 +109,11 @@ class Frame(Element):
 
     def switch_background(self):
         """Switch to the focused background or the normal background."""
-        if not self.focused:
-            self.focused_background.reset()
-        else:
-            self.surface.reset()
+        if not self._continue_animation:
+            if not self.focused:
+                self.focused_background.reset()
+            else:
+                self.surface.reset()
 
     def next_object_focus(self):
         """Change the focused object."""
@@ -135,9 +141,13 @@ class Frame(Element):
 
     def loop(self, loop_duration: int):
         """Update the frame every loop iteration."""
-        if not self.focused:
-            self.surface.update_animation(loop_duration)
+        if not self._continue_animation:
+            if not self.focused:
+                self.surface.update_animation(loop_duration)
+            else:
+                self.focused_background.update_animation(loop_duration)
         else:
+            self.surface.update_animation(loop_duration)
             self.focused_background.update_animation(loop_duration)
         self.update(loop_duration)
 
