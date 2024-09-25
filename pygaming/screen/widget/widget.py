@@ -54,7 +54,9 @@ class Widget(Element, ABC):
             True,
             True
         )
-        self.active_area = active_area
+        if active_area is None:
+            active_area = self.surface.get().get_rect()
+        self._active_area = active_area
         self._continue_animation = continue_animation
         self.focused_background = make_background(focused_background, self.surface)
         self.disabled_background = make_background(disabled_background, self.surface)
