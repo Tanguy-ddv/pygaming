@@ -1,23 +1,24 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
-from typing import Optional, Iterable, Callable
+from typing import Optional, Iterable, Callable, Any
 from pygame import Cursor, Surface, Rect
 from ..animated_surface import AnimatedSurface
+from ...error import PygamingException
 from .widget import Widget, TOP_LEFT, make_background
 from ..element import SurfaceLike
-import pygame
+from ..frame import Frame
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
 
     def __init__(
         self,
-        master,
+        master: Frame,
         x: int,
         y: int,
         values: Iterable,
         normal_background: SurfaceLike,
         normal_cursor: SurfaceLike,
-        initial_value: Optional[int] = None,
+        initial_value: Optional[Any] = None,
         focused_background: Optional[SurfaceLike] = None,
         focused_cursor: Optional[SurfaceLike] = None,
         disabled_background:  Optional[SurfaceLike] = None,
@@ -31,6 +32,34 @@ class Slider(Widget):
         transition_function: Callable[[float], float] = lambda x:x,
         transition_duration: int = 300, # [ms]
     ) -> None:
+        """
+        A Slider is a widget that is used to select a value in a given range by moving a cursor from left to right on a background.
+
+        Params:
+        ---
+        - master: Frame. The Frame in which this widget is placed.
+        - x: int, the coordinate of the anchor in the master Frame
+        - y: int, the top coordinate of the anchor in the master Frame.
+        - values: Iterable, the ordered list of values from which the slider can select.
+        - normal_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is neither focused nor disabled.
+        - normal_cursor: AnimatedSurface | Surface: The surface used as the cursor of the slider when it is neither focused nor disabled.
+        - initial_value: Any, The initial value set to the cursor. If None, use the first value.
+        - focused_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is focused.
+        - focused_cursor: AnimatedSurface | Surface: The surface used as the cursor of the slider when it is focused.
+        - disabled_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is disabled.
+        - disabled_cursor: AnimatedSurface | Surface: The surface used as the cursor of the slider when it is disabled.
+        - anchor: tuple[float, float]. The point of the slider that is placed at the coordinate (x,y).
+          Use TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT or BOTTOM_RIGHT, or another personized tuple.
+        - active_area: Rect. The Rectangle in the bacground that represent the active part of the slider. if None, then it is the whole background.
+        - layer: int, the layer of the slider in its master frame
+        - hover_surface: Surface, The surface to show when the slider is hovered.
+        - hover_cursor: Cursor The cursor of the mouse to use when the widget is hovered
+        - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
+        - transition_function: func [0, 1] -> [0, 1] A function that represent the position of the cursor during a transition given the transition duration.
+            Default is lambda x:x. For an accelerating transition, use lambda x:x**2, for a decelerating transition, lambda x:x**(1/2), or other.
+            Conditions: transition_function(0) = 0, transition_function(1) = 1
+        - transition_duration: int [ms], the duration of the transition in ms.
+        """
         super().__init__(
             master,
             x,
@@ -52,7 +81,12 @@ class Slider(Widget):
 
         # initial value and index
         self._values= list(values)
-        self._index = min(range(len(self._values)), key=lambda i: abs(self._values[i] - initial_value))
+        if initial_value is None:
+            self._index = 0
+            if initial_value in self._values:
+                self._index = self._values.index(initial_value)
+            else:
+                raise PygamingException(f"{initial_value} is not a valid initial value as it is not in the values list.")
 
         # the positions of the cursor for each value
         x_min = self._active_area.left + self.normal_cursor.width//2
@@ -75,7 +109,7 @@ class Slider(Widget):
         self._cursor_position = self._positions[self._index]
 
     def get(self):
-        """Return the numeric value selected by the player."""
+        """Return the value selected by the player."""
         return self._values[self._index]
 
     def update(self, loop_duration: int):
