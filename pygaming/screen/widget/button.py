@@ -88,9 +88,9 @@ class Button(Widget):
         ck1 = self.game.mouse.get_click(1)
 
         if (
-            (   # This means the user is pressing 'enter' while the button is focused
+            (   # This means the user is pressing 'return' while the button is focused
                 self.focused
-                and self.game.keyboard.get_actions_press()['enter']
+                and self.game.keyboard.get_actions_press()['return']
             )
             or ( # This means the user is clicking on the button
                 ck1 is not None
