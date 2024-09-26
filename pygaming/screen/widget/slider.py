@@ -83,10 +83,10 @@ class Slider(Widget):
         self._values= list(values)
         if initial_value is None:
             self._index = 0
-            if initial_value in self._values:
-                self._index = self._values.index(initial_value)
-            else:
-                raise PygamingException(f"{initial_value} is not a valid initial value as it is not in the values list.")
+        elif initial_value in self._values:
+            self._index = self._values.index(initial_value)
+        else:
+            raise PygamingException(f"{initial_value} is not a valid initial value as it is not in the values list.")
 
         # the positions of the cursor for each value
         x_min = self._active_area.left + self.normal_cursor.width//2
@@ -97,7 +97,6 @@ class Slider(Widget):
             for t in range(len(self._values))
         ]
 
-        self._absolute_active_area = self._active_area.move(self.absolute_x, self.absolute_y)
         self._cursor_width = self.normal_cursor.width
         self._holding_cursor = False
 

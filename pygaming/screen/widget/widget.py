@@ -1,6 +1,7 @@
 """The widget module contains the widget class, which is a base for all widgets."""
 
 from abc import ABC, abstractmethod
+from ..frame import Frame
 from typing import Optional
 from pygame import Cursor, Surface, Rect
 from ..element import Element, TOP_LEFT, SurfaceLike
@@ -29,7 +30,7 @@ class Widget(Element, ABC):
 
     def __init__(
         self,
-        master,
+        master: Frame,
         x: int,
         y: int,
         normal_background: SurfaceLike,
@@ -57,6 +58,7 @@ class Widget(Element, ABC):
         if active_area is None:
             active_area = self.surface.get().get_rect()
         self._active_area = active_area
+        self._absolute_active_area = self._active_area.move(self.absolute_x, self.absolute_y)
         self._continue_animation = continue_animation
         self.focused_background = make_background(focused_background, self.surface)
         self.disabled_background = make_background(disabled_background, self.surface)
