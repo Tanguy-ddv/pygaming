@@ -65,7 +65,7 @@ class Element(ABC):
         if isinstance(surface, pygame.Surface):
             self.surface = AnimatedSurface([surface], 2, 0)
         else:
-            self.surface = surface
+            self.surface = surface.copy()
 
         self.width, self.height = self.surface.width, self.surface.height
         self.x = x - anchor[0]*self.width
@@ -138,25 +138,25 @@ class Element(ABC):
 
     def enable(self):
         """Enable the object if it can be disabled."""
-        if self.can_be_disabled:
+        if self.can_be_disabled and self.disabled:
             self.disabled = False
             self.switch_background()
 
     def disable(self):
         """disable the object if it can be disabled."""
-        if self.can_be_disabled:
+        if self.can_be_disabled and not self.disabled:
             self.disabled = True
             self.switch_background()
 
     def focus(self):
         """focus the object if it can be focused."""
-        if self.can_be_focused:
-            self.focused = False
+        if self.can_be_focused and not self.focused:
+            self.focused = True
             self.switch_background()
 
     def unfocus(self):
         """Unfocus the object if it can be focused."""
-        if self.can_be_focused:
+        if self.can_be_focused and self.focused:
             self.focused = False
             self.switch_background()
 

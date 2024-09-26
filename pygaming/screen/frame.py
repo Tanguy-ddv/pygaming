@@ -164,7 +164,7 @@ class Frame(Element):
     def get_surface(self):
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
-            background = self.focus_background.get()
+            background = self.focused_background.get()
         else:
             background = self.surface.get()
         for child in self.visible_children:
