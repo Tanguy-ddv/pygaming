@@ -15,8 +15,8 @@ class Game(BaseRunnable):
     It can be online (with a server) or offline.
     """
 
-    def __init__(self, debug: bool = False) -> None:
-        BaseRunnable.__init__(self, debug, GAME)
+    def __init__(self, first_phase: str, debug: bool = False) -> None:
+        BaseRunnable.__init__(self, debug, GAME, first_phase)
         pygame.init()
 
         self.settings = Settings()
@@ -24,12 +24,12 @@ class Game(BaseRunnable):
         self.jukebox = Jukebox(self.settings)
 
         self.mouse = Mouse(self.settings)
-        self.keyboard = Keyboard(self.settings, self.config)
+        self.keyboard = Keyboard()
         self._inputs = Inputs(self.mouse, self.keyboard)
         self._screen = Screen(self.config, self.settings)
 
-        self.texts = Texts(self.database, self.settings)
-        self.speeches = Speeches(self.database, self.settings)
+        self.texts = Texts(self.database, self.settings, self.current_phase)
+        self.speeches = Speeches(self.database, self.settings, self.current_phase)
 
         self.client = None
         self.online = False
@@ -38,7 +38,7 @@ class Game(BaseRunnable):
         """Update all the component of the game."""
         loop_duration = self.clock.tick(self.config.get("max_frame_rate"))
         self.logger.update(loop_duration)
-        self._inputs.update(loop_duration)
+        self._inputs.update(loop_duration, self.current_phase)
         self._screen.display_phase(self.phases[self.current_phase])
         self._screen.update()
         self.jukebox.update()
@@ -49,11 +49,13 @@ class Game(BaseRunnable):
 
     def connect(self) -> bool:
         """Connect the game to the server."""
-        self.client = Client(self.config)
-        self.online = True
+        if not self.online:
+            self.client = Client(self.config)
+            self.online = True
 
     def disconnect(self) -> bool:
         """Disconnect the game from the server."""
-        self.client.close()
-        self.client = None
-        self.online = False
+        if self.online:
+            self.client.close()
+            self.client = None
+            self.online = False

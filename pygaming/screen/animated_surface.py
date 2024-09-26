@@ -1,12 +1,10 @@
 """AnimatedSurface is a class use to represent the a Surface that might be animated."""
-from typing import Union, List, Iterable
+from typing import List, Iterable
 import pygame
 from ..file import ImageFile
 from ..error import PygamingException
-from .colored_surface import ColoredSurface
 
-SurfaceLike = Union[pygame.Surface, ColoredSurface, ImageFile]
-SurfacesLike = List[SurfaceLike]
+SurfacesLike = List[pygame.Surface | ImageFile]
 
 class AnimatedSurface:
     """An AnimatedSurface is a Surface that can be animated."""
@@ -97,17 +95,6 @@ class AnimatedSurface:
         self._index = self._index%self._n_bg
         return self._surfaces[self._index].copy()
 
-def make_rounded_rectangle(color: pygame.Color | str, width: int, height: int):
-    """Make a rectange with half circles at the start and end."""
-    if isinstance(color, str):
-        if color in pygame.color.THECOLORS:
-            color = pygame.color.THECOLORS[color]
-        else:
-            color = pygame.Color(0,0,0,255)
-
-    surface = pygame.Surface((width, height), pygame.SRCALPHA)
-    rect = pygame.Rect(height//2, 0, width - height, height)
-    pygame.draw.rect(surface, color, rect)
-    pygame.draw.circle(surface, color, (height//2, height//2), height//2)
-    pygame.draw.circle(surface, color, (width - height//2, height//2), height//2)
-    return surface
+    def copy(self):
+        """Return a copy of the surface."""
+        return AnimatedSurface([s.copy() for s in self._surfaces], self._image_durations.copy(), self._image_introduction)

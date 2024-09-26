@@ -1,11 +1,11 @@
 """A phase is one step of the game."""
 from abc import ABC, abstractmethod
 import pygame
-from .screen.frame import Frame
 from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
 from .server import Server
+from .database import Texts, Speeches
 
 class BasePhase(ABC):
     """
@@ -48,6 +48,10 @@ class BasePhase(ABC):
     def debug(self):
         """Alias for self.game.debug or self.server.debug"""
         return self.runnable.debug
+
+    def begin(self, **kwargs):
+        """This method is called at the beginning of the phase."""
+        self.start(**kwargs)
 
     @abstractmethod
     def start(self, **kwargs):
@@ -107,15 +111,24 @@ class GamePhase(BasePhase, ABC):
     def __init__(self, name, game: Game) -> None:
         ABC.__init__(self)
         BasePhase.__init__(self, name, game)
-        self.frames: list[Frame] = []
+        self.frames = [] # list[Frame]
 
         self.absolute_x = 0
         self.absolute_y = 0
         self.current_hover_surface = None
 
-    def add_child(self, frame: Frame):
+    def add_child(self, frame):
         """Add a new frame to the phase."""
         self.frames.append(frame)
+
+    def begin(self, **kwargs):
+        """This method is called at the beginning of the phase."""
+        # update texts, speeche and controls based on the new phase
+        self.game.keyboard.load_controls(self.settings, self.config, self._name)
+        self.game.texts = Texts(self.database, self.settings, self._name)
+        self.game.speeches = Speeches(self.database, self.settings, self._name)
+        # Start the phase
+        self.start(**kwargs)
 
     @property
     def game(self) -> Game:
@@ -141,7 +154,7 @@ class GamePhase(BasePhase, ABC):
     def keyboard(self):
         """Alias for self.game.keyboard"""
         return self.game.keyboard
-    
+
     @property
     def mouse(self):
         """Alias for self.game.mouse"""
@@ -153,7 +166,16 @@ class GamePhase(BasePhase, ABC):
         if self.game.online:
             return self.game.client
         raise PygamingException("The game is not connected yet, there is no network to reach.")
-
+    
+    @property
+    def texts(self):
+        """Alias for self.game.texts"""
+        return self.game.texts
+    
+    @property
+    def speeches(self):
+        """Alias for self.game.speeches"""
+        return self.game.speeches
 
     def loop(self, loop_duration: int):
         """Update the phase."""
@@ -175,7 +197,7 @@ class GamePhase(BasePhase, ABC):
                 else:
                     frame.remove_focus()
 
-        actions = self.keyboard.get_actions()
+        actions = self.keyboard.get_actions_down()
         if "tab" in actions and actions["tab"]:
             for frame in self.frames:
                 if frame.focused:
@@ -184,19 +206,23 @@ class GamePhase(BasePhase, ABC):
     def __update_hover(self):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         x,y = self.mouse.get_position()
-        is_one_hovered = False
+        cursor, surf = None, None
         for frame in self.frames:
             if frame.absolute_left < x < frame.absolute_right and frame.absolute_top < y < frame.absolute_bottom:
-                is_frame_hovered, surf = frame.update_hover(x, y)
-                if is_frame_hovered:
-                    is_one_hovered = True
-                    self.current_hover_surface = surf
+                surf, cursor = frame.update_hover()
+                if surf is not None:
+                    self.current_hover_surface: pygame.Surface = surf
                     break
 
-        if not is_one_hovered:
+        if surf is None:
+            self.current_hover_surface = None
+
+        if cursor is None:
             cursor = self.config.default_cursor
             if hasattr(pygame, cursor):
                 cursor = getattr(pygame, cursor)
+            pygame.mouse.set_cursor(cursor)
+        else:
             pygame.mouse.set_cursor(cursor)
 
     @property
@@ -210,4 +236,7 @@ class GamePhase(BasePhase, ABC):
         for frame in self.visible_frames:
             surf = frame.get_surface()
             bg.blit(surf, (frame.x, frame.y))
+        if self.current_hover_surface is not None:
+            x, y = self.mouse.get_position()
+            bg.blit(self.current_hover_surface, (x, y - self.current_hover_surface.get_height()))
         return bg

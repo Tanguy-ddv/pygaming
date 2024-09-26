@@ -9,12 +9,12 @@
     "flush_frequency" : 5000,
     "broadcast_frequency" : 5000,
     "widget_keys" : {
-        "tab": "K_TAB",
-        "return": "K_RETURN",
-        "backspace": "K_BACKSPACE",
-        "left": "K_LEFT",
-        "right": "K_RIGHT",
-        "up": "K_UP",
-        "down": "K_DOWN"
+        "K_TAB": "tab",
+        "K_RETURN": "return",
+        "K_BACKSPACE": "backspace",
+        "K_LEFT": "left",
+        "K_RIGHT": "right",
+        "K_UP": "up",
+        "K_DOWN": "down"
     }
 }

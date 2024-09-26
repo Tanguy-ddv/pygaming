@@ -16,7 +16,7 @@ STAY = 'stay'
 class BaseRunnable(ABC):
     """The BaseRunnable Class is an abstract class for both the Game and the Server."""
 
-    def __init__(self, debug: bool, runnable_type: Literal['server', 'game']) -> None:
+    def __init__(self, debug: bool, runnable_type: Literal['server', 'game'], first_phase: str) -> None:
         super().__init__()
         pygame.init()
         self.debug = debug
@@ -25,7 +25,7 @@ class BaseRunnable(ABC):
         self.database = Database(self.config, runnable_type, debug)
         self.phases = {}
         self.transitions = {}
-        self.current_phase = ""
+        self.current_phase = first_phase
         self.clock = pygame.time.Clock()
 
     @abstractmethod
@@ -84,7 +84,7 @@ class BaseRunnable(ABC):
     def run(self, **kwargs0: dict[str, Any]):
         """Run the game."""
         stop = False
-        self.phases[self.current_phase].start(**kwargs0)
+        self.phases[self.current_phase].begin(**kwargs0)
         while not stop:
             stop = self.update()
         self.phases[self.current_phase].end()

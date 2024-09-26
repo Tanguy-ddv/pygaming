@@ -1,7 +1,7 @@
-INSERT INTO localizations (position, language_code, text_value) VALUES 
-('LOC_TITLE', 'en_US', 'Title'),
-('LOC_TTILE', 'fr_FR', 'Titre'),
-('LOC_SELECT_PLAYER', 'en_US', 'Choose your fighter!') 
+INSERT INTO localizations (position, phase_name, language_code, text_value) VALUES 
+('LOC_TITLE', 'all', 'en_US', 'Title'),
+('LOC_TITLE', 'all', 'fr_FR', 'Titre'),
+('LOC_SELECT_PLAYER', 'phase1', 'en_US', 'Choose your fighter!') 
 -- Example of use of the localizations table
 -- in the game, get the text via self.texts.get(position).
 -- If it exist in the current language, it gets it

@@ -1,7 +1,9 @@
 """the element module contains the Element object, which is a base for every object displayed on the game window."""
+from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 import pygame
+from ..phase import GamePhase
 from .animated_surface import AnimatedSurface
 
 # Anchors
@@ -12,13 +14,15 @@ CENTER = 0.5, 0.5
 BOTTOM_LEFT = 1, 0
 BOTTOM_RIGHT = 1, 1
 
+SurfaceLike = Union[AnimatedSurface, pygame.Surface]
+
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
 
     def __init__(
         self,
-        master,
-        surface: AnimatedSurface | pygame.Surface,
+        master : Union[GamePhase | Element], # Frame or phase, no direct typing of frame to avoid circular import
+        surface: SurfaceLike,
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
@@ -61,7 +65,7 @@ class Element(ABC):
         if isinstance(surface, pygame.Surface):
             self.surface = AnimatedSurface([surface], 2, 0)
         else:
-            self.surface = surface
+            self.surface = surface.copy()
 
         self.width, self.height = self.surface.width, self.surface.height
         self.x = x - anchor[0]*self.width
@@ -88,9 +92,9 @@ class Element(ABC):
         """Return the game."""
         return self.master.game
 
-    def update_hover(self, hover_x, hover_y): #pylint: disable=unused-argument
+    def update_hover(self): #pylint: disable=unused-argument
         """Update the hover cursor and surface. To be overriden by element needing it."""
-        return False, None
+        return self.hover_surface, self.hover_cursor
 
     @abstractmethod
     def get_surface(self) -> pygame.Surface:
@@ -134,23 +138,33 @@ class Element(ABC):
 
     def enable(self):
         """Enable the object if it can be disabled."""
-        if self.can_be_disabled:
+        if self.can_be_disabled and self.disabled:
             self.disabled = False
+            self.switch_background()
 
     def disable(self):
         """disable the object if it can be disabled."""
-        if self.can_be_disabled:
+        if self.can_be_disabled and not self.disabled:
             self.disabled = True
+            self.switch_background()
 
     def focus(self):
         """focus the object if it can be focused."""
-        if self.can_be_focused:
-            self.focused = False
+        if self.can_be_focused and not self.focused:
+            self.focused = True
+            self.switch_background()
 
     def unfocus(self):
         """Unfocus the object if it can be focused."""
-        if self.can_be_focused:
+        if self.can_be_focused and self.focused:
             self.focused = False
+            self.switch_background()
+
+    def switch_background(self):
+        """
+        Switch background when the widget is disabled, focused, enabled or unfocused.
+        Don't do anything for basic elements, to be overriden by other elements.
+        """
 
     @property
     def relative_coordinate(self):
