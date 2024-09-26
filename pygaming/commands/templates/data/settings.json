@@ -1,6 +1,8 @@
 {
     "controls": {
-        "K_ESCAPE": "pause"
+        "phase1" : {
+            "K_ESCAPE": "pause"
+        }
     }, 
     "current_language": "fr_FR", 
     "fullscreen": 0, 

@@ -48,6 +48,10 @@ class BasePhase(ABC):
         """Alias for self.game.debug or self.server.debug"""
         return self.runnable.debug
 
+    def begin(self, **kwargs):
+        """This method is called at the beginning of the phase."""
+        self.start(**kwargs)
+
     @abstractmethod
     def start(self, **kwargs):
         """This method is called at the start of the phase and might need several arguments."""
@@ -116,6 +120,12 @@ class GamePhase(BasePhase, ABC):
         """Add a new frame to the phase."""
         self.frames.append(frame)
 
+    def begin(self, **kwargs):
+        self.game.keyboard.load_controls(self.settings, self.config, self._name)
+        # update texts, speeche and controls based on the new phase
+        #self.game.texts
+        self.start(**kwargs)
+
     @property
     def game(self) -> Game:
         """Alias for the game."""
@@ -140,7 +150,7 @@ class GamePhase(BasePhase, ABC):
     def keyboard(self):
         """Alias for self.game.keyboard"""
         return self.game.keyboard
-    
+
     @property
     def mouse(self):
         """Alias for self.game.mouse"""
@@ -190,7 +200,7 @@ class GamePhase(BasePhase, ABC):
                 if surf is not None:
                     self.current_hover_surface: pygame.Surface = surf
                     break
-        
+
         if surf is None:
             self.current_hover_surface = None
 

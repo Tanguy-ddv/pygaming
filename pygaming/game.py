@@ -24,7 +24,7 @@ class Game(BaseRunnable):
         self.jukebox = Jukebox(self.settings)
 
         self.mouse = Mouse(self.settings)
-        self.keyboard = Keyboard(self.settings, self.config)
+        self.keyboard = Keyboard()
         self._inputs = Inputs(self.mouse, self.keyboard)
         self._screen = Screen(self.config, self.settings)
 
@@ -38,7 +38,7 @@ class Game(BaseRunnable):
         """Update all the component of the game."""
         loop_duration = self.clock.tick(self.config.get("max_frame_rate"))
         self.logger.update(loop_duration)
-        self._inputs.update(loop_duration)
+        self._inputs.update(loop_duration, self.current_phase)
         self._screen.display_phase(self.phases[self.current_phase])
         self._screen.update()
         self.jukebox.update()

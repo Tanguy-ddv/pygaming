@@ -11,15 +11,28 @@ _ACCEPTED_LETTERS = ascii_letters + digits + punctuation + " "
 class Keyboard:
     """The keyboard class is used to manage the keyboard inputs."""
 
-    def __init__(self, settings: Settings, config: Config) -> None:
+    def __init__(self) -> None:
         """Create the keyboard."""
-        self.controls = Controls(settings, config)
+        self.controls = None
         self.event_list: list[pygame.event.Event] = []
+        self._control_mapping = {}
+        self.action_pressed = {}
+        self._phase_name = None
+
+    def load_controls(self, settings: Settings, config: Config, phase_name: str):
+        """Load the new controls"""
+        self.controls = Controls(settings, config, phase_name)
+        self._control_mapping = self.controls.get_reverse_mapping()
         self.action_pressed = self.get_actions_down()
 
-    def update(self, event_list: list[pygame.event.Event]):
+    def update(self, event_list: list[pygame.event.Event], phase_name: str):
         """Update the keyboard with the event list."""
         self.event_list = event_list
+        if self._phase_name != phase_name:
+            self._phase_name = phase_name
+            self.controls.update_settings()
+
+        self._control_mapping = self.controls.get_reverse_mapping()
         for key, upped in self.get_actions_up().items():
             if upped:
                 self.action_pressed[key] = False
@@ -45,15 +58,15 @@ class Keyboard:
         types = [event.key for event in self.event_list if event.type == pygame.KEYDOWN]
         return {
             action : any(int(key) in types for key in keys)
-            for action, keys in self.controls.get_reverse_mapping().items()}
+            for action, keys in self._control_mapping.items()}
 
     def get_actions_up(self):
         """Return a dict of str: bool specifying if the action is triggered or not. The action is triggered if the user just unpressed the key."""
         types = [event.key for event in self.event_list if event.type == pygame.KEYUP]
         return {
             action : any(int(key) in types for key in keys)
-            for action, keys in self.controls.get_reverse_mapping().items()}
-    
+            for action, keys in self._control_mapping.items()}
+
     def get_actions_press(self):
         """Return a dict of str: bool specifying if the action is triggered or not. The action is triggered if the user just unpressed the key."""
         return self.action_pressed

@@ -84,7 +84,7 @@ class BaseRunnable(ABC):
     def run(self, **kwargs0: dict[str, Any]):
         """Run the game."""
         stop = False
-        self.phases[self.current_phase].start(**kwargs0)
+        self.phases[self.current_phase].begin(**kwargs0)
         while not stop:
             stop = self.update()
         self.phases[self.current_phase].end()

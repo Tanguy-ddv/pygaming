@@ -166,7 +166,6 @@ class Element(ABC):
         Don't do anything for basic elements, to be overriden by other elements.
         """
 
-
     @property
     def relative_coordinate(self):
         """Return the coordinate of the element in its frame."""

@@ -13,14 +13,14 @@ class Controls:
     The current mapping is store in the dynamic data/keymap.json file.
     """
 
-    def __init__(self, settings: Settings, config: Config) -> None:
+    def __init__(self, settings: Settings, config: Config, phase_name: str) -> None:
 
         self._key_map_dict: dict[str, str] = {}
         self._reverse_mapping = {}
         self._settings = settings
         self._config = config
-        self._previous_controls = self._settings.controls
-        self._update_settings()
+        self._previous_controls = None
+        self._phase_name = phase_name
 
     def get_reverse_mapping(self):
         """
@@ -31,20 +31,19 @@ class Controls:
         reverse_mapping: dict[str, list[str]]. The keys are the actions, the values the list of event that would trigger it.
         """
         if self._previous_controls != self._settings.controls:
-            self._update_settings()
+            self.update_settings()
         return self._reverse_mapping
 
-    def _update_settings(self):
+    def update_settings(self):
         """Update the key map dict with the current settings."""
         self._key_map_dict = {}
 
-        controls = self._settings.controls
+        controls = self._settings.controls[self._phase_name]
         for key, action in controls.items():
             if not key.isdigit() and hasattr(pygame, key):
                 self._key_map_dict[str(getattr(pygame, key))] = action
             else:
                 self._key_map_dict[key] = action
-
 
         controls = self._config.get("widget_keys")
         for key, action in controls.items():
@@ -52,7 +51,7 @@ class Controls:
                 self._key_map_dict[str(getattr(pygame, key))] = action
             else:
                 self._key_map_dict[key] = action
-        
+
         self._reverse_mapping = self._get_reversed_mapping()
 
     def _get_reversed_mapping(self):
