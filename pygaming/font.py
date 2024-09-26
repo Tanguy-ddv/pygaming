@@ -11,7 +11,8 @@ class Font(Ft):
             name: str | None,
             size: int,
             color: Color,
-            settings, bold: bool = False,
+            settings = None, # No typing to avoid circular imports
+            bold: bool = False,
             italic: bool = False,
             underline: bool = False
         ) -> None:
@@ -36,7 +37,11 @@ class Font(Ft):
 
     def render(self, text: str) -> Surface:
         """Create a surface from the font by writing a text."""
-        return super().render(text, self._settings.antialias, self.color)
+        if self._settings is None:
+            antialias = False
+        else:
+            antialias = self._settings.antialias
+        return super().render(text, antialias, self.color)
 
     def set_color(self, color: Color):
         """Change the color of the font."""
