@@ -22,6 +22,7 @@ from .screen.animated_surface import AnimatedSurface, SurfacesLike
 from .screen.label import Label, TEXT_CENTERED, TEXT_LEFT, TEXT_RIGHT
 from .screen.widget.widget import Widget
 from .screen.widget.slider import Slider
+from .screen.widget.button import Button
 
 from .inputs import Inputs, Controls, Click, Keyboard, Mouse
 from .file import FontFile, DataFile, ImageFile, GIFFile, SoundFile, MusicFile, get_file
@@ -35,6 +36,6 @@ __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase',
            'Server', 'Settings', 'ServerTransition', 'GameTransition', 'Screen', 'Frame',
            'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
            'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client', 'Keyboard', 'Mouse',
-           'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches',
+           'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches', 'Button',
            'commands', 'ColoredRectangle', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT',
            'Label', 'TEXT_CENTERED', 'TEXT_LEFT', 'TEXT_RIGHT', 'Widget', 'Slider', 'ColoredCircle', 'ColoredRoundedRectangle']
