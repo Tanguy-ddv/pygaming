@@ -183,19 +183,23 @@ class GamePhase(BasePhase, ABC):
     def __update_hover(self):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         x,y = self.mouse.get_position()
-        is_one_hovered = False
+        cursor, surf = None, None
         for frame in self.frames:
             if frame.absolute_left < x < frame.absolute_right and frame.absolute_top < y < frame.absolute_bottom:
-                is_frame_hovered, surf = frame.update_hover(x, y)
-                if is_frame_hovered:
-                    is_one_hovered = True
-                    self.current_hover_surface = surf
+                surf, cursor = frame.update_hover()
+                if surf is not None:
+                    self.current_hover_surface: pygame.Surface = surf
                     break
+        
+        if surf is None:
+            self.current_hover_surface = None
 
-        if not is_one_hovered:
+        if cursor is None:
             cursor = self.config.default_cursor
             if hasattr(pygame, cursor):
                 cursor = getattr(pygame, cursor)
+            pygame.mouse.set_cursor(cursor)
+        else:
             pygame.mouse.set_cursor(cursor)
 
     @property
@@ -209,4 +213,7 @@ class GamePhase(BasePhase, ABC):
         for frame in self.visible_frames:
             surf = frame.get_surface()
             bg.blit(surf, (frame.x, frame.y))
+        if self.current_hover_surface is not None:
+            x, y = self.mouse.get_position()
+            bg.blit(self.current_hover_surface, (x, y - self.current_hover_surface.get_height()))
         return bg

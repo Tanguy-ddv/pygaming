@@ -37,9 +37,6 @@ class Frame(Element):
         - focused_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
         If None, copy the background
         - layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
-        - hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
-        frame is hovered by the mouse.
-        - hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the frame.
         - continue_animation: bool. If set to False, switching from focused to unfocused will reset the animations.
         """
         self.children: list[Element] = []
@@ -52,8 +49,8 @@ class Frame(Element):
             y,
             anchor,
             layer,
-            hover_surface,
-            hover_cursor,
+            None,
+            None,
             can_be_disabled=False,
             can_be_focused=True
         )
@@ -67,25 +64,19 @@ class Frame(Element):
             self.focused_background = AnimatedSurface([focused_background], 4, 0)
         else:
             self.focused_background = focused_background
-        self.current_hover_surface = None
 
     def add_child(self, child: Element):
         """Add a new element to the child list."""
         self.children.append(child)
 
-    def update_hover(self, hover_x, hover_y) -> tuple[bool, pygame.Surface | None]:
+    def update_hover(self) -> tuple[bool, pygame.Surface | None]:
         """Update the hovering."""
-        hover_x -= self.x
-        hover_y -= self.y
-        is_one_hovered = False
-        for child in self.children:
-            if child.visible:
-                if child.x < hover_x < child.x + child.width and child.y < hover_y < child.y + child.height:
-                    is_child_hovered, surf = child.update_hover(hover_x, hover_y)
-                    if is_child_hovered:
-                        is_one_hovered = True
-                        self.current_hover_surface = surf
-        return is_one_hovered, self.current_hover_surface
+        surf, cursor = None, None
+        hover_x, hover_y = self.game.mouse.get_position()
+        for child in self.visible_children:
+            if child.absolute_left < hover_x < child.absolute_right and child.absolute_top < hover_y < child.absolute_bottom:
+                surf, cursor = child.update_hover()
+        return surf, cursor
 
     def update_focus(self, click_x, click_y):
         """Update the focus of all the children in the frame."""
