@@ -174,7 +174,7 @@ class GamePhase(BasePhase, ABC):
                 else:
                     frame.remove_focus()
 
-        actions = self.keyboard.get_actions()
+        actions = self.keyboard.get_actions_down()
         if "tab" in actions and actions["tab"]:
             for frame in self.frames:
                 if frame.focused:
