@@ -9,11 +9,11 @@ class Texts:
     The class Texts is used to manage the texts of the game, that might be provided in several languages.
     """
 
-    def __init__(self, database: Database, settings: Settings) -> None:
+    def __init__(self, database: Database, settings: Settings, phase_name: str) -> None:
         self._db = database
         self._settings = settings
         self._last_language = settings.language
-        texts_list = self._db.get_texts(self._last_language)
+        texts_list = self._db.get_texts(self._last_language, phase_name)
         self._text_dict = {pos : txt for pos, txt in texts_list[0]}
 
     def get_positions(self):

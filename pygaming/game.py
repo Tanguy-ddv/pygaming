@@ -15,8 +15,8 @@ class Game(BaseRunnable):
     It can be online (with a server) or offline.
     """
 
-    def __init__(self, debug: bool = False) -> None:
-        BaseRunnable.__init__(self, debug, GAME)
+    def __init__(self, first_phase: str, debug: bool = False) -> None:
+        BaseRunnable.__init__(self, debug, GAME, first_phase)
         pygame.init()
 
         self.settings = Settings()
@@ -28,8 +28,8 @@ class Game(BaseRunnable):
         self._inputs = Inputs(self.mouse, self.keyboard)
         self._screen = Screen(self.config, self.settings)
 
-        self.texts = Texts(self.database, self.settings)
-        self.speeches = Speeches(self.database, self.settings)
+        self.texts = Texts(self.database, self.settings, self.current_phase)
+        self.speeches = Speeches(self.database, self.settings, self.current_phase)
 
         self.client = None
         self.online = False

@@ -5,6 +5,7 @@ from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
 from .server import Server
+from .database import Texts, Speeches
 
 class BasePhase(ABC):
     """
@@ -121,9 +122,12 @@ class GamePhase(BasePhase, ABC):
         self.frames.append(frame)
 
     def begin(self, **kwargs):
-        self.game.keyboard.load_controls(self.settings, self.config, self._name)
+        """This method is called at the beginning of the phase."""
         # update texts, speeche and controls based on the new phase
-        #self.game.texts
+        self.game.keyboard.load_controls(self.settings, self.config, self._name)
+        self.game.texts = Texts(self.database, self.settings, self._name)
+        self.game.speeches = Speeches(self.database, self.settings, self._name)
+        # Start the phase
         self.start(**kwargs)
 
     @property
@@ -162,7 +166,16 @@ class GamePhase(BasePhase, ABC):
         if self.game.online:
             return self.game.client
         raise PygamingException("The game is not connected yet, there is no network to reach.")
-
+    
+    @property
+    def texts(self):
+        """Alias for self.game.texts"""
+        return self.game.texts
+    
+    @property
+    def speeches(self):
+        """Alias for self.game.speeches"""
+        return self.game.speeches
 
     def loop(self, loop_duration: int):
         """Update the phase."""

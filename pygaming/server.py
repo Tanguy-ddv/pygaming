@@ -6,7 +6,7 @@ from .base import BaseRunnable
 class Server(BaseRunnable):
     """The Server is the instance to be run as a server for online game."""
 
-    def __init__(self, debug: bool, nb_max_player: bool) -> None:
+    def __init__(self, nb_max_player: bool, first_phase: str, debug: bool = False) -> None:
         """
         Create the Server.
 
@@ -14,7 +14,7 @@ class Server(BaseRunnable):
         debug: bool, if True, the database will not delete itself at the end and the logger will also log debug content.
         nb_max_player: The maximum number of player allowed to connect to the game.
         """
-        super().__init__(debug, SERVER)
+        super().__init__(debug, SERVER, first_phase)
         self.network = Network(self.config, nb_max_player)
 
     def update(self):

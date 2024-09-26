@@ -125,7 +125,7 @@ class Database:
         result, description = self._execute_select_query(query)
         return [{key : value for key,value in zip(description, res) if (key != f"{table}_id" or return_id)} for res in result]
 
-    def get_texts(self, language: str):
+    def get_texts(self, language: str, phase_name:str):
         """Return all the texts of the game.
         If the text is not avaiable in the chosen language, get the text in the default language.
         """
@@ -134,6 +134,7 @@ class Database:
             f"""SELECT position, text_value
                 FROM localizations
                 WHERE language_code = '{language}'
+                AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
 
                 UNION
 
@@ -144,10 +145,11 @@ class Database:
                     SELECT position
                     FROM localizations
                     WHERE language_code = '{language}'
+                    AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
             )"""
         )
 
-    def get_speeches(self, language: str):
+    def get_speeches(self, language: str, phase_name: str):
         """
         Return all the specches of the game of the given language.
         If the speech is not available in the given language, get it in the default language
@@ -157,6 +159,7 @@ class Database:
             f"""SELECT position, sound_path
                 FROM speeches
                 WHERE language_code = '{language}'
+                AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
 
                 UNION
 
@@ -167,5 +170,6 @@ class Database:
                     SELECT position
                     FROM speeches
                     WHERE language_code = '{language}'
+                    AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
             )"""
         )
