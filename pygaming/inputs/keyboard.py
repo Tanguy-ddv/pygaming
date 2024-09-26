@@ -27,13 +27,17 @@ class Keyboard:
             if upped:
                 self.action_pressed[key] = True
 
-    def get_characters(self, extra_characters: str = ''):
+    def get_characters(self, extra_characters: str = '', forbid_characters: str = ''):
         """Return all the letter characters a-z, digits 0-9, whitespace, punctuation and extra caracters."""
         if not isinstance(extra_characters, str) and isinstance(extra_characters, Iterable):
             extra_characters = ''.join(extra_characters)
         return [
             event.unicode for event in self.event_list
-            if event.type == pygame.KEYDOWN and event.unicode and event.unicode in _ACCEPTED_LETTERS + extra_characters
+            if (event.type == pygame.KEYDOWN
+                and event.unicode
+                and event.unicode in _ACCEPTED_LETTERS + extra_characters
+                and not event.unicode in forbid_characters
+                )
         ]
 
     def get_actions_down(self):
