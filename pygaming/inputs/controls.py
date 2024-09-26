@@ -45,7 +45,6 @@ class Controls:
             else:
                 self._key_map_dict[key] = action
 
-        self._reverse_mapping = self._get_reversed_mapping()
 
         controls = self._config.get("widget_keys")
         for key, action in controls.items():
@@ -53,6 +52,8 @@ class Controls:
                 self._key_map_dict[str(getattr(pygame, key))] = action
             else:
                 self._key_map_dict[key] = action
+        
+        self._reverse_mapping = self._get_reversed_mapping()
 
     def _get_reversed_mapping(self):
         """Get all the defined keys and the actions."""

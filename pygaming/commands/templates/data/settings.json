@@ -1,20 +1,18 @@
 {
     "controls": {
-        "K_ESCAPE": "pause",
-        "K_LEFT": "left",
-        "K_RIGHT": "right",
-        "K_UP": "up",
-        "K_DOWN": "down"
-    },
+        "K_ESCAPE": "pause"
+    }, 
     "current_language": "fr_FR", 
     "fullscreen": 0, 
     "volumes": {
         "main": 1, 
         "music": 1, 
         "sounds": {
-            "speeches": 1
+            "speeches": 1,
+            "classic" : 0.5,
+            "not classic" : 0.8
         }
     },
-    "antialias" : 1,
-    "sensibility" : 0.5
+        "antialias": 1,
+        "current_languge": "fr_FR"
 }
