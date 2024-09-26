@@ -49,11 +49,13 @@ class Game(BaseRunnable):
 
     def connect(self) -> bool:
         """Connect the game to the server."""
-        self.client = Client(self.config)
-        self.online = True
+        if not self.online:
+            self.client = Client(self.config)
+            self.online = True
 
     def disconnect(self) -> bool:
         """Disconnect the game from the server."""
-        self.client.close()
-        self.client = None
-        self.online = False
+        if self.online:
+            self.client.close()
+            self.client = None
+            self.online = False
