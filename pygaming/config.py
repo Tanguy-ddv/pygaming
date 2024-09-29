@@ -3,7 +3,10 @@ import json
 from .file import get_file
 
 class Config:
-    """The config class is used to interact with the config file."""
+    """
+    The config class is used to interact with the config file.
+    It store several constants of the game: screen dimension, default language, default cursor, ...
+    """
 
     def __init__(self) -> None:
         path = get_file('data', 'config.json', True)

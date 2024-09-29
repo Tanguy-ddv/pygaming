@@ -12,7 +12,11 @@ from .base import BaseRunnable
 class Game(BaseRunnable):
     """
     The game is the instance created and runned by the player.
-    It can be online (with a server) or offline.
+
+    Params:
+    ----
+    first_phase: str, the name of the first frame.
+    debug: bool
     """
 
     def __init__(self, first_phase: str, debug: bool = False) -> None:

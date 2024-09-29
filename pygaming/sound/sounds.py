@@ -4,7 +4,7 @@ from ..file import SoundFile
 from ..settings import Settings
 
 class Sound:
-    """The Sound class represent a sound, it load the category and the file from a SoundFile object."""
+    """The Sound class represent a sound, it loads the category and the file from a SoundFile object."""
 
     def __init__(self, sound_file: SoundFile) -> None:
         self._sound, self.category = sound_file.get()

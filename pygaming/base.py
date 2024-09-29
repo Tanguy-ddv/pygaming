@@ -44,7 +44,9 @@ class BaseRunnable(ABC):
 
     def update_phases(self, loop_duration: int):
         """Update the phases of the game."""
+        # Update the current phase
         self.phases[self.current_phase].loop(loop_duration)
+        # Ask what is next
         next_phase = self.phases[self.current_phase].next()
         # Verify if the phase is over
         if next_phase not in [NO_NEXT, STAY]:

@@ -21,8 +21,6 @@ class Frame(Element):
         focused_background: Optional[SurfaceLike] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
-        hover_surface: Optional[pygame.Surface] = None,
-        hover_cursor: Optional[pygame.Cursor] = None,
         continue_animation: bool = False
     ) -> None:
         """

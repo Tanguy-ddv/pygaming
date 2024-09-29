@@ -20,16 +20,11 @@ class AnimatedSurface:
 
         params:
         ----
-        width: int, the width of the object.
-        height: int, the hieght of the object.
-        surfaces: SurfacesLike, The surfaces of the objects.
+        - surfaces: SurfacesLike, The surfaces of the objects. It should be a list of pygame.Surface or of ImageFile
         if only one element is given, it is treated as a list of length 1
-        If it is a (list of) color or a str, create a list of surface of this color with the shape (width, height)
-        If it is a (list of) surface, resize the surface with (width, height)
-        Can be a list of colors and surfaces, str
-        image_duration: If several surfaces are given, as a list of str, color, ImageFile or Surface,
+        - image_duration: If several surfaces are given,
         the frame duration is the amount of time each frame is displayed before. If it is a list, it must be the same length than surfaces.
-        image_introduction: int, default 0. If an integer is given (< length of surfaces), the loop does not go back to the first image but to this one.
+        - image_introduction: int, default 0. If an integer is given (< length of surfaces), the loop does not go back to the first image but to this one.
         ex: In a platformer, the 5 first frames are the character standing in the right direction, then he walks. For this, we use a image_introduction=5
         """
         self._index = 0
@@ -60,7 +55,7 @@ class AnimatedSurface:
             )
 
     def update_animation(self, loop_duration: float):
-        """Update the background"""
+        """Update the animation."""
         if self._n_bg > 1:
             self._time_since_last_change += loop_duration
             if self._time_since_last_change >= self._image_durations[self._index]:
@@ -92,7 +87,6 @@ class AnimatedSurface:
         """
         Return the background.
         """
-        self._index = self._index%self._n_bg
         return self._surfaces[self._index].copy()
 
     def copy(self):

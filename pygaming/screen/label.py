@@ -33,6 +33,7 @@ class Label(Element):
         - y: The first coordinate of the anchor in the Frame.
         - anchor: The anchor of the coordinate.
         - layer: int, the layer of the element in the frame.
+        - justify: the position of the text in the label. can be TEXT_CENTERED, TEXT_RIGHT, TEXT_LEFT
         """
         self.font = font
         self.text = str(text)

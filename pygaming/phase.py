@@ -18,11 +18,14 @@ class BasePhase(ABC):
     and send data based on them to the players via self.network.send() (or .send_all()).
     """
 
-    def __init__(self, name, runnable: BaseRunnable) -> None:
+    def __init__(self, name: str, runnable: BaseRunnable) -> None:
         """
-        Create the phase.
+        Create the phase. Each game/server have several phases
 
-        Runnable: the game or server instance
+        Params:
+        ----
+        - name: The name of the phase
+        - runnable: the game or server instance
         """
         ABC.__init__(self)
         self._name = name
@@ -94,7 +97,22 @@ class BasePhase(ABC):
         raise NotImplementedError()
 
 class ServerPhase(BasePhase, ABC):
-    """The ServerPhase is a game phase to be add to the server only."""
+    """
+    The ServerPhase is a phase to be added to the server only.
+    Each SeverPhase must implements the `start`, `update`, `end`, `next` and `apply_transition` emthods.
+    - The `start` method is called at the beginning of the phase and is used to initialiez it. It can have several arguments
+    - The `update` method is called every loop iteration and contains the game's logic.
+    - The `end` method is called at the end of the game and is used to save results and free resources.
+    - The `next` method is called every loop iteration and is used to know if the phase is over.
+    It should return pygaming.NO_NEXT if the whole game is over, pygaming.STAY if the phase is not over
+    or the name of another phase if we have to switch phase.
+    - The `apply_transition` method is called if the `next` method returns a phase name. It return the argument
+    for the start method of the next phase as a dict.
+    
+    ---
+    You can access to the network via `self.network` to send data to the players or receive data.
+    You can acces to the logger via `self.logger`, to the config via `self.config` and to the database via `self.database`.
+    """
 
     def __init__(self, name, server: Server) -> None:
         ABC.__init__(self)
@@ -115,7 +133,25 @@ class ServerPhase(BasePhase, ABC):
         self.update(loop_duration)
 
 class GamePhase(BasePhase, ABC):
-    """The ServerPhase is a game phase to be add to the game only."""
+    """
+    The GamePhase is a phase to be added to the game only.
+    Each SeverPhase must implements the `start`, `update`, `end`, `next` and `apply_transition` emthods.
+    - The `start` method is called at the beginning of the phase and is used to initialiez it. It can have several arguments
+    - The `update` method is called every loop iteration and contains the game's logic.
+    - The `end` method is called at the end of the game and is used to save results and free resources.
+    - The `next` method is called every loop iteration and is used to know if the phase is over.
+    It should return pygaming.NO_NEXT if the whole game is over, pygaming.STAY if the phase is not over
+    or the name of another phase if we have to switch phase.
+    - The `apply_transition` method is called if the `next` method returns a phase name. It return the argument
+    for the start method of the next phase as a dict. 
+    
+    ---
+    You can access to the network via `self.network` to send data to the server or receive data.
+    You can acces to the logger via `self.logger`, to the config via `self.config`, to the settings with `self.settings`,
+    to the database via `self.database`, to the input via `self.keyboard` and `self.mouse`,
+    to the texts and speeches via `self.texts` and `self.speeches`, and
+    to the soundbox and jukebox via `self.soundbox` and `self.jukebox`.
+    """
 
     def __init__(self, name, game: Game) -> None:
         ABC.__init__(self)
@@ -132,7 +168,7 @@ class GamePhase(BasePhase, ABC):
 
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
-        # update texts, speeche and controls based on the new phase
+        # update texts, speeches and controls based on the new phase
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
         self.game.texts = Texts(self.database, self.settings, self._name)
         self.game.speeches = Speeches(self.database, self.settings, self._name)

@@ -38,6 +38,36 @@ class Entry(Widget):
         charet_width: int = 2,
         max_length: int = 10,
     ) -> None:
+        """
+        The Entry widget is used to allow the user to add a textual input.
+        
+Params:
+        ---
+        - master: Frame. The Frame in which this widget is placed.
+        - x: int, the coordinate of the anchor in the master Frame
+        - y: int, the top coordinate of the anchor in the master Frame.
+        - normal_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is neither focused nor disabled.
+        - normal_font: Font
+        - focused_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is focused.
+        - focused_font: Font,
+        - disabled_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is disabled.
+        - disabled_font: Font,
+        - initial_value: str
+        - extra_characters: str
+        - forbid_charcaters: str
+        - anchor: tuple[float, float]. The point of the slider that is placed at the coordinate (x,y).
+          Use TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT or BOTTOM_RIGHT, or another personized tuple.
+        - active_area: Rect. The Rectangle in the bacground that represent the active part of the slider. if None, then it is the whole background.
+        - layer: int, the layer of the slider in its master frame
+        - hover_surface: Surface, The surface to show when the slider is hovered.
+        - hover_cursor: Cursor The cursor of the mouse to use when the widget is hovered,
+        - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
+        - justify: str, the position of the text in the entry. can be TEXT_CENTERED, TEXT_RIGHT, TEXT_LEFT
+        - charet_frequency: int, The blinking frequency of the charet (ms)
+        - charet_width: int, The width of the charet in pixel.
+        - max_length: The maximum number of characters the entry can support.
+        """
+
         super().__init__(
             master,
             x,

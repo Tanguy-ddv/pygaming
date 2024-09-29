@@ -13,7 +13,6 @@ from .logger import Logger
 from .phase import ServerPhase, GamePhase
 from .server import Server
 from .settings import Settings
-from .transition import ServerTransition, GameTransition
 
 from .screen.screen import Screen
 from .screen.frame import Frame
@@ -31,12 +30,12 @@ from .connexion import Client, Server as Network, HEADER, ID, CONTENT, TIMESTAMP
 
 from .database import Database, Texts, Speeches
 from . import commands
-from .screen.colored_surfaces import ColoredRectangle, ColoredCircle, ColoredRoundedRectangle
+from .screen.colored_surfaces import ColoredRectangle, ColoredCircle, ColoredPolygon
 
 __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
-           'Server', 'Settings', 'ServerTransition', 'GameTransition', 'Screen', 'Frame',
+           'Server', 'Settings', 'Screen', 'Frame',
            'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
            'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client', 'Keyboard', 'Mouse',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches', 'Button','Entry',
            'commands', 'ColoredRectangle', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT',
-           'Label', 'TEXT_CENTERED', 'TEXT_LEFT', 'TEXT_RIGHT', 'Widget', 'Slider', 'ColoredCircle', 'ColoredRoundedRectangle']
+           'Label', 'TEXT_CENTERED', 'TEXT_LEFT', 'TEXT_RIGHT', 'Widget', 'Slider', 'ColoredCircle', 'ColoredPolygon']

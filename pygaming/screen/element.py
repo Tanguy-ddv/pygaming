@@ -37,25 +37,19 @@ class Element(ABC):
 
         Params:
         ----
-        master: Frame or Phase, the master of this object.
-        surface: The surface.
-        x, y: the coordinates in the master of the anchor point.
-        anchor: the anchor point in % of the width and height. 
-        width, height: the dimension of the object.
-        layer: the layer of the object. The smaller the more on the background
-        image_duration (ms): If a list is provided as background, the background of the frame is changed every image_duration.
-        if image_duration is a list, it must have the same length as background.
-        in this case, the i-th image of the background will be displayed image_duration[i] ms.
-        image_introduction: int, if you provided a list for the surface, the background will not cycle back to 0
-        but to this index. 
-        hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
+        - master: Frame or Phase, the master of this object.
+        - surface: The surface. It is either an AnimatedSurface or a pygame.Surface
+        - x, int, the coordinates in the master of the anchor point.
+        - y: int, the coordinates in the master of the anchor point.
+        - anchor: the anchor point in % of the width and height. 
+        - hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
         frame is hovered by the mouse.
-        hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the frame.
-        ca_be_disabled, can_be_focused: Some element could be disabled, like widgets. Some element could be focused.
+        - hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the frame.
+        - can_be_disabled: some element can be disabled.
+        - can_be_focused: Some element can be focused.
         """
 
         self.layer = layer
-
         self.visible = True
         self.can_be_focused = can_be_focused
         self.focused = False
