@@ -12,10 +12,10 @@ class BasePhase(ABC):
     A Phase is a step in the game. Each game should have a few phases.
     Exemple of phases: menus, lobby, stages, ...
     Create a subclass of phase to do whatever you need by
-    rewriting the start, the __init__, _update and/or end method.
+    rewriting the start, the __init__, update, end, next and apply_transition methods.
     If the game is online, you will need twice as much frames. One half for the Server and the other half for the game.
-    For the server, don't use any frame, but use only the inputs from the players by using self.game.server.get_last_reception()
-    and send data based on them to the players via self.game.server.send() (or .send_all()).
+    For the server, don't use any frame, but use only the inputs from the players by using self..gnetwork.get_last_receptions()
+    and send data based on them to the players via self.network.send() (or .send_all()).
     """
 
     def __init__(self, name, runnable: BaseRunnable) -> None:
@@ -68,6 +68,15 @@ class BasePhase(ABC):
         """
         If the phase is over, return the name of the next phase, if the phase is not, return an empty string.
         If it is the end of the game, return 'NO_NEXT'
+        """
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def apply_transition(self, next_phase: str):
+        """
+        This method is called if the method next returns a new phase. Its argument is the name of the next phase.
+        For each new phase possible, it should return a dict, whose keys are the name of the argument of the
+        start method of the next phase, and the values are the values given to these arguments.
         """
         raise NotImplementedError()
 
