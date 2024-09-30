@@ -15,8 +15,8 @@ class ImageFile(File):
         
         Params:
         ----
-        size: tuple(int, int), the expected size of the return image. If no argument is passed, use the size of the image.
-        rotation: float, Rotate the image of this amount, default is 0.
+        - size: tuple(int, int), the expected size of the return image. If no argument is passed, use the size of the image.
+        - rotation: float, Rotate the image of this amount, default is 0.
         """
         image = pygame.image.load(self.full_path).convert_alpha()
         surface = pygame.transform.rotate(image, rotation)

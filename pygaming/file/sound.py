@@ -25,7 +25,7 @@ class SoundFile(File):
         
         Returns:
         ----
-        sound: the sound as a pygame object
-        category: str, the category of the sound to be played with the proper volume.
+        - sound: the sound as a pygame object
+        - category: str, the category of the sound to be played with the proper volume.
         """
         return pygame.mixer.Sound(self.full_path), self.category

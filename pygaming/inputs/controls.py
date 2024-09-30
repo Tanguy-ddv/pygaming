@@ -30,7 +30,7 @@ class Controls:
         -----
         reverse_mapping: dict[str, list[str]]. The keys are the actions, the values the list of event that would trigger it.
         """
-        if self._previous_controls != self._settings.controls:
+        if self._previous_controls != self._settings.controls[self._phase_name]:
             self.update_settings()
         return self._reverse_mapping
 
@@ -38,8 +38,12 @@ class Controls:
         """Update the key map dict with the current settings."""
         self._key_map_dict = {}
 
+        # Find the keys from the controles
         controls = self._settings.controls[self._phase_name]
+        self._previous_controls = self._settings.controls[self._phase_name]
         for key, action in controls.items():
+            # The key is either stored as a string of the value of the pygame.key or as a string of the name
+            # e.g. : '1073741904' or 'K_LEFT'
             if not key.isdigit() and hasattr(pygame, key):
                 self._key_map_dict[str(getattr(pygame, key))] = action
             else:

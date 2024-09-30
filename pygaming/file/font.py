@@ -29,10 +29,12 @@ class FontFile(File):
         
         Params:
         ----
-        size: int, the size of the font.
-        color: pygame.Color: the color of the Font
-        settings: Settings, the self.settings of the Game
-        italic, bold, underline: bools, flags for the font.
+        - size: int, the size of the font.
+        - color: pygame.Color: the color of the Font
+        - settings: Settings, the self.settings of the Game
+        - italic: bool, flag for the font
+        - bold: bool, flage for the font
+        - underline: bool, flags for the font.
         """
         return Font(self.full_path, size, color, settings, bold, italic, underline)
 

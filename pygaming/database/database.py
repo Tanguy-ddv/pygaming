@@ -17,16 +17,18 @@ class Database:
     No need to have 2 databases on the same code as they will connect to the same db.
     The database automatically create a .sqlite file in the temporary folder /data/sql/db.sqlite,
     then execute every .sql file in the data/sql/ folder.
-    At instance deletion, the .sqlite file is deleted if the debug mode is not selected ()
-    
+    At instance deletion, the .sqlite file is deleted if the debug mode is not selected.
     """
 
     def __init__(self, config: Config, runnable_type: Literal['server', 'game'] = GAME, debug: bool=False) -> None:
         """
         Initialize an instance of Database.
         
-        args:
-        debug: when passed to true, the delation of the database is not done at the destruction of the instance.
+        Params:
+        ---
+        - config: the config of the runnable. It is used to collect the default language
+        - runnable_type: 'server' or 'game', used to specifiy if it is the game's database or the server's database.
+        - debug: when passed to true, the delation of the database is not done at the destruction of the instance.
         """
         self._debug = debug
         if runnable_type == SERVER:
@@ -48,7 +50,7 @@ class Database:
         self._conn = sql.connect(self._db_path)
 
         # Initialize the sqlite file with the tables.
-        self._execute_sql_script(self._table_path)
+        self.execute_sql_script(self._table_path)
 
         for root, _, files in os.walk(self._sql_folder):
             for file in files:
@@ -56,14 +58,27 @@ class Database:
                 if complete_path.endswith('.sql') and complete_path != self._table_path and complete_path != self._ig_queries_path:
                     if self._debug:
                         print(complete_path)
-                    self._execute_sql_script(complete_path)
+                    self.execute_sql_script(complete_path)
 
         # Execute the queries previously saved.
-        self._execute_sql_script(self._ig_queries_path)
+        self.execute_sql_script(self._ig_queries_path)
+
+        # Save the current language
         self.default_language = config.default_language
 
-    def _execute_select_query(self, query: str):
-        """Execute a select query on the database."""
+    def execute_select_query(self, query: str):
+        """
+        Execute a select query on the database.
+
+        Params:
+        ---
+        - query: str, the query to execute. Must start by 'SELECT'
+
+        Returns:
+        ---
+        - result: list[list[Any]]: The matrix of outputs
+        - description: list[str]: The list of fields
+        """
         if not query.startswith("SELECT"):
             print("The query is wrong:\n", query, "\nShould start by 'SELECT'")
         try:
@@ -78,11 +93,17 @@ class Database:
             return None, None
 
     def execute_insert_query(self, query: str):
-        """Execute an insert query on the database."""
+        """
+        Execute an insert query on the database.
+        
+        Params:
+        ---
+        - query: str, the query to execute. Need to start with 'INSERT INTO'
+        """
         if not query.startswith("INSERT INTO"):
             print("The query is wrong:\n", query, "\nShould start by 'INSERT INTO'")
         try:
-            # Execute the query on the Database
+            # Execute the query on the database
             cur = self._conn.cursor()
             cur.execute(query)
             self._conn.commit()
@@ -93,7 +114,33 @@ class Database:
         except sql.Error as error:
             print("An error occured while querying the database with:\n",query,"\n",error)
 
-    def _execute_sql_script(self, script_path: str):
+    def execute_modify_query(self, query: str):
+        """
+        Execute a modifying query (UPDATE, DELETE, etc.) on the database.
+
+        Params:
+        ---
+        - query: str, the query to execute. Needs to start with 'UPDATE', 'DELETE', 'ALTER TABLE', or similar.
+        """
+        valid_keywords = ["UPDATE", "DELETE", "ALTER TABLE", "DROP", "CREATE", "REPLACE"]
+
+        if not any(query.startswith(keyword) for keyword in valid_keywords):
+            print("The query is wrong:\n", query, "\nShould start by one of:", ', '.join(valid_keywords))
+            return
+
+        try:
+            # Execute the query on the database
+            cur = self._conn.cursor()
+            cur.execute(query)
+            self._conn.commit()
+            # Optionally log or save the query
+            with open(self._ig_queries_path, 'a', encoding='utf-8') as f:
+                f.write(";\n" + query)
+            cur.close()
+        except sql.Error as error:
+            print("An error occurred while querying the database with:\n", query, "\n", error)
+
+    def execute_sql_script(self, script_path: str):
         """Execute a script query on the database."""
         try:
             cur = self._conn.cursor()
@@ -116,21 +163,15 @@ class Database:
     def get_data_by_id(self, id_: int, table: str, return_id: bool = True):
         """Get all the data of one row based on the id and the table."""
         query = f"SELECT * FROM {table} WHERE {table}_id = {id_} LIMIT 1"
-        result, description = self._execute_select_query(query)
-        return {key : value for key,value in zip(description, result[0]) if (key != f"{table}_id" or return_id)}
-
-    def get_collection_joined_by_id(self, id_, table: str, join_table: str, return_id: bool = True) -> list:
-        """Get all the row of a the table 'table' having has foreign key for the table 'join_table' the id id_"""
-        query = f"SELECT * FROM {table} WHERE {join_table}_id = {id_}"
-        result, description = self._execute_select_query(query)
-        return [{key : value for key,value in zip(description, res) if (key != f"{table}_id" or return_id)} for res in result]
+        result, description = self.execute_select_query(query)
+        return {key : value for key,value in zip(description, result[0]) if (return_id or key != f"{table}_id")}
 
     def get_texts(self, language: str, phase_name:str):
         """Return all the texts of the game.
         If the text is not avaiable in the chosen language, get the text in the default language.
         """
 
-        return self._execute_select_query(
+        return self.execute_select_query(
             f"""SELECT position, text_value
                 FROM localizations
                 WHERE language_code = '{language}'
@@ -155,7 +196,7 @@ class Database:
         If the speech is not available in the given language, get it in the default language
         """
 
-        return self._execute_select_query(
+        return self.execute_select_query(
             f"""SELECT position, sound_path
                 FROM speeches
                 WHERE language_code = '{language}'

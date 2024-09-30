@@ -26,9 +26,9 @@ def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fo
     
     params:
     ----
-    folder: the folder of the file
-    file: the name of the file.
-    permanent: if False, get the file from the temporary folder of the app. If True, from the place where the file dynamic files are saved
+    - folder: the folder of the file
+    - file: the name of the file.
+    - permanent: if False, get the file from the temporary folder of the app. If True, from the place where the file dynamic files are saved
     
     Non-Permanent files are the ones that might be modified during the game and that should be saved.
     Exemple of non-permanent files: saves, ig_queries, logs.

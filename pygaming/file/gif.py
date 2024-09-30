@@ -13,7 +13,16 @@ class GIFFile(File):
         self.full_path = get_file('images', path)
 
     def get(self, size: tuple[int, int] | None = None, rotation: float = 0, image_introduction: int = 0):
-        """Get the gif as a list of surfaces and frame durations."""
+        """
+        Get the gif as a list of surfaces and frame durations.
+        
+        Params:
+        ----
+        size: the dimension of the images to reshape
+        rotation: an angle to rotate the images of the gif
+        image_introduction: int, if specify, the first image_introduction images are only displayed once,
+        then the loop is made on the remaining images.
+        """
         gif = Image.open(self.full_path)
         gif.seek(0)
         images: list[pygame.Surface] = [pygame.image.fromstring(gif.convert('RGBA').tobytes(), gif.size, 'RGBA')]
