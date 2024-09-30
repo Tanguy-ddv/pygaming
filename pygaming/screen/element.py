@@ -105,10 +105,10 @@ class Element(ABC):
         """Update the element logic every loop iteration."""
         raise NotImplementedError()
 
-    def move(self, new_x: int, new_y: int):
+    def move(self, new_x: int, new_y: int, anchor: tuple[int, int] = TOP_LEFT):
         """Move the object."""
-        self.x = new_x
-        self.y = new_y
+        self.x = new_x - anchor[0]*self.width
+        self.y = new_y - anchor[0]*self.height
 
     def set_layer(self, new_layer: int):
         """Set a new value for the layer"""
