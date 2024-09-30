@@ -172,4 +172,6 @@ setup.exe
 server.exe
 TODO
 
+# personal files
 .pypirc
+desktop.ini
