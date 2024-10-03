@@ -1,5 +1,5 @@
 """The actor module contain the actor."""
-
+import math
 from ..phase import GamePhase
 from .element import Element, TOP_LEFT, SurfaceLike
 
@@ -53,3 +53,18 @@ class Actor(Element):
         """Reset the position of the actor in the frame."""
         self._x = new_x
         self._y = new_y
+        
+    def rotate(self, angle):
+        w, h = self.main_surface.width, self.main_surface.height
+        # rotate every frame
+        for surface in self.surfaces:
+            surface.rotate(angle)
+        # determine the new anchor
+        new_w, new_h = self.main_surface.width, self.main_surface.height
+        center_x, center_y = w / 2, h / 2
+        point = self._x*self.surface.width, self._y*self.surface.height
+        rel_x, rel_y = point[0] - center_x, point[1] - center_y
+        rad_angle = math.radians(-angle)
+        new_rel_x = rel_x * math.cos(rad_angle) - rel_y * math.sin(rad_angle)
+        new_rel_y = rel_x * math.sin(rad_angle) + rel_y * math.cos(rad_angle)
+        self.anchor = (new_rel_x + new_w / 2)/new_w, (new_rel_y + new_h / 2)/new_h

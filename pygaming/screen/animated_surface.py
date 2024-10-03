@@ -92,3 +92,8 @@ class AnimatedSurface:
     def copy(self):
         """Return a copy of the surface."""
         return AnimatedSurface([s.copy() for s in self._surfaces], self._image_durations.copy(), self._image_introduction)
+
+    def rotate(self, angle: float):
+        """Rotate the animated surface by a given angle."""
+        for i, surf in enumerate(self._surfaces):
+            self._surfaces[i] = pygame.transform.rotate(surf, angle)
