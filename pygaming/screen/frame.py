@@ -72,20 +72,20 @@ class Frame(Element):
         surf, cursor = None, None
         hover_x, hover_y = self.game.mouse.get_position()
         for child in self.visible_children:
-            if child.absolute_left < hover_x < child.absolute_right and child.absolute_top < hover_y < child.absolute_bottom:
+            if child.absolute_rect.collidepoint(hover_x, hover_y):
                 surf, cursor = child.update_hover()
         return surf, cursor
 
     def update_focus(self, click_x, click_y):
         """Update the focus of all the children in the frame."""
-        click_x -= self.x
-        click_y -= self.y
+        click_x -= self._x
+        click_y -= self._y
         self.focused = True
         self.surface.reset()
         one_is_clicked = False
         for (i,child) in enumerate(self.children):
             if child.visible and child.can_be_focused:
-                if child.x < click_x < child.x + child.width and child.y < click_y < child.y + child.height:
+                if child.relative_rect.collidepoint(click_x, click_y):
                     child.focus()
                     self._current_object_focus = i
                     one_is_clicked = True

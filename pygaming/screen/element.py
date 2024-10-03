@@ -62,24 +62,15 @@ class Element(ABC):
             self.surface = surface.copy()
 
         self.width, self.height = self.surface.width, self.surface.height
-        self.x = x - anchor[0]*self.width
-        self.y = y - anchor[1]*self.height
+        self._x = x
+        self._y = y
+        self.anchor = anchor
         ABC.__init__(self)
         self.master = master
         self.master.add_child(self)
 
         self.hover_cursor = hover_cursor
         self.hover_surface = hover_surface
-
-    @property
-    def absolute_x(self):
-        """Return the absolute value of x in the game window."""
-        return self.master.absolute_x + self.x
-
-    @property
-    def absolute_y(self):
-        """Return the absolute value of y in the game window."""
-        return self.master.absolute_y + self.y
 
     @property
     def game(self):
@@ -104,11 +95,6 @@ class Element(ABC):
     def update(self, loop_duration: int):
         """Update the element logic every loop iteration."""
         raise NotImplementedError()
-
-    def move(self, new_x: int, new_y: int, anchor: tuple[int, int] = TOP_LEFT):
-        """Move the object."""
-        self.x = new_x - anchor[0]*self.width
-        self.y = new_y - anchor[0]*self.height
 
     def set_layer(self, new_layer: int):
         """Set a new value for the layer"""
@@ -162,23 +148,23 @@ class Element(ABC):
 
     @property
     def relative_coordinate(self):
-        """Return the coordinate of the element in its frame."""
-        return (self.x, self.y)
+        """Reutnr the relative coordinate of the element in its frame."""
+        return (self.relative_left, self.relative_top)
 
     @property
     def absolute_coordinate(self):
-        """Return the coordinate of the element in the game window"""
-        return (self.absolute_x, self.absolute_y)
+        """Return the coordinate of the element in the game window."""
+        return (self.absolute_left, self.absolute_top)
 
     @property
     def relative_rect(self):
         """Return the rect of the element in its frame."""
-        return pygame.rect.Rect(self.x, self.y, self.width, self.height)
+        return pygame.rect.Rect(self.relative_left, self.relative_top, self.width, self.height)
 
     @property
     def absolute_rect(self):
         """Return the rect of the element in the game window."""
-        return pygame.rect.Rect(self.absolute_x, self.absolute_y, self.width, self.height)
+        return pygame.rect.Rect(self.absolute_left, self.absolute_top, self.width, self.height)
 
     @property
     def shape(self):
@@ -188,39 +174,39 @@ class Element(ABC):
     @property
     def relative_right(self):
         """Return the right coordinate of the element in the frame."""
-        return self.x + self.width
+        return self.relative_left + self.width
 
     @property
     def absolute_right(self):
         """Return the right coordinate of the element in the game window"""
-        return self.absolute_x + self.width
+        return self.absolute_left + self.width
 
     @property
     def relative_bottom(self):
         """Return the bottom coordinate of the element in the frame."""
-        return self.y + self.height
+        return self.relative_top + self.height
 
     @property
     def absolute_bottom(self):
         """Return the bottom coordinate of the element in the game window."""
-        return self.absolute_y + self.height
+        return self.absolute_top + self.height
 
     @property
     def relative_left(self):
         """Return the left coordinate of the element in the frame."""
-        return self.x
+        return self._x - self.anchor[0]*self.height
 
     @property
     def absolute_left(self):
         """Return the left coordinate of the element in the game window."""
-        return self.absolute_x
+        return self.master.absolute_left + self.relative_left
 
     @property
     def relative_top(self):
         """Return the top coordinate of the element in the frame."""
-        return self.y
+        return self._y - self.anchor[1]*self.width
 
     @property
     def absolute_top(self):
         """Return the top coordinate of the element in the game window."""
-        return self.absolute_y
+        return self.master.absolute_top + self.relative_top
