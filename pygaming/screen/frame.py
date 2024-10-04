@@ -4,6 +4,7 @@ from typing import Optional
 import pygame
 from .animated_surface import AnimatedSurface
 from ..phase import GamePhase
+from ..error import PygamingException
 from .element import Element, TOP_LEFT, SurfaceLike
 
 class Frame(Element):
@@ -15,11 +16,10 @@ class Frame(Element):
     def __init__(
         self,
         master: GamePhase | Frame, # Frame or phase, no direct typing to avoid circular import
-        x: int,
-        y: int,
+        window: pygame.Rect,
         background: SurfaceLike,
         focused_background: Optional[SurfaceLike] = None,
-        anchor: tuple[float | int, float | int] = TOP_LEFT,
+        background_window: Optional[pygame.Rect] = None,
         layer: int = 0,
         continue_animation: bool = False
     ) -> None:
@@ -29,15 +29,19 @@ class Frame(Element):
         Params:
         ----
         - master: Another Frame or a phase.
-        - x: the coordinate of the left of the frame, in its master.
-        - y: the coordinate of the top of the frame, in its master.
+        - window: pygame.Rect, the rectangle in which show the frame in the master
         - background: The AnimatedSurface or Surface representing the background of the Frame.
         - focused_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
         If None, copy the background
+        - background_window: pygame.Rect, the rectangle of the background to get the image from. Use if you have a big background
+        If None, the top left is 0,0 and the dimensions are the window dimensions.
         - layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
         - continue_animation: bool. If set to False, switching from focused to unfocused will reset the animations.
         """
         self.children: list[Element] = []
+        x = window.left
+        y = window.top
+        self.window = window
 
         Element.__init__(
             self,
@@ -45,7 +49,7 @@ class Frame(Element):
             background,
             x,
             y,
-            anchor,
+            TOP_LEFT,
             layer,
             None,
             None,
@@ -54,10 +58,16 @@ class Frame(Element):
         )
         self._continue_animation = continue_animation
 
+        if background_window is None:
+            background_window = pygame.Rect(0, 0, self.window.width, self.window.height)
+        if self.window.size != background_window.size:
+            raise PygamingException(f"window and background window must have the same dimension, got {self.window.size} and {background_window.size}")
+        self.background_window = background_window
+
         self.focused = False
         self._current_object_focus = None
         if focused_background is None:
-            focused_background = self.surface.copy()
+            self.focused_background = self.surface.copy()
         elif isinstance(focused_background, pygame.Surface):
             self.focused_background = AnimatedSurface([focused_background], 4, 0)
         else:
@@ -161,4 +171,12 @@ class Frame(Element):
             y = child.relative_top
             surface = child.get_surface()
             background.blit(surface, (x,y))
-        return background
+        return background.subsurface(self.background_window)
+
+    def move_background(self, dx, dy):
+        """Move the background in the window."""
+        self.background_window.move(dx, dy)
+    
+    def set_background_position(self, new_x, new_y):
+        """Reset the background position in the window with a new value."""
+        self.background_window = pygame.Rect(new_x, new_y, *self.background_window.size)
