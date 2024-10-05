@@ -41,7 +41,10 @@ class Keyboard:
                 self.action_pressed[key] = True
 
     def get_characters(self, extra_characters: str = '', forbid_characters: str = ''):
-        """Return all the letter characters a-z, digits 0-9, whitespace, punctuation and extra caracters."""
+        """
+        Return all the letter characters a-z, digits 0-9, whitespace, punctuation and extra caracters
+        (except forbidden characters) typed by the player.
+        """
         if not isinstance(extra_characters, str) and isinstance(extra_characters, Iterable):
             extra_characters = ''.join(extra_characters)
         return [
@@ -68,5 +71,5 @@ class Keyboard:
             for action, keys in self._control_mapping.items()}
 
     def get_actions_press(self):
-        """Return a dict of str: bool specifying if the action is triggered or not. The action is triggered if the user just unpressed the key."""
+        """Return a dict of str: bool specifying if the action is triggered or not. The action is triggered if the user is pressing the key."""
         return self.action_pressed

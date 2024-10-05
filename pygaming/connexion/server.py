@@ -30,7 +30,8 @@ class Server:
     
     Params:
     -----
-    nb_max_players: int, the maximum number of players in one game.
+    - config: the game config, used to get the hosrt port.
+    - nb_max_players: int, the maximum number of players in one game.
     """
     def __init__(self, config: Config, nb_max_player: int = 8):
 
@@ -80,12 +81,13 @@ class Server:
 
     def _broadcast_address(self, host_ip: int):
         """Send in the socket.SOCK_DGRAM socket the host_ip and the host port every 5 seconds."""
-        while self._running and self.get_nb_players() < self._nb_max_player:
-            broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            message = json.dumps({HEADER : BROADCAST_IP, CONTENT : host_ip})
-            broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
-            time.sleep(self.config.get("broadcast_frequency")/1000)  # Send broadcast every 5 seconds
+        while self._running:
+            if self.get_nb_players() < self._nb_max_player:
+                broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                message = json.dumps({HEADER : BROADCAST_IP, CONTENT : host_ip})
+                broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
+                time.sleep(self.config.get("broadcast_frequency")/1000)  # Send broadcast every broadcast_frquency ms
 
     def _handle_client(self, client_socket: socket.socket, id_: int):
         while self._running:

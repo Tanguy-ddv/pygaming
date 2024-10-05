@@ -17,7 +17,7 @@ class Inputs:
         self.keyboard = keyboard
 
     def update(self, loop_duration: int, phase_name: str):
-        """Get the current events."""
+        """Get the current events and update the mouse and the keyboard."""
         self.event_list = pygame.event.get()
         self.keyboard.update(self.event_list, phase_name)
         self.mouse.update(loop_duration, self.event_list)

@@ -42,34 +42,18 @@ class BaseRunnable(ABC):
         self.phases[name] = phase
         return self
 
-    def set_transition(self, phase1: str, phase2: str, transition):
-        """
-        Set a transition between two phases.
-
-        Params:
-        ----
-        phase1: the name of the phase that is ending.
-        phase2: the name of the phase that is starting.
-        transition: the Transition object between the two phases.
-        Returns:
-        ----
-        The game itself for method chaining
-        """
-        self.transitions[(phase1, phase2)] = transition
-        return self
-
     def update_phases(self, loop_duration: int):
         """Update the phases of the game."""
+        # Update the current phase
         self.phases[self.current_phase].loop(loop_duration)
+        # Ask what is next
         next_phase = self.phases[self.current_phase].next()
         # Verify if the phase is over
         if next_phase not in [NO_NEXT, STAY]:
-            # if it is, end the current phase
-            self.phases[self.current_phase].end()
             # get the value for the arguments for the start of the next phase
-            new_data = self.transitions[(self.current_phase, next_phase)].apply(
-                self.phases[self.current_phase]
-            )
+            new_data = self.phases[self.current_phase].apply_transition(next_phase)
+            # End the current phase
+            self.phases[self.current_phase].end()
             # change the phase
             self.current_phase = next_phase
             # start the new phase

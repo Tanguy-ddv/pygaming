@@ -26,10 +26,22 @@ class Logger:
         # We use this to get the log file always open to save performance with openning and closing.
 
     def write(self, data: dict, is_it_debugging: bool = False):
-        """Write a new line in the log."""
+        """
+        Write a new line in the log.
+        
+        Params:
+        ----
+        data: dict, the data to save in the log.
+        is_it_debugging: bool, specify if the line is for debugging or not.
+        """
         if self.debug or not is_it_debugging:
-            data['timestamp'] = time.time_ns()
+            data['timestamp'] = int(time.time()*1000)
             json.dump(data, self._file)
+    
+    @property
+    def current_file(self):
+        """Return the name of the current file."""
+        return get_file('data', f'logs/{self.timestamp}.log', True)
 
     def update(self, loop_duration: int):
         """Update the logger at every iteration to flush regularly."""

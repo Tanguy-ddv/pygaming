@@ -1,5 +1,6 @@
 """The Jukebox class is used to manage the musics."""
 
+from random import random as rd
 import pygame
 from ..file import MusicFile
 from ..settings import Settings
@@ -33,10 +34,12 @@ class Jukebox:
         self._playing = True
         self._playlist_idx = 0
     
-    def read_playlist(self, playlist: list[MusicFile]):
+    def read_playlist(self, playlist: list[MusicFile], random: bool = False):
         """Play a playlist"""
         self._loops_or_playlist = _PLAYLIST
         self._playlist_idx = 0
+        if random:
+            playlist = sorted(playlist, key= lambda music: rd())
         self._playlist_playing = playlist
         self._playing = True
     

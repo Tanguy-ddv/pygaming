@@ -21,7 +21,7 @@ class MusicFile(File):
         Get the music.
         
         Returns:
-        full_path: str, the path to the music
-        loop_time: int, the loop time.
+        - full_path: str, the path to the music
+        - loop_time: int, the loop time (in ms).
         """
         return self.full_path, self.loop_time

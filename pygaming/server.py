@@ -11,8 +11,9 @@ class Server(BaseRunnable):
         Create the Server.
 
         Params:
-        debug: bool, if True, the database will not delete itself at the end and the logger will also log debug content.
-        nb_max_player: The maximum number of player allowed to connect to the game.
+        - nb_max_player: int, The maximum number of player allowed to connect to the game.
+        - first_phase: str, The name of the first phase.
+        - debug: bool, if True, the database will not delete itself at the end and the logger will also log debug content.
         """
         super().__init__(debug, SERVER, first_phase)
         self.network = Network(self.config, nb_max_player)

@@ -5,7 +5,13 @@ from .file import get_file
 from .error import PygamingException
 
 class Settings:
-    """The settings class is used to interact with the settings file."""
+    """
+    The settings class is used to interact with the settings file.
+    Every game setting is stored here: controls, language, full screen etc.
+    You can also store your own settings by modify the data/settings.json files
+    to add your own controls and settings.
+    For instance, difficulty, rendering etc.
+    """
 
     def __init__(self) -> None:
         self._path = get_file('data', 'settings.json', False)
