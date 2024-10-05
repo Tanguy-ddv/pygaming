@@ -224,9 +224,9 @@ class GamePhase(BasePhase, ABC):
 
     def loop(self, loop_duration: int):
         """Update the phase."""
-        self.update(loop_duration)
         self.__update_focus()
         self.__update_hover()
+        self.update(loop_duration)
         for frame in self.frames:
             frame.loop(loop_duration)
 
@@ -245,8 +245,7 @@ class GamePhase(BasePhase, ABC):
         actions = self.keyboard.get_actions_down()
         if "tab" in actions and actions["tab"]:
             for frame in self.frames:
-                if frame.focused:
-                    frame.next_object_focus()
+                frame.next_object_focus()
 
     def __update_hover(self):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""

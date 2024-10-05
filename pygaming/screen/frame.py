@@ -42,6 +42,7 @@ class Frame(Element):
         x = window.left
         y = window.top
         self.window = window
+        self.has_a_widget_focused = False
 
         Element.__init__(
             self,
@@ -76,6 +77,9 @@ class Frame(Element):
     def add_child(self, child: Element):
         """Add a new element to the child list."""
         self.children.append(child)
+        # Filter the widgets
+        if not isinstance(child, Frame) and child.can_be_focused:
+            self._widget_children.append(child)
 
     def update_hover(self) -> tuple[bool, pygame.Surface | None]:
         """Update the hovering."""
@@ -91,20 +95,59 @@ class Frame(Element):
         click_x -= self._x
         click_y -= self._y
         self.focused = True
-        self.surface.reset()
+        self.switch_background()
         one_is_clicked = False
-        for (i,child) in enumerate(self.children):
-            if child.visible and child.can_be_focused:
+
+        for (i,child) in enumerate(self.visible_children):
+            if child.can_be_focused:
                 if child.relative_rect.collidepoint(click_x, click_y):
-                    child.focus()
-                    self._current_object_focus = i
-                    one_is_clicked = True
+                    if isinstance(child, Frame):
+                        child.update_focus(click_x, click_y)
+                    elif child.can_be_focused:
+                        child.focus()
+                        self._current_object_focus = i
+                        one_is_clicked = True
+                        self.has_a_widget_focused = True
                 else:
                     child.unfocus()
-            else:
-                child.unfocus()
         if not one_is_clicked:
             self._current_object_focus = None
+            self.has_a_widget_focused = False
+    
+    def unfocus(self):
+        """Unfocus the Frame by unfocusing itself and its children"""
+        super().unfocus()
+        for child in self.children:
+            child.unfocus()
+
+
+    def next_object_focus(self):
+        """Change the focused object."""
+        if self.focused and self.has_a_widget_focused:
+            
+            widget_children = self._widget_children
+            if len(widget_children) > 1:
+
+                for element in widget_children:
+                    element.unfocus()
+
+                next_index = (1 + self._current_object_focus)%len(widget_children)
+                widget_children[next_index].focus()
+                self._current_object_focus = next_index
+                        
+        else:
+            for child in self.children:
+                if isinstance(child, Frame):
+                    child.next_object_focus()
+
+    def remove_focus(self):
+        """Remove the focus of all the children."""
+        self.focused = False
+        self.has_a_widget_focused = False
+        self.focused_background.reset()
+        for child in self.children:
+            child.unfocus()
+        self.switch_background()
 
     def switch_background(self):
         """Switch to the focused background or the normal background."""
@@ -113,30 +156,6 @@ class Frame(Element):
                 self.focused_background.reset()
             else:
                 self.surface.reset()
-
-    def next_object_focus(self):
-        """Change the focused object."""
-        if self._current_object_focus is None:
-            self._current_object_focus = 0
-
-        for element in self.children:
-            if element.can_be_focused:
-                element.unfocus()
-
-        for i in range(1, len(self.children)):
-            j = (i + self._current_object_focus)%len(self.children)
-            if self.children[j].can_be_focused:
-                self.children[j].focus()
-                self._current_object_focus = j
-                break
-
-    def remove_focus(self):
-        """Remove the focus of all the children."""
-        self.focused = False
-        self.focused_background.reset()
-        for child in self.children:
-            child.unfocus()
-        self.switch_background()
 
     def loop(self, loop_duration: int):
         """Update the frame every loop iteration."""
@@ -159,6 +178,11 @@ class Frame(Element):
     def visible_children(self):
         """Return the list of visible children sorted by increasing layer."""
         return sorted(filter(lambda ch: ch.visible, self.children), key= lambda w: w.layer)
+
+    @property
+    def _widget_children(self):
+        """Return the list of visible widgets in the frame."""
+        return list(filter(lambda elem: not isinstance(elem, Frame) and elem.can_be_focused, self.visible_children))
 
     def get_surface(self):
         """Return the surface of the frame as a pygame.Surface"""
