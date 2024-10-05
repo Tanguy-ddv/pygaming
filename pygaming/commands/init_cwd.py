@@ -9,22 +9,23 @@ import os
 import shutil
 import json
 import locale
+import importlib.resources
 
 def init_cwd():
     """Create some files and folder in the current working directory."""
 
     cwd = os.getcwd()
-    this_dir = os.path.dirname(__name__)
+    this_dir = str(importlib.resources.files('pygaming'))
 
     if not os.path.exists(os.path.join(cwd, 'assets')):
 
         shutil.copytree(
-            os.path.join(this_dir, 'pygaming', 'commands/templates/assets'),
+            os.path.join(this_dir, 'commands/templates/assets'),
             os.path.join(cwd, 'assets')
         )
 
         # Print the success output ot guide the user
-        with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/assert_success.txt'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(this_dir, 'commands/init_texts/assert_success.txt'), 'r', encoding='utf-8') as f:
             text = ''.join(f.readlines())
         print("\033[33m" + text + "\033[0m")
 
@@ -33,7 +34,7 @@ def init_cwd():
         language = locale.getlocale()[0]
 
         shutil.copytree(
-            os.path.join(this_dir, 'pygaming', 'commands/templates/data'),
+            os.path.join(this_dir, 'commands/templates/data'),
             os.path.join(cwd, 'data')
         )
 
@@ -50,7 +51,7 @@ def init_cwd():
             json.dump(settings, f)
 
 
-        with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/data_success.txt'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(this_dir, 'commands/init_texts/data_success.txt'), 'r', encoding='utf-8') as f:
             text = ''.join(f.readlines())
         print("\033[35m" + text + "\033[0m")
 
@@ -58,16 +59,16 @@ def init_cwd():
     if not os.path.exists(os.path.join(cwd, 'src')):
 
         shutil.copytree(
-            os.path.join(this_dir, 'pygaming', 'commands/templates/src'),
+            os.path.join(this_dir, 'commands/templates/src'),
             os.path.join(cwd, 'src')
         )
 
-        with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/src_success.txt'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(this_dir, 'commands/init_texts/src_success.txt'), 'r', encoding='utf-8') as f:
             text = ''.join(f.readlines())
 
         print("\033[32m" + text + "\033[0m")
 
-    with open(os.path.join(this_dir, 'pygaming', 'commands/init_texts/init_success.txt'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(this_dir, 'commands/init_texts/init_success.txt'), 'r', encoding='utf-8') as f:
         text = ''.join(f.readlines())
 
     # Reinitialize the color text and print the end of the init text
