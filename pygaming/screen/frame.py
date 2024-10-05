@@ -77,9 +77,6 @@ class Frame(Element):
     def add_child(self, child: Element):
         """Add a new element to the child list."""
         self.children.append(child)
-        # Filter the widgets
-        if not isinstance(child, Frame) and child.can_be_focused:
-            self._widget_children.append(child)
 
     def update_hover(self) -> tuple[bool, pygame.Surface | None]:
         """Update the hovering."""
@@ -98,22 +95,22 @@ class Frame(Element):
         self.switch_background()
         one_is_clicked = False
 
-        for (i,child) in enumerate(self.visible_children):
-            if child.can_be_focused:
-                if child.relative_rect.collidepoint(click_x, click_y):
-                    if isinstance(child, Frame):
-                        child.update_focus(click_x, click_y)
-                    elif child.can_be_focused:
-                        child.focus()
-                        self._current_object_focus = i
-                        one_is_clicked = True
-                        self.has_a_widget_focused = True
-                else:
-                    child.unfocus()
+        for (i,child) in enumerate(self._widget_children):
+            if child.relative_rect.collidepoint(click_x, click_y):
+                child.focus()
+                self._current_object_focus = i
+                one_is_clicked = True
+                self.has_a_widget_focused = True
+            else:
+                child.unfocus()
+        
+        for (i, child) in enumerate(self._frame_childern):
+            if child.relative_rect.collidepoint(click_x, click_y):
+                child.update_focus(click_x, click_y)
         if not one_is_clicked:
             self._current_object_focus = None
             self.has_a_widget_focused = False
-    
+
     def unfocus(self):
         """Unfocus the Frame by unfocusing itself and its children"""
         super().unfocus()
@@ -124,7 +121,7 @@ class Frame(Element):
     def next_object_focus(self):
         """Change the focused object."""
         if self.focused and self.has_a_widget_focused:
-            
+
             widget_children = self._widget_children
             if len(widget_children) > 1:
 
@@ -134,11 +131,10 @@ class Frame(Element):
                 next_index = (1 + self._current_object_focus)%len(widget_children)
                 widget_children[next_index].focus()
                 self._current_object_focus = next_index
-                        
+
         else:
-            for child in self.children:
-                if isinstance(child, Frame):
-                    child.next_object_focus()
+            for child in self._frame_childern:
+                child.next_object_focus()
 
     def remove_focus(self):
         """Remove the focus of all the children."""
@@ -173,6 +169,7 @@ class Frame(Element):
         """Update all the children of the frame."""
         for element in self.children:
             element.loop(loop_duration)
+        print(self._current_object_focus)
 
     @property
     def visible_children(self):
@@ -183,6 +180,10 @@ class Frame(Element):
     def _widget_children(self):
         """Return the list of visible widgets in the frame."""
         return list(filter(lambda elem: not isinstance(elem, Frame) and elem.can_be_focused, self.visible_children))
+
+    @property
+    def _frame_childern(self) -> list[Frame]:
+        return list(filter(lambda elem: isinstance(elem, Frame), self.visible_children))
 
     def get_surface(self):
         """Return the surface of the frame as a pygame.Surface"""
@@ -200,7 +201,7 @@ class Frame(Element):
     def move_background(self, dx, dy):
         """Move the background in the window."""
         self.background_window.move(dx, dy)
-    
+
     def set_background_position(self, new_x, new_y):
         """Reset the background position in the window with a new value."""
         self.background_window = pygame.Rect(new_x, new_y, *self.background_window.size)

@@ -73,7 +73,7 @@ class BasePhase(ABC):
         If it is the end of the game, return 'NO_NEXT'
         """
         raise NotImplementedError()
-    
+
     @abstractmethod
     def apply_transition(self, next_phase: str):
         """
@@ -211,12 +211,12 @@ class GamePhase(BasePhase, ABC):
         if self.game.online:
             return self.game.client
         raise PygamingException("The game is not connected yet, there is no network to reach.")
-    
+
     @property
     def texts(self):
         """Alias for self.game.texts"""
         return self.game.texts
-    
+
     @property
     def speeches(self):
         """Alias for self.game.speeches"""
