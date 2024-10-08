@@ -23,6 +23,7 @@ from .screen.widget.widget import Widget
 from .screen.widget.slider import Slider
 from .screen.widget.button import Button
 from .screen.widget.entry import Entry
+from .screen.actor import Actor
 
 from .inputs import Inputs, Controls, Click, Keyboard, Mouse
 from .file import FontFile, DataFile, ImageFile, GIFFile, SoundFile, MusicFile, get_file
@@ -33,7 +34,7 @@ from . import commands
 from .screen.colored_surfaces import ColoredRectangle, ColoredCircle, ColoredPolygon
 
 __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
-           'Server', 'Settings', 'Screen', 'Frame',
+           'Server', 'Settings', 'Screen', 'Frame', 'Actor',
            'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
            'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client', 'Keyboard', 'Mouse',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches', 'Button','Entry',
