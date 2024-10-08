@@ -9,10 +9,7 @@ class FontFile(File):
 
     def __init__(self, name: str) -> None:
         super().__init__(name)
-        if name.endswith('.ttf') or name.endswith('.TTF'):
-            self.full_path = get_file(folder='fonts', file=name)
-        else:
-            self.full_path = get_file(folder='fonts', file=name + '.ttf')
+        self.full_path = get_file(folder='fonts', file=name)
 
     #pylint: disable=arguments-differ
     def get(
