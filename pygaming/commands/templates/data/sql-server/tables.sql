@@ -1,7 +1,7 @@
 -- Example of table to store the users:
 
 CREATE TABLE player(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     victories INTEGER DEFAULT 0
 );
@@ -9,7 +9,7 @@ CREATE TABLE player(
 -- Example of table to store the playable characters:
 
 CREATE TABLE character(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    character_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     age INTEGER,
     weight REAL,
@@ -22,7 +22,7 @@ CREATE TABLE character(
 -- Example of table to store levels.
 
 CREATE TABLE levels(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    level_id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     image_path TEXT NOT NULL,
     length INTEGER,
