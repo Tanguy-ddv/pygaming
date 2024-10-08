@@ -169,7 +169,6 @@ class Frame(Element):
         """Update all the children of the frame."""
         for element in self.children:
             element.loop(loop_duration)
-        print(self._current_object_focus)
 
     @property
     def visible_children(self):
