@@ -194,7 +194,7 @@ class Element(ABC):
     @property
     def relative_left(self):
         """Return the left coordinate of the element in the frame."""
-        return self._x - self.anchor[0]*self.height
+        return self._x - self.anchor[0]*self.width
 
     @property
     def absolute_left(self):
@@ -204,7 +204,7 @@ class Element(ABC):
     @property
     def relative_top(self):
         """Return the top coordinate of the element in the frame."""
-        return self._y - self.anchor[1]*self.width
+        return self._y - self.anchor[1]*self.height
 
     @property
     def absolute_top(self):
