@@ -15,7 +15,7 @@ class Label(Element):
         master,
         background: SurfaceLike,
         font: Font,
-        text: str,
+        localization_or_text: str,
         x: int,
         y: int,
         anchor = TOP_LEFT,
@@ -36,14 +36,14 @@ class Label(Element):
         - justify: the position of the text in the label. can be TEXT_CENTERED, TEXT_RIGHT, TEXT_LEFT
         """
         self.font = font
-        self.text = str(text)
+        self.text = str(localization_or_text)
         super().__init__(master, background, x, y, anchor, layer, None, None, False, False)
         self.justify = justify
         self._bg_width, self._bg_height = self.surface.width, self.surface.height
 
-    def set_text(self, text: str):
+    def set_localization_or_text(self, localization_or_text: str):
         """Set the label text to a new value."""
-        self.text = str(text)
+        self.text = str(localization_or_text)
 
     def update(self, loop_duration: int):
         pass
@@ -51,7 +51,7 @@ class Label(Element):
     def get_surface(self) -> pygame.Surface:
         """Return the surface of the Label."""
         bg = self.surface.get()
-        rendered_text = self.font.render(self.text)
+        rendered_text = self.font.render(self.game.texts.get(self.text))
         text_width, text_height = rendered_text.get_size()
         y = (self._bg_height - text_height)//2
         if self.justify == TEXT_CENTERED:
