@@ -99,7 +99,7 @@ class Button(Widget):
             )
         ):
             # We verify if the user just clicked or if it is a long click.
-            if not self._is_clicked:
+            if not self._is_clicked and self._command is not None:
                 self._command()
 
             self._is_clicked = True
