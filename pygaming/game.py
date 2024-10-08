@@ -63,3 +63,7 @@ class Game(BaseRunnable):
             self.client.close()
             self.client = None
             self.online = False
+    
+    def update_language(self, phase_name: str):
+        self.texts = Texts(self.database, self.settings, phase_name)
+        self.speeches = Speeches(self.database, self.settings, phase_name)
