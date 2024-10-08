@@ -182,6 +182,7 @@ class Database:
                 SELECT position, text_value
                 FROM localizations
                 WHERE language_code = '{self.default_language}'
+                AND phase_name = '{phase_name}'
                 AND position NOT IN (
                     SELECT position
                     FROM localizations
@@ -207,6 +208,7 @@ class Database:
                 SELECT position, sound_path
                 FROM speeches
                 WHERE language_code = '{self.default_language}'
+                AND phase_name = '{phase_name}'
                 AND position NOT IN (
                     SELECT position
                     FROM speeches
