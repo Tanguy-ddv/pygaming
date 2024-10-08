@@ -38,6 +38,14 @@ class Controls:
         """Update the key map dict with the current settings."""
         self._key_map_dict = {}
 
+        # Find the keys allocated to the widgets. Some could be overlapped by the settings.
+        controls = self._config.get("widget_keys")
+        for key, action in controls.items():
+            if not key.isdigit() and hasattr(pygame, key):
+                self._key_map_dict[str(getattr(pygame, key))] = action
+            else:
+                self._key_map_dict[key] = action
+
         # Find the keys from the controles
         controls = self._settings.controls[self._phase_name]
         self._previous_controls = self._settings.controls[self._phase_name]
@@ -49,12 +57,7 @@ class Controls:
             else:
                 self._key_map_dict[key] = action
 
-        controls = self._config.get("widget_keys")
-        for key, action in controls.items():
-            if not key.isdigit() and hasattr(pygame, key):
-                self._key_map_dict[str(getattr(pygame, key))] = action
-            else:
-                self._key_map_dict[key] = action
+
 
         self._reverse_mapping = self._get_reversed_mapping()
 
