@@ -21,7 +21,7 @@ from .screen.animated_surface import AnimatedSurface, SurfacesLike
 from .screen.label import Label, TEXT_CENTERED, TEXT_LEFT, TEXT_RIGHT
 from .screen.widget.widget import Widget
 from .screen.widget.slider import Slider
-from .screen.widget.button import Button
+from .screen.widget.button import Button, TextButton
 from .screen.widget.entry import Entry
 from .screen.actor import Actor
 
@@ -34,7 +34,7 @@ from . import commands
 from .screen.colored_surfaces import ColoredRectangle, ColoredCircle, ColoredPolygon
 
 __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
-           'Server', 'Settings', 'Screen', 'Frame', 'Actor',
+           'Server', 'Settings', 'Screen', 'Frame', 'Actor', 'TextButton',
            'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
            'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client', 'Keyboard', 'Mouse',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches', 'Button','Entry',
