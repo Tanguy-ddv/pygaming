@@ -79,7 +79,7 @@ class Database:
         - result: list[list[Any]]: The matrix of outputs
         - description: list[str]: The list of fields
         """
-        if not query.startswith("SELECT"):
+        if not (query.startswith("SELECT") or query.startswith("\nSELECT")):
             print("The query is wrong:\n", query, "\nShould start by 'SELECT'")
         try:
             cur = self._conn.cursor()
@@ -100,7 +100,7 @@ class Database:
         ---
         - query: str, the query to execute. Need to start with 'INSERT INTO'
         """
-        if not query.startswith("INSERT INTO"):
+        if not (query.startswith("INSERT INTO") or query.startswith("\nINSERT INTO")):
             print("The query is wrong:\n", query, "\nShould start by 'INSERT INTO'")
         try:
             # Execute the query on the database
@@ -122,7 +122,7 @@ class Database:
         ---
         - query: str, the query to execute. Needs to start with 'UPDATE', 'DELETE', 'ALTER TABLE', or similar.
         """
-        valid_keywords = ["UPDATE", "DELETE", "ALTER TABLE", "DROP", "CREATE", "REPLACE"]
+        valid_keywords = ["UPDATE", "DELETE", "ALTER TABLE", "DROP", "CREATE", "REPLACE", "\nUPDATE", "\nDELETE", "\nALTER TABLE", "\nDROP", "\nCREATE", "\nREPLACE"]
 
         if not any(query.startswith(keyword) for keyword in valid_keywords):
             print("The query is wrong:\n", query, "\nShould start by one of:", ', '.join(valid_keywords))
