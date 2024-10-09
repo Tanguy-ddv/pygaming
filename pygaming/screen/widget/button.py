@@ -6,6 +6,8 @@ from ..frame import Frame
 from ..element import TOP_LEFT
 from ..element import SurfaceLike
 from .widget import Widget, make_background
+from ...font import Font
+from ..label import TEXT_CENTERED, TEXT_RIGHT
 
 class Button(Widget):
     """A Button is a basic widget used to get a player click."""
@@ -106,3 +108,61 @@ class Button(Widget):
 
         else:
             self._is_clicked = False
+
+class TextButton(Button):
+
+    def __init__(
+            self,
+            master: Frame,
+            x: int,
+            y: int,
+            normal_background: SurfaceLike,
+            font : Font,
+            localization_or_text: str,
+            active_background: Optional[SurfaceLike] = None,
+            focused_background: Optional[SurfaceLike] = None,
+            disabled_background: Optional[SurfaceLike] = None,
+            anchor: tuple[float | int, float | int] = TOP_LEFT,
+            active_area: Rect | None = None,
+            layer: int = 0,
+            hover_surface: Surface | None = None,
+            hover_cursor: Cursor | None = None,
+            continue_animation: bool = False,
+            command: Callable[[], Any] | None = None,
+            jusitfy = TEXT_CENTERED
+        ) -> None:
+        super().__init__(
+            master,
+            x,
+            y,
+            normal_background,
+            active_background,
+            focused_background,
+            disabled_background,
+            anchor,
+            active_area,
+            layer,
+            hover_surface,
+            hover_cursor,
+            continue_animation,
+            command
+        )
+
+        self.font = font
+        self.text = localization_or_text
+        self.justify = jusitfy
+        self._bg_width, self._bg_height = self.surface.width, self.surface.height
+
+    def get_surface(self):
+        bg = super().get_surface()
+        rendered_text = self.font.render(self.game.texts.get(self.text))
+        text_width, text_height = rendered_text.get_size()
+        y = (self._bg_height - text_height)//2
+        if self.justify == TEXT_CENTERED:
+            x = (self._bg_width - text_width)//2
+        elif self.justify == TEXT_RIGHT:
+            x = self._bg_width - text_width
+        else:
+            x = 0
+        bg.blit(rendered_text, (x,y))
+        return bg
