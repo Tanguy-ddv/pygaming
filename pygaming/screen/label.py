@@ -1,11 +1,8 @@
 """The label module contains the Label Element used to display text."""
 import pygame
-from .element import Element, SurfaceLike, TOP_LEFT
+from .element import Element, SurfaceLike, TOP_LEFT, CENTER
 from ..font import Font
 
-TEXT_LEFT = 'text_left'
-TEXT_RIGHT = 'text_right'
-TEXT_CENTERED = 'text_centered'
 
 class Label(Element):
     """A Label is an element used to display text."""
@@ -20,7 +17,7 @@ class Label(Element):
         y: int,
         anchor = TOP_LEFT,
         layer: int = 0,
-        justify = TEXT_CENTERED,
+        justify = CENTER,
         blinking_period: int = None
     ) -> None:
         """
@@ -34,7 +31,7 @@ class Label(Element):
         - y: The first coordinate of the anchor in the Frame.
         - anchor: The anchor of the coordinate.
         - layer: int, the layer of the element in the frame.
-        - justify: the position of the text in the label. can be TEXT_CENTERED, TEXT_RIGHT, TEXT_LEFT
+        - justify: the position of the text in the label, should be an anchor (i.e a tuple[x, y] with 0 <= x, y <= 1, )
         - blinking_period: int [ms]. If an integer is specified, the text will blink with the given period.
         """
         self.font = font
@@ -64,12 +61,7 @@ class Label(Element):
         if self._show_text:
             rendered_text = self.font.render(self.game.texts.get(self.text))
             text_width, text_height = rendered_text.get_size()
-            y = (self._bg_height - text_height)//2
-            if self.justify == TEXT_CENTERED:
-                x = (self._bg_width - text_width)//2
-            elif self.justify == TEXT_RIGHT:
-                x = self._bg_width - text_width
-            else:
-                x = 0
-            bg.blit(rendered_text, (x,y))
+            just_x = self.justify[0]*(bg.get_width() - text_width)
+            just_y = self.justify[1]*(bg.get_height() - text_height)
+            bg.blit(rendered_text, (just_x, just_y))
         return bg

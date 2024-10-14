@@ -3,11 +3,10 @@
 from typing import Optional, Callable, Any
 from pygame import Cursor, Rect, Surface
 from ..frame import Frame
-from ..element import TOP_LEFT
+from ..element import TOP_LEFT, CENTER
 from ..element import SurfaceLike
 from .widget import Widget, make_background
 from ...font import Font
-from ..label import TEXT_CENTERED, TEXT_RIGHT
 
 class Button(Widget):
     """A Button is a basic widget used to get a player click."""
@@ -129,7 +128,7 @@ class TextButton(Button):
             hover_cursor: Cursor | None = None,
             continue_animation: bool = False,
             command: Callable[[], Any] | None = None,
-            jusitfy = TEXT_CENTERED
+            jusitfy = CENTER
         ) -> None:
         super().__init__(
             master,
@@ -147,7 +146,6 @@ class TextButton(Button):
             continue_animation,
             command
         )
-
         self.font = font
         self.text = localization_or_text
         self.justify = jusitfy
@@ -157,12 +155,7 @@ class TextButton(Button):
         bg = super().get_surface()
         rendered_text = self.font.render(self.game.texts.get(self.text))
         text_width, text_height = rendered_text.get_size()
-        y = (self._bg_height - text_height)//2
-        if self.justify == TEXT_CENTERED:
-            x = (self._bg_width - text_width)//2
-        elif self.justify == TEXT_RIGHT:
-            x = self._bg_width - text_width
-        else:
-            x = 0
-        bg.blit(rendered_text, (x,y))
+        just_x = self.justify[0]*(bg.get_width() - text_width)
+        just_y = self.justify[1]*(bg.get_height() - text_height)
+        bg.blit(rendered_text, (just_x, just_y))
         return bg

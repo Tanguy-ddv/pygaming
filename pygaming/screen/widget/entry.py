@@ -3,12 +3,10 @@
 from typing import Optional
 from pygame import Cursor, Rect, Surface
 from .widget import Widget
-from ..element import SurfaceLike, TOP_LEFT
+from ..element import SurfaceLike, TOP_LEFT, CENTER
 from ..colored_surfaces import ColoredRectangle
 from ..frame import Frame
 from ...font import Font
-
-from ..label import TEXT_CENTERED, TEXT_RIGHT
 
 class Entry(Widget):
     """The Entry widget is used to allow the user to add a textual input."""
@@ -33,7 +31,7 @@ class Entry(Widget):
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,
         continue_animation: bool = False,
-        justify = TEXT_CENTERED,
+        justify = CENTER,
         charet_frequency: int = 500,
         charet_width: int = 2,
         max_length: int = 10,
@@ -124,17 +122,12 @@ Params:
     def _get_surface(self, background: Surface, font: Font, charet: bool):
         rendered_text = font.render(self._text)
         text_width, text_height = rendered_text.get_size()
-        y = (self._active_area.height - text_height)//2 + self._active_area.top
-        if self._justify == TEXT_CENTERED:
-            x = (self._active_area.width - text_width)//2 + self._active_area.left
-        elif self._justify == TEXT_RIGHT:
-            x = self._active_area.right - text_width
-        else:
-            x = self._active_area.left
-        background.blit(rendered_text, (x,y))
+        just_x = self._justify[0]*(background.get_width() - text_width)
+        just_y = self._justify[1]*(background.get_height() - text_height)
+        background.blit(rendered_text, (just_x, just_y))
         if charet:
-            charet_x = x + font.size(self._text[:self._charet_index])[0]
-            background.blit(self._charet, (charet_x, y))
+            charet_x = just_x + font.size(self._text[:self._charet_index])[0]
+            background.blit(self._charet, (charet_x, just_y))
         return background
 
     def update(self, loop_duration: int):
