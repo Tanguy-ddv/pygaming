@@ -8,10 +8,10 @@ from .animated_surface import AnimatedSurface
 
 # Anchors
 
-TOP_RIGHT = 0, 1
+TOP_RIGHT = 1, 0
 TOP_LEFT = 0, 0
 CENTER = 0.5, 0.5
-BOTTOM_LEFT = 1, 0
+BOTTOM_LEFT = 0, 1
 BOTTOM_RIGHT = 1, 1
 
 SurfaceLike = Union[AnimatedSurface, pygame.Surface]
