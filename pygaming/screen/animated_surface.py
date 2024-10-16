@@ -29,7 +29,6 @@ class AnimatedSurface:
         """
         self._index = 0
         self._image_introduction = image_introduction
-        self._introduction_done = False
         self._time_since_last_change = 0
 
         if not isinstance(surfaces, Iterable):
@@ -60,12 +59,9 @@ class AnimatedSurface:
             self._time_since_last_change += loop_duration
             if self._time_since_last_change >= self._image_durations[self._index]:
                 self._time_since_last_change = 0
-                if not self._introduction_done:
-                    self._index = (self._index+1)%self._n_bg
-                    if self._index > self._image_introduction:
-                        self._introduction_done = True
-                else:
-                    self._index = (self._index+1 - self._image_introduction)%(self._n_bg - self._image_introduction) + self._image_introduction
+                self._index += 1
+                if self._index == self._n_bg:
+                    self._index = self._image_introduction
 
     @property
     def height(self):
