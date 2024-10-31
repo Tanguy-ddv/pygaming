@@ -30,17 +30,27 @@ class Controls:
         -----
         reverse_mapping: dict[str, list[str]]. The keys are the actions, the values the list of event that would trigger it.
         """
-        if self._previous_controls != self._settings.controls[self._phase_name]:
-            self.update_settings()
-        return self._reverse_mapping
+        if self._phase_name in self._settings.controls:
+            if self._previous_controls != self._settings.controls[self._phase_name]:
+                self.update_settings()
+            return self._reverse_mapping
+        return {}
 
     def update_settings(self):
         """Update the key map dict with the current settings."""
         self._key_map_dict = {}
 
-        # Find the keys from the controles
-        controls = self._settings.controls[self._phase_name]
-        self._previous_controls = self._settings.controls[self._phase_name]
+        # Find the keys allocated to the widgets. Some could be overlapped by the settings.
+        controls = self._config.get("widget_keys")
+        for key, action in controls.items():
+            if not key.isdigit() and hasattr(pygame, key):
+                self._key_map_dict[str(getattr(pygame, key))] = action
+            else:
+                self._key_map_dict[key] = action
+
+        # Find the keys from the controls
+        controls = self._settings.controls[self._phase_name] if self._phase_name in self._settings.controls else {}
+        self._previous_controls = controls
         for key, action in controls.items():
             # The key is either stored as a string of the value of the pygame.key or as a string of the name
             # e.g. : '1073741904' or 'K_LEFT'
@@ -49,12 +59,7 @@ class Controls:
             else:
                 self._key_map_dict[key] = action
 
-        controls = self._config.get("widget_keys")
-        for key, action in controls.items():
-            if not key.isdigit() and hasattr(pygame, key):
-                self._key_map_dict[str(getattr(pygame, key))] = action
-            else:
-                self._key_map_dict[key] = action
+
 
         self._reverse_mapping = self._get_reversed_mapping()
 

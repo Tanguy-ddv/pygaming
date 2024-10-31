@@ -10,11 +10,9 @@
         "main": 1, 
         "music": 1, 
         "sounds": {
-            "speeches": 1,
-            "classic" : 0.5,
-            "not classic" : 0.8
+            "speeches": 1
         }
     },
-        "antialias": 1,
-        "current_languge": "fr_FR"
+    "antialias": 1,
+    "senibility" : 1
 }

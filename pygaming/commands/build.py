@@ -5,6 +5,7 @@ import shutil
 import platform
 import PyInstaller.__main__
 from ..error import PygamingException
+import importlib.resources
 
 def build(name: str):
     """
@@ -70,7 +71,7 @@ def build(name: str):
         print("The server has been built successfully")
 
     # Create the installer
-    command = [os.path.join(os.path.abspath(this_dir), 'pygaming', 'commands/install.py')] + installer_options
+    command = [os.path.join(importlib.resources.files('pygaming'), 'commands/install.py')] + installer_options
     PyInstaller.__main__.run(command)
 
     # Copy paste it on the root.

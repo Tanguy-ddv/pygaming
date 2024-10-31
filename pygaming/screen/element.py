@@ -8,11 +8,15 @@ from .animated_surface import AnimatedSurface
 
 # Anchors
 
-TOP_RIGHT = 0, 1
+TOP_RIGHT = 1, 0
 TOP_LEFT = 0, 0
 CENTER = 0.5, 0.5
-BOTTOM_LEFT = 1, 0
+BOTTOM_LEFT = 0, 1
 BOTTOM_RIGHT = 1, 1
+TOP_CENTER = 0.5, 0
+BOTTOM_CENTER = 0.5, 1
+CENTER_LEFT = 0, 0.5
+CENTER_RIGHT = 1, 0.5
 
 SurfaceLike = Union[AnimatedSurface, pygame.Surface]
 
@@ -194,7 +198,7 @@ class Element(ABC):
     @property
     def relative_left(self):
         """Return the left coordinate of the element in the frame."""
-        return self._x - self.anchor[0]*self.height
+        return self._x - self.anchor[0]*self.width
 
     @property
     def absolute_left(self):
@@ -204,7 +208,7 @@ class Element(ABC):
     @property
     def relative_top(self):
         """Return the top coordinate of the element in the frame."""
-        return self._y - self.anchor[1]*self.width
+        return self._y - self.anchor[1]*self.height
 
     @property
     def absolute_top(self):

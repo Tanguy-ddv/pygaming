@@ -3,9 +3,10 @@
 from typing import Optional, Callable, Any
 from pygame import Cursor, Rect, Surface
 from ..frame import Frame
-from ..element import TOP_LEFT
+from ..element import TOP_LEFT, CENTER
 from ..element import SurfaceLike
 from .widget import Widget, make_background
+from ...font import Font
 
 class Button(Widget):
     """A Button is a basic widget used to get a player click."""
@@ -99,10 +100,62 @@ class Button(Widget):
             )
         ):
             # We verify if the user just clicked or if it is a long click.
-            if not self._is_clicked:
+            if not self._is_clicked and self._command is not None:
                 self._command()
 
             self._is_clicked = True
 
         else:
             self._is_clicked = False
+
+class TextButton(Button):
+
+    def __init__(
+            self,
+            master: Frame,
+            x: int,
+            y: int,
+            normal_background: SurfaceLike,
+            font : Font,
+            localization_or_text: str,
+            active_background: Optional[SurfaceLike] = None,
+            focused_background: Optional[SurfaceLike] = None,
+            disabled_background: Optional[SurfaceLike] = None,
+            anchor: tuple[float | int, float | int] = TOP_LEFT,
+            active_area: Rect | None = None,
+            layer: int = 0,
+            hover_surface: Surface | None = None,
+            hover_cursor: Cursor | None = None,
+            continue_animation: bool = False,
+            command: Callable[[], Any] | None = None,
+            jusitfy = CENTER
+        ) -> None:
+        super().__init__(
+            master,
+            x,
+            y,
+            normal_background,
+            active_background,
+            focused_background,
+            disabled_background,
+            anchor,
+            active_area,
+            layer,
+            hover_surface,
+            hover_cursor,
+            continue_animation,
+            command
+        )
+        self.font = font
+        self.text = localization_or_text
+        self.justify = jusitfy
+        self._bg_width, self._bg_height = self.surface.width, self.surface.height
+
+    def get_surface(self):
+        bg = super().get_surface()
+        rendered_text = self.font.render(self.game.texts.get(self.text))
+        text_width, text_height = rendered_text.get_size()
+        just_x = self.justify[0]*(bg.get_width() - text_width)
+        just_y = self.justify[1]*(bg.get_height() - text_height)
+        bg.blit(rendered_text, (just_x, just_y))
+        return bg

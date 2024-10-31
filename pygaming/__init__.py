@@ -16,13 +16,17 @@ from .settings import Settings
 
 from .screen.screen import Screen
 from .screen.frame import Frame
-from .screen.element import Element, TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT, BOTTOM_RIGHT, SurfaceLike
+from .screen.element import (
+    Element, TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT, BOTTOM_CENTER,
+    BOTTOM_RIGHT, SurfaceLike, CENTER_LEFT, CENTER_RIGHT, TOP_CENTER
+)
 from .screen.animated_surface import AnimatedSurface, SurfacesLike
-from .screen.label import Label, TEXT_CENTERED, TEXT_LEFT, TEXT_RIGHT
+from .screen.label import Label
 from .screen.widget.widget import Widget
 from .screen.widget.slider import Slider
-from .screen.widget.button import Button
+from .screen.widget.button import Button, TextButton
 from .screen.widget.entry import Entry
+from .screen.actor import Actor
 
 from .inputs import Inputs, Controls, Click, Keyboard, Mouse
 from .file import FontFile, DataFile, ImageFile, GIFFile, SoundFile, MusicFile, get_file
@@ -33,9 +37,9 @@ from . import commands
 from .screen.colored_surfaces import ColoredRectangle, ColoredCircle, ColoredPolygon
 
 __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
-           'Server', 'Settings', 'Screen', 'Frame',
+           'Server', 'Settings', 'Screen', 'Frame', 'Actor', 'TextButton', 'CENTER_LEFT', 'CENTER_RIGHT', 'TOP_CENTER', 'BOTTOM_CENTER',
            'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
            'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client', 'Keyboard', 'Mouse',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches', 'Button','Entry',
            'commands', 'ColoredRectangle', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT',
-           'Label', 'TEXT_CENTERED', 'TEXT_LEFT', 'TEXT_RIGHT', 'Widget', 'Slider', 'ColoredCircle', 'ColoredPolygon']
+           'Label', 'Widget', 'Slider', 'ColoredCircle', 'ColoredPolygon']

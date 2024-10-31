@@ -57,7 +57,7 @@ class BaseRunnable(ABC):
             # change the phase
             self.current_phase = next_phase
             # start the new phase
-            self.phases[self.current_phase].start(**new_data)
+            self.phases[self.current_phase].begin(**new_data)
 
         # if NO_NEXT was return, end the game.
         return next_phase == NO_NEXT
