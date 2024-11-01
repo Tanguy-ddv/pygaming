@@ -1,11 +1,13 @@
 """A phase is one step of the game."""
 from abc import ABC, abstractmethod
 import pygame
+import gc
 from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
 from .server import Server
 from .database import SoundBox
+
 
 class BasePhase(ABC):
     """
@@ -91,6 +93,11 @@ class BasePhase(ABC):
         """
         raise NotImplementedError()
 
+    def finish(self):
+        """This method is called at the end of the phase and is used to clear some data"""
+        self.end()
+        gc.collect()
+
     @abstractmethod
     def end(self):
         """Action to do when the phase is ended."""
@@ -174,6 +181,12 @@ class GamePhase(BasePhase, ABC):
         self.game.soundbox = SoundBox(self.settings, self._name, self.database)
         # Start the phase
         self.start(**kwargs)
+    
+    def finish(self):
+        """This method is called at the end of the phase."""
+        self.game.soundbox = None # Unload all the sounds
+        self.end()
+        gc.collect()
 
     @property
     def game(self) -> Game:

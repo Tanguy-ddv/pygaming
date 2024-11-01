@@ -53,7 +53,7 @@ class BaseRunnable(ABC):
             # get the value for the arguments for the start of the next phase
             new_data = self.phases[self.current_phase].apply_transition(next_phase)
             # End the current phase
-            self.phases[self.current_phase].end()
+            self.phases[self.current_phase].finish()
             # change the phase
             self.current_phase = next_phase
             # start the new phase
