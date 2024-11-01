@@ -1,12 +1,11 @@
 """The game module contains the game class which is used to represent every game."""
 import pygame
-from .database import Texts, Speeches
-from .database.database import GAME
+from .database import Texts, Speeches, SoundBox, GAME 
+from .music import Jukebox
 from .connexion import Client
 from .inputs import Inputs, Mouse, Keyboard
 from .settings import Settings
 from .screen.screen import Screen
-from .sound import SoundBox, Jukebox
 from .base import BaseRunnable
 
 class Game(BaseRunnable):
@@ -24,7 +23,7 @@ class Game(BaseRunnable):
         pygame.init()
 
         self.settings = Settings()
-        self.soundbox = SoundBox(self.settings)
+        self.soundbox = SoundBox(self.settings, first_phase, self.database)
         self.jukebox = Jukebox(self.settings)
 
         self.mouse = Mouse(self.settings)
@@ -65,5 +64,6 @@ class Game(BaseRunnable):
             self.online = False
     
     def update_language(self, phase_name: str):
+        """Update the language."""
         self.texts = Texts(self.database, self.settings, phase_name)
-        self.speeches = Speeches(self.database, self.settings, phase_name)
+        self.soundbox.update_language()
