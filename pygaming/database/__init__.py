@@ -2,7 +2,9 @@
 The database module contains the database class to interaxct with the database
 the texts and speeches to display texts ad play sounds in the good language.
 """
-from .database import Database
+from .database import Database, GAME, SERVER
 from .texts import Texts
 from .speeches import Speeches
-__all__ = ['Texts', 'Database', 'Speeches']
+from .sounds import SoundBox
+
+__all__ = ['Texts', 'Database', 'Speeches', 'SoundBox', 'SERVER', 'GAME']

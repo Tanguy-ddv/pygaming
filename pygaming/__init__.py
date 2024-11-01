@@ -29,7 +29,7 @@ from .screen.widget.entry import Entry
 from .screen.actor import Actor
 
 from .inputs import Inputs, Controls, Click, Keyboard, Mouse
-from .file import FontFile, DataFile, ImageFile, GIFFile, SoundFile, MusicFile, get_file
+from .file import FontFile, DataFile, ImageFile, GIFFile, MusicFile, get_file
 from .connexion import Client, Server as Network, HEADER, ID, CONTENT, TIMESTAMP
 
 from .database import Database, Texts, Speeches
@@ -39,7 +39,7 @@ from .screen.colored_surfaces import ColoredRectangle, ColoredCircle, ColoredPol
 __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
            'Server', 'Settings', 'Screen', 'Frame', 'Actor', 'TextButton', 'CENTER_LEFT', 'CENTER_RIGHT', 'TOP_CENTER', 'BOTTOM_CENTER',
            'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
-           'DataFile', 'ImageFile', 'GIFFile', 'SoundFile', 'MusicFile','get_file', 'Client', 'Keyboard', 'Mouse',
+           'DataFile', 'ImageFile', 'GIFFile', 'MusicFile','get_file', 'Client', 'Keyboard', 'Mouse',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches', 'Button','Entry',
            'commands', 'ColoredRectangle', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT',
            'Label', 'Widget', 'Slider', 'ColoredCircle', 'ColoredPolygon']

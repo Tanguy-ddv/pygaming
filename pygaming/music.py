@@ -2,8 +2,8 @@
 
 from random import random as rd
 import pygame
-from ..file import MusicFile
-from ..settings import Settings
+from .file import MusicFile
+from .settings import Settings
 
 _LOOPS = 'loops'
 _PLAYLIST = 'playlist'
