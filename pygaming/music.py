@@ -25,6 +25,16 @@ class Jukebox:
         pygame.mixer.music.stop()
         self._playing = False
 
+    def pause(self):
+        """Pause the music currently playing."""
+        pygame.mixer.music.pause()
+        self._playing = False
+    
+    def unpause(self):
+        """Resume the music playing."""
+        pygame.mixer.music.unpause()
+        self._playing = True
+
     def play_loop(self, music_file: MusicFile):
         """Play a music that will loop."""
         path, self._loop_instant = music_file.get()
