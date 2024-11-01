@@ -7,9 +7,20 @@ CREATE TABLE localizations (
     text_value TEXT NOT NULL -- The value itself
 );
 
+-- Example: see localizations.sql
+
 CREATE TABLE speeches (
-    position TEXT NOT NULL UNIQUE,
-    phase_name TEXT NOT NULL,
-    language_code TEXT,
-    sound_path TEXT NOT NULL
+    position TEXT NOT, -- "LOC_..."
+    phase_name TEXT NOT NULL, -- the name of the phase
+    language_code TEXT, --'en_US" for us english, "fr_FR" for french, "it_IT" for italian, "es_MX" for mexican spanish etc.
+    sound_path TEXT NOT NULL -- The path to the sound in this language in the folder assets/sounds
 );
+
+-- Example: see localizations.sql
+
+CREATE TABLE sounds (
+    name TEXT NOT NULL UNIQUE,
+    phase_name TEXT NOT NULL,
+    sound_path TEXT NOT NULL,
+    category TEXT NOT NULL
+)
