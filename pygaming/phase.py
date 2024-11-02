@@ -6,7 +6,8 @@ from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
 from .server import Server
-from .database import SoundBox
+from .database import SoundBox, TypeWriter
+
 
 
 class BasePhase(ABC):
@@ -175,10 +176,10 @@ class GamePhase(BasePhase, ABC):
 
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
-        # update texts, speeches and controls based on the new phase
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
-        self.game.update_settings(self._name)
+        self.game.update_settings()
         self.game.soundbox = SoundBox(self.settings, self._name, self.database)
+        self.game.typewriter = TypeWriter(self.database, self.settings, self._name)
         # Start the phase
         self.start(**kwargs)
     
@@ -192,6 +193,11 @@ class GamePhase(BasePhase, ABC):
     def game(self) -> Game:
         """Alias for the game."""
         return self.runnable
+    
+    @property
+    def typewriter(self):
+        """Alias for self.game.typewriter"""
+        return self.game.typewriter
 
     @property
     def settings(self):
