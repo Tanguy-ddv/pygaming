@@ -6,7 +6,6 @@ provides settings, loggers, inputs, files, music and sounds, network, and databa
 as well as multi-language support, screen, widgets and frames.
 """
 from .config import Config
-from .font import Font
 from .game import Game
 from .base import NO_NEXT, STAY
 from .logger import Logger
@@ -32,7 +31,7 @@ from .inputs import Inputs, Controls, Click, Keyboard, Mouse
 from .file import FontFile, DataFile, ImageFile, GIFFile, get_file
 from .connexion import Client, Server as Network, HEADER, ID, CONTENT, TIMESTAMP
 
-from .database import Database, Texts, Speeches
+from .database import Database, Texts, Speeches, TypeWriter, SoundBox
 from . import commands
 from .screen.colored_surfaces import ColoredRectangle, ColoredCircle, ColoredPolygon
 
@@ -42,4 +41,4 @@ __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase',
            'DataFile', 'ImageFile', 'GIFFile','get_file', 'Client', 'Keyboard', 'Mouse',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches', 'Button','Entry',
            'commands', 'ColoredRectangle', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT',
-           'Label', 'Widget', 'Slider', 'ColoredCircle', 'ColoredPolygon']
+           'Label', 'Widget', 'Slider', 'ColoredCircle', 'ColoredPolygon', 'TypeWriter', 'SoundBox']
