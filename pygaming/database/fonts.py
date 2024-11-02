@@ -91,8 +91,16 @@ class TypeWriter:
         Be aware that most fonts use kerning which adjusts the widths for specific letter pairs.
         For example, the width for "ae" will not always match the width for "a" + "e".
         """
+        if "\n" in text_or_loc:
+            lines = [line.strip() for line in text_or_loc.split('\n')]
+            thefont = self._get_font(font)
+            line_size = thefont.get_linesize()
+            line_spacing = line_size//20 + 1
+            bg_width = max(thefont.size(line)[0] for line in lines)
+            bg_height = len(lines)*line_size + line_spacing*(len(lines) - 1)
+            return bg_width, bg_height
+        
         return self._get_font(font).size(self._texts.get(text_or_loc))
-
 
     def get_ascent(self, font: str):
         """Return the height in pixels for the font ascent.
