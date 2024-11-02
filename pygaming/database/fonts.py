@@ -44,6 +44,7 @@ class TypeWriter:
     def __init__(self, database: Database, settings: Settings, phase_name: str) -> None:
 
         self._settings = settings
+        self._db = database
         fonts = database.get_fonts(phase_name)
         self._fonts: dict[str, Font] = {
             font_name : Font(get_file('fonts', path, True), size, bold, italic, underline)
@@ -51,10 +52,15 @@ class TypeWriter:
             in fonts
         }
 
+        self._phase_name = phase_name
         self._texts = Texts(database, settings, phase_name)
 
         self._default_font = Ft(None, 15)
         self._default_font.get_descent()
+    
+    def update_settings(self):
+        """Update the texts based on the new language."""
+        self._texts = Texts(self._db, self._settings, self._phase_name)
     
     def _get_font(self, font):
         """Get the font from the dict or return the default font"""

@@ -1,6 +1,6 @@
 """The game module contains the game class which is used to represent every game."""
 import pygame
-from .database import Texts, Speeches, SoundBox, GAME 
+from .database import TypeWriter, Speeches, SoundBox, GAME 
 from .music import Jukebox
 from .connexion import Client
 from .inputs import Inputs, Mouse, Keyboard
@@ -23,16 +23,17 @@ class Game(BaseRunnable):
         pygame.init()
 
         self.settings = Settings()
+
         self.soundbox = SoundBox(self.settings, first_phase, self.database)
         self.jukebox = Jukebox(self.settings)
+
+        self.typewriter = TypeWriter(self.database, self.settings, self.current_phase)
 
         self.mouse = Mouse(self.settings)
         self.keyboard = Keyboard()
         self._inputs = Inputs(self.mouse, self.keyboard)
-        self._screen = Screen(self.config, self.settings)
 
-        self.texts = Texts(self.database, self.settings, self.current_phase)
-        self.speeches = Speeches(self.database, self.settings, self.current_phase)
+        self._screen = Screen(self.config, self.settings)
 
         self.client = None
         self.online = False
