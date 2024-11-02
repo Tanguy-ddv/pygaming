@@ -16,29 +16,27 @@ class Keyboard:
         self.controls = None
         self.event_list: list[pygame.event.Event] = []
         self._control_mapping = {}
-        self.action_pressed = {}
-        self._phase_name = None
+        self.actions_pressed = {}
+        self.actions_down = {}
+        self.actions_up = {}
 
     def load_controls(self, settings: Settings, config: Config, phase_name: str):
         """Load the new controls"""
         self.controls = Controls(settings, config, phase_name)
-        self._control_mapping = self.controls.get_reverse_mapping()
-        self.action_pressed = self.get_actions_down()
+        self._control_mapping = self.controls.get_reversed_mapping()
+        self.action_pressed = self.udpate_actions_down()
+    
+    def update_settings(self):
+        """Update the controls."""
+        self.controls.update_settings()
+        self._control_mapping = self.controls.get_reversed_mapping()
 
     def update(self, event_list: list[pygame.event.Event], phase_name: str):
         """Update the keyboard with the event list."""
         self.event_list = event_list
-        if self._phase_name != phase_name:
-            self._phase_name = phase_name
-            self.controls.update_settings()
-
-        self._control_mapping = self.controls.get_reverse_mapping()
-        for key, upped in self.get_actions_up().items():
-            if upped:
-                self.action_pressed[key] = False
-        for key, upped in self.get_actions_down().items():
-            if upped:
-                self.action_pressed[key] = True
+        self.update_actions_up()
+        self.udpate_actions_down()
+        self.update_actions_pressed()
 
     def get_characters(self, extra_characters: str = '', forbid_characters: str = ''):
         """
@@ -56,20 +54,24 @@ class Keyboard:
                 )
         ]
 
-    def get_actions_down(self):
+    def udpate_actions_down(self):
         """Return a dict of str: bool specifying if the action is triggered or not. The action is triggered if the user just pressed the key."""
         types = [event.key for event in self.event_list if event.type == pygame.KEYDOWN]
-        return {
+        self.actions_down = {
             action : any(int(key) in types for key in keys)
             for action, keys in self._control_mapping.items()}
 
-    def get_actions_up(self):
-        """Return a dict of str: bool specifying if the action is triggered or not. The action is triggered if the user just unpressed the key."""
+    def update_actions_up(self):
         types = [event.key for event in self.event_list if event.type == pygame.KEYUP]
-        return {
+        self.actions_up = {
             action : any(int(key) in types for key in keys)
             for action, keys in self._control_mapping.items()}
-
-    def get_actions_press(self):
-        """Return a dict of str: bool specifying if the action is triggered or not. The action is triggered if the user is pressing the key."""
-        return self.action_pressed
+    
+    def update_actions_pressed(self):
+        """Update the dict of str: bool specifying if the action is triggered or not. The action is triggered if the user is pressing the key."""
+        for key, upped in self.actions_down.items():
+            if upped:
+                self.action_pressed[key] = False
+        for key, upped in self.actions_up.items():
+            if upped:
+                self.action_pressed[key] = True

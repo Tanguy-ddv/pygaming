@@ -67,4 +67,4 @@ class Game(BaseRunnable):
         """Update the language."""
         self.texts = Texts(self.database, self.settings, phase_name)
         self.soundbox.update_settings()
-        self.keyboard.load_controls(self.settings, self.config, self.current_phase)
+        self.keyboard.update_settings()
