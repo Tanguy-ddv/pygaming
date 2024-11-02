@@ -34,8 +34,8 @@ CREATE TABLE fonts (
     size INTEGER NOT NULL,
     italic BOOLEAN DEFAULT FALSE,
     bold BOOLEAN DEFAULT FALSE,
-    underline BOOLEAN DEFAULT FALSE
-    strikethrough BOOLEAN DEFAULT FALSE,
+    underline BOOLEAN DEFAULT FALSE,
+    strikethrough BOOLEAN DEFAULT FALSE
 )
 
 -- Example: see fonts.sql
