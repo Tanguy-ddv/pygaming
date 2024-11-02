@@ -10,11 +10,12 @@ then convert into an .ico file (you can use online converters) and be sure to na
 The musics, sounds, fonts and images folders will be used by you to store the different assets of the game.
 You can load them by using the FontFile, MusicFile, SoundFile and ImageFile to load them in the game.
 ----
-The musics folder contains an empty file: loop_times.json, this file must be filled with a dictionnary-like content with:
-- The keys are the name of the music file (e.g : "music.mp3")
-- The values are the instants (in second) on which you want the musics to loop when finished
-    (e.g: 13.458, when the menu music ends, it restart at 13.458 seconds from the start)
-This file can stay empty if you don't have any music you want to loop.
+The musics folder contains all the musics you will play during the game. They can be played in two different ways:
+- with a loop by using jukebox.play_loop(name, loop_instant (in ms))
+- with playlists with jukebox.read_playlist(list[name], random: bool)
+Here, names are the path to the music file into the musics folder.
+Ex: if the musics folder contains one music called 'background_music.mp3', the name is 'background_music.mp3'
+if the music folder contains several folders with musics in it, the name is '
 ----
 The sounds folder contains all the sounds to be played. To have acces to them, you should have a line in the data/sql-game/sounds.sql file
 Each line is composed of:
