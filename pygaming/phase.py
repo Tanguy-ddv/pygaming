@@ -177,7 +177,7 @@ class GamePhase(BasePhase, ABC):
         """This method is called at the beginning of the phase."""
         # update texts, speeches and controls based on the new phase
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
-        self.game.update_language(self._name)
+        self.game.update_settings(self._name)
         self.game.soundbox = SoundBox(self.settings, self._name, self.database)
         # Start the phase
         self.start(**kwargs)

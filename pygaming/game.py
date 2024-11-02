@@ -63,7 +63,8 @@ class Game(BaseRunnable):
             self.client = None
             self.online = False
     
-    def update_language(self, phase_name: str):
+    def update_settings(self, phase_name: str):
         """Update the language."""
         self.texts = Texts(self.database, self.settings, phase_name)
-        self.soundbox.update_language()
+        self.soundbox.update_settings()
+        self.keyboard.load_controls(self.settings, self.config, self.current_phase)
