@@ -236,9 +236,9 @@ class Database:
         """
 
         fonts = self.execute_select_query(
-            f"""SELECT name, font_path, size, italic, bold, underline
+            f"""SELECT name, font_path, size, italic, bold, underline, strikethrough
                 FROM fonts
                 WHERE ( phase_name = '{phase_name}' OR phase_name = 'all' )
             """
         )[0]
-        return {font_name : (font_path, size, italic, bold, underline ) for font_name, font_path, size, italic, bold, underline in fonts}
+        return {font_name : (font_path, size, italic, bold, underline, strikethrough ) for font_name, font_path, size, italic, bold, underline, strikethrough in fonts}
