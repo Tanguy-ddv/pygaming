@@ -25,11 +25,13 @@ class Font(_Ft):
 
         Params:
         ----
-        name: the path to the font in the assets/font folder.
-        size: the size of the font
-        color: the color of the font
-        settings: the self.settings of the game. It is used to 
-        bold, italic, underline: flags for the font.
+        - name: the path to the font in the assets/font folder.
+        - size: the size of the font
+        - settings: the self.settings of the game. It is used to 
+        - bold: bool, flag for the font to be diplayed in bold characters or not
+        - italic: bool, flag for the font to be diplayed in italic characters or not
+        - underline: bool, flag for the font to be diplayed underlined or not
+        - strikethrough: bool, flag for the font to be diplayed with a strikethrough or not
         """
         super().__init__(path, size)
         self.name = path
@@ -70,7 +72,19 @@ class TypeWriter:
             return self._default_font
 
     def render(self, font: str, text_or_loc: str, color: Color, background_color: Color = None) -> Surface:
-        """Draw text or localization on a new Surface."""
+        """
+        Draw text or localization on a new Surface.
+        
+        Params:
+        -----
+        - font: str, the name of the font. If the name is not find (which means it is not present on the fonts.sql file for this phase),
+        use the default system font with a size of 20
+        - text_or_loc: str, the text to be rendered. If it is recognized as a loc, the text in the current language is displayed, else.
+        Otherwise, the test itself is used.
+        - color: Color, the color to display the font in
+        - background_color: Color = None, the color of the background. If a color is given,
+        the surface return has a solid background with this color, otherwise the background is transparent
+        """
         thefont = self._get_font(font)
         if "\n" in text_or_loc:
             lines = [line.strip() for line in text_or_loc.split('\n')]
@@ -96,6 +110,13 @@ class TypeWriter:
 
         Be aware that most fonts use kerning which adjusts the widths for specific letter pairs.
         For example, the width for "ae" will not always match the width for "a" + "e".
+
+        Params:
+        ----
+        - font: str, the name of the font. If the name is not find (which means it is not present on the fonts.sql file for this phase),
+        use the default system font with a size of 20
+        - text_or_loc: str, the text to be rendered. If it is recognized as a loc, the text in the current language is displayed, else.
+        Otherwise, the test itself is used.
         """
         if "\n" in text_or_loc:
             lines = [line.strip() for line in text_or_loc.split('\n')]
@@ -110,17 +131,34 @@ class TypeWriter:
 
     def get_ascent(self, font: str):
         """Return the height in pixels for the font ascent.
-        The ascent is the number of pixels from the font baseline to the top of the font."""
+        The ascent is the number of pixels from the font baseline to the top of the font.
+        
+        Params:
+        ----
+        - font: str, the name of the font. If the name is not find (which means it is not present on the fonts.sql file for this phase),
+        use the default system font with a size of 20
+        """
         return self._get_font(font).get_ascent()
 
     def get_descent(self, font: str):
         """Return the height in pixels for the font descent.
-        The descent is the number of pixels from the font baseline to the bottom of the font."""
+        The descent is the number of pixels from the font baseline to the bottom of the font.
+
+        Params:
+        ----
+        - font: str, the name of the font. If the name is not find (which means it is not present on the fonts.sql file for this phase),
+        use the default system font with a size of 20
+        """
         return self._get_font(font).get_descent()
 
     def get_linesize(self, font: str):
         """
         Return the height in pixels for a line of text with the font.
         When rendering multiple lines of text this is the recommended amount of space between lines.
+
+        Params:
+        ----
+        - font: str, the name of the font. If the name is not find (which means it is not present on the fonts.sql file for this phase),
+        use the default system font with a size of 20
         """
         return self._get_font(font).get_linesize()
