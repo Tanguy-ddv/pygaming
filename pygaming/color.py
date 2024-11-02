@@ -1,4 +1,4 @@
-from pygame import Color as Cl
+from pygame import Color as _Cl
 from pygame.colordict import THECOLORS
 from typing import overload, Union
 import colorsys
@@ -8,7 +8,7 @@ def _from_hsla(h: float, s: float, l: float, a: float) -> 'Color':
     r, g, b = colorsys.hls_to_rgb(h/360, l/100, s/100)
     return Color(int(r*255), int(g*255), int(b*255), int(a*255))
 
-class Color(Cl):
+class Color(_Cl):
 
     @overload
     def __init__(self, r: int, g: int, b: int, a: int = 255):

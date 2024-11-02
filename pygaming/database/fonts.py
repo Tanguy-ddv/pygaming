@@ -1,5 +1,5 @@
 """The Font module contain the font class."""
-from pygame.font import Font as Ft
+from pygame.font import Font as _Ft
 from pygame import Surface
 from ..screen.colored_surfaces import ColoredRectangle
 from ..color import Color
@@ -8,7 +8,7 @@ from .database import Database
 from ..settings import Settings
 from ..file import get_file
 
-class Font(Ft):
+class Font(_Ft):
     """The Font class is used to display texts."""
 
     def __init__(
@@ -55,7 +55,7 @@ class TypeWriter:
         self._phase_name = phase_name
         self._texts = Texts(database, settings, phase_name)
 
-        self._default_font = Ft(None, 15)
+        self._default_font = _Ft(None, 15)
         self._default_font.get_descent()
     
     def update_settings(self):
