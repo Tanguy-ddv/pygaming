@@ -30,14 +30,20 @@ class SoundBox:
         self._paths: dict[str, (str, str)] = {loc : (path, "speeches") for loc, path in speech_paths.items()}
         self._paths.update(database.get_sounds(phase_name))
         self._sounds = {name : Sound(path, category) for name, (path, category) in self._paths.items()}
+        self.update_settings()
     
-    def update_language(self):
-        """Change the speeches based on the language."""
+    def update_settings(self):
+        """Change the speeches based on the language and the volumes based on the new volumes."""
         if self._speeches.language != self._settings.language:
             self._speeches = Speeches(self._db, self._settings, self._phase_name)
             speech_paths =  self._speeches.get_all()
             self._paths.update({loc : (path, "speeches") for loc, path in speech_paths.items()})
             self._sounds = {name : Sound(path) for name, path in self._paths.items()}
+        
+        for sound in self._sounds.values():
+            if sound.category not in self._settings.volumes["sounds"]:
+                raise PygamingException(f"The sound category {sound.category} is not listed in the settings, got\n {list(self._settings.volumes['sounds'].keys())}.")
+            sound.set_volume(self._settings.volumes["sounds"][sound.category]*self._settings.volumes["main"])        
 
     def play_sound(self, name_or_loc: str, loop: int = 0, maxtime_ms: int = 0, fade_ms: int = 0):
         """
@@ -54,9 +60,7 @@ class SoundBox:
             sd = self._sounds[name_or_loc]
         except KeyError:
             raise PygamingException(f"The name {name_or_loc} is neither a sound nor a localization of the phase {self._phase_name}. The sounds loaded are:\n{self.get_sounds_names}")
-        if sd.category not in self._settings.volumes["sounds"]:
-            raise PygamingException(f"The sound category {sd.category} is not listed in the settings.")
-        sd.set_volume(self._settings.volumes["sounds"][sd.category]*self._settings.volumes["main"])
+
         sd.play(loop, maxtime_ms, fade_ms)
     
     def get_sounds_names(self):
