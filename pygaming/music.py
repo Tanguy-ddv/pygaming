@@ -1,9 +1,9 @@
 """The Jukebox class is used to manage the musics."""
 
-from random import random as rd
+from random import shuffle
 import pygame
-from .file import MusicFile
 from .settings import Settings
+from .file import get_file
 
 _LOOPS = 'loops'
 _PLAYLIST = 'playlist'
@@ -35,38 +35,40 @@ class Jukebox:
         pygame.mixer.music.unpause()
         self._playing = True
 
-    def play_loop(self, music_file: MusicFile):
+    def play_loop(self, path: str, loop_instant: int):
         """Play a music that will loop."""
-        path, self._loop_instant = music_file.get()
+        full_path = get_file('musics', path)
+        self._loop_instant = loop_instant
         self._loops_or_playlist = _LOOPS
-        pygame.mixer.music.load(path)
+        pygame.mixer.music.load(full_path)
         pygame.mixer.music.play(0)
         self._playing = True
         self._playlist_idx = 0
     
-    def read_playlist(self, playlist: list[MusicFile], random: bool = False):
+    def read_playlist(self, playlist: list[str], random: bool = False):
         """Play a playlist"""
         self._loops_or_playlist = _PLAYLIST
         self._playlist_idx = 0
         if random:
-            playlist = sorted(playlist, key= lambda music: rd())
-        self._playlist_playing = playlist
+            shuffle(playlist)
+        self._playlist_playing = [get_file('musics', path) for path in playlist]
         self._playing = True
     
-    def add_to_playlist(self, music_file: MusicFile):
+    def add_to_playlist(self, path: str):
         """Add a music to the playlist."""
-        self._playlist_playing.append(music_file)
+        full_path = get_file('musics', path)
+        self._playlist_playing.append(full_path)
 
     def update(self):
         """This function should be called at the end of every gameloop to make the music loop or the jukebox play a new music."""
         pygame.mixer.music.set_volume(self._settings.volumes['main']*self._settings.volumes['music'])
         # If we are playing a looping music.
-        if self._loops_or_playlist == _LOOPS and not pygame.mixer.music.get_busy() and self._playing and self._loop_instant is not None:
+        if self._playing and self._loops_or_playlist == _LOOPS and not pygame.mixer.music.get_busy() and self._loop_instant is not None:
             pygame.mixer.music.play(0, self._loop_instant/1000)
 
         # If we are reading a playlist
-        if self._loops_or_playlist == _PLAYLIST and not pygame.mixer.music.get_busy() and self._playing:
+        if self._playing and self._loops_or_playlist == _PLAYLIST and not pygame.mixer.music.get_busy():
             self._playlist_idx = (self._playlist_idx+1)%len(self._playlist_playing)
-            path, _ = self._playlist_playing[self._playlist_idx].get()
+            path = self._playlist_playing[self._playlist_idx]
             pygame.mixer.music.load(path)
             pygame.mixer.music.play(0)
