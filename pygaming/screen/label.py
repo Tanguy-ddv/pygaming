@@ -1,7 +1,7 @@
 """The label module contains the Label Element used to display text."""
 import pygame
 from .element import Element, SurfaceLike, TOP_LEFT, CENTER
-from ..font import Font
+from ..color import Color
 
 
 class Label(Element):
@@ -11,7 +11,8 @@ class Label(Element):
         self,
         master,
         background: SurfaceLike,
-        font: Font,
+        font: str,
+        font_color: Color,
         localization_or_text: str,
         x: int,
         y: int,
@@ -42,6 +43,7 @@ class Label(Element):
         self._blinking_period = blinking_period
         self._time_since_last_blink = 0
         self._show_text = True
+        self.font_color = font_color
 
     def set_localization_or_text(self, localization_or_text: str):
         """Set the label text to a new value."""
@@ -59,7 +61,7 @@ class Label(Element):
         """Return the surface of the Label."""
         bg = self.surface.get()
         if self._show_text:
-            rendered_text = self.font.render(self.game.texts.get(self.text))
+            rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None)
             text_width, text_height = rendered_text.get_size()
             just_x = self.justify[0]*(bg.get_width() - text_width)
             just_y = self.justify[1]*(bg.get_height() - text_height)
