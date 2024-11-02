@@ -232,7 +232,7 @@ class Database:
 
     def get_fonts(self, phase_name: str):
         """
-        Return all the fonts of the phase
+        Return all the fonts of the phase.
         """
 
         fonts = self.execute_select_query(
