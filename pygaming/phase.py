@@ -231,16 +231,6 @@ class GamePhase(BasePhase, ABC):
             return self.game.client
         raise PygamingException("The game is not connected yet, there is no network to reach.")
 
-    @property
-    def texts(self):
-        """Alias for self.game.texts"""
-        return self.game.texts
-
-    @property
-    def speeches(self):
-        """Alias for self.game.speeches"""
-        return self.game.speeches
-
     def loop(self, loop_duration: int):
         """Update the phase."""
         self.__update_focus()
