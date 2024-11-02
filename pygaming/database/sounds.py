@@ -7,7 +7,7 @@ from ..file.file import get_file
 from .database import Database
 from .speeches import Speeches
 
-class Sound:
+class Sound(Sd):
     """
     A Sound represent a sound stored in the assets/sounds folder.
     The category of the sound
@@ -15,17 +15,8 @@ class Sound:
 
     def __init__(self, path: str, category) -> None:
         self._full_path = get_file('sounds', path)
-        self._path = path
-        self._sound = Sd(self._full_path)
+        super().__init__(self._full_path)
         self.category = category
-
-    def set_volume(self, volume):
-        """Set the volume of the sound"""
-        self._sound.set_volume(volume)
-
-    def play(self, loop: int = 0, maxtime: int = 0, fade_ms: int = 0):
-        """Play the sound."""
-        self._sound.play(loop, maxtime, fade_ms)
 
 class SoundBox:
     """The Sound box is used to play all the sounds."""
