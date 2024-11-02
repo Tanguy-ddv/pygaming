@@ -193,7 +193,7 @@ class Database:
 
     def get_speeches(self, language: str, phase_name: str):
         """
-        Return all the specches of the game of the given language.
+        Return all the specches of the phase of the given language.
         If the speech is not available in the given language, get it in the default language
         """
 
@@ -216,3 +216,16 @@ class Database:
                     AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
             )"""
         )
+
+    def get_sounds(self, phase_name: str):
+        """
+        Return all the sounds of the phase.
+        """
+
+        sounds = self.execute_select_query(
+            f"""SELECT name, sound_path, category
+                FROM sounds
+                WHERE ( phase_name = '{phase_name}' OR phase_name = 'all' )
+            """
+        )[0]
+        return {sound_name : (sound_path, category) for sound_name, sound_path, category in sounds}

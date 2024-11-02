@@ -1,0 +1,26 @@
+The folder 'assets' has been created. It will be used to store all the assets of the game:
+musics, sounds, fonts and images
+
+The folder contains several subfolders and files:
+----
+The default icon is pygaming's icon, rememeber to replace this file with your own icon.
+To create a .icon file, use the image software you want (e.g : microsoft paint) to create your own icon,
+then convert into an .ico file (you can use online converters) and be sure to name it 'icon.ico'.
+----
+The musics, sounds, fonts and images folders will be used by you to store the different assets of the game.
+You can load them by using the FontFile, MusicFile, SoundFile and ImageFile to load them in the game.
+----
+The musics folder contains all the musics you will play during the game. They can be played in two different ways:
+- with a loop by using jukebox.play_loop(name, loop_instant (in ms))
+- with playlists with jukebox.read_playlist(list[name], random: bool)
+Here, names are the path to the music file into the musics folder.
+Ex: if the musics folder contains one music called 'background_music.mp3', the name is 'background_music.mp3'
+if the music folder contains several folders with musics in it, the name is 'folder/music.mp3
+----
+The sounds folder contains all the sounds to be played. To have acces to them, you should have a line in the data/sql-game/sounds.sql file
+Each line is composed of:
+- name, that is the identifier of the sounds to be used to play the sound
+- phase_name: the name of the phase (or 'all') in which the sound will be played
+- sound_path: the path of the sounds in the assets/sound folder
+- category: the category of the sounds that must match the data.settings.json document
+------

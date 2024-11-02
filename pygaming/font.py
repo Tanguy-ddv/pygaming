@@ -1,6 +1,6 @@
 """The Font module contain the font class."""
 from pygame.font import Font as Ft
-from pygame import Color
+from .color import Color
 from pygame import Surface
 
 class Font(Ft):

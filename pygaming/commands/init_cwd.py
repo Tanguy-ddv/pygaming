@@ -25,7 +25,7 @@ def init_cwd():
         )
 
         # Print the success output ot guide the user
-        with open(os.path.join(this_dir, 'commands/init_texts/assert_success.txt'), 'r', encoding='utf-8') as f:
+        with open(os.path.join(this_dir, 'commands/init_texts/asset_success.txt'), 'r', encoding='utf-8') as f:
             text = ''.join(f.readlines())
         print("\033[33m" + text + "\033[0m")
 

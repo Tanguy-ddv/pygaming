@@ -1,24 +1,11 @@
 """The colored_surface module contains the ColoredSurface class which is a pygame Surface."""
 
 from typing import Union, Sequence
-from pygame import Surface, Color, SRCALPHA
-from pygame.color import THECOLORS
+from pygame import Surface, SRCALPHA
+from ..color import Color
 import pygame
 
-ColorLike = Union[str, Color, tuple[int, int, int], tuple[int, int, int, int]]
-
-def _get_color(color: ColorLike):
-    """Get the pygame.Color instance with a ColorLike object."""
-    if isinstance(color, str): # Translate the string into a color
-        if color in THECOLORS:
-            color = THECOLORS[color]
-        elif color.startswith('#'):
-            color = Color(color)
-        else:
-            print(f"'{color}' is not a color, replaced by white.")
-            color = Color(255,255,255,255)
-    return color
-
+ColorLike = Union[Color, tuple[int, int, int], tuple[int, int, int, int]]
 
 class ColoredRectangle(Surface):
     """A ColoredRectangle is a Surface with only one color."""
@@ -38,7 +25,6 @@ class ColoredRectangle(Surface):
         """Create a rectangle"""
         super().__init__((width, height), SRCALPHA)
 
-        color = _get_color(color)
         pygame.draw.rect(
             self,
             color,
@@ -64,7 +50,6 @@ class ColoredCircle(Surface):
         draw_bottom_left: bool = False,
         draw_bottom_right: bool = False,):
         super().__init__((radius*2, radius*2), SRCALPHA)
-        color = _get_color(color)
         pygame.draw.circle(self, color, (radius, radius), radius, thickness, draw_top_right, draw_top_left, draw_bottom_left, draw_bottom_right)
 
 class ColoredPolygon(Surface):
@@ -81,5 +66,4 @@ class ColoredPolygon(Surface):
         max_x = max(p[0] for p in points)
         max_y = max(p[1] for p in points)
         super().__init__((max_x, max_y), SRCALPHA)
-        color = _get_color(color)
         pygame.draw.polygon(self, color, points, thickness)
