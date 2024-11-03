@@ -6,7 +6,7 @@ from .widget import Widget
 from ..element import SurfaceLike, TOP_LEFT, CENTER
 from ..colored_surfaces import ColoredRectangle
 from ..frame import Frame
-from ...font import Font
+from ...color import Color
 
 class Entry(Widget):
     """The Entry widget is used to allow the user to add a textual input."""
@@ -17,11 +17,14 @@ class Entry(Widget):
         x: int,
         y: int,
         normal_background: SurfaceLike,
-        normal_font: Font,
+        normal_font: str,
+        normal_font_color: Color,
         focused_background: Optional[SurfaceLike] = None,
-        focused_font: Optional[Font] = None,
+        focused_font: Optional[str] = None,
+        focused_font_color: Optional[str] = None,
         disabled_background: Optional[SurfaceLike] = None,
-        disabled_font: Optional[Font] = None,
+        disabled_font: Optional[str] = None,
+        disbaled_font_color: Optional[str] = None,
         initial_value: str = '',
         extra_characters: str = '',
         forbid_characters: str = '',
@@ -45,11 +48,14 @@ Params:
         - x: int, the coordinate of the anchor in the master Frame
         - y: int, the top coordinate of the anchor in the master Frame.
         - normal_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is neither focused nor disabled.
-        - normal_font: Font
+        - normal_font: str
+        - normal_font_color: Color
         - focused_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is focused.
-        - focused_font: Font,
+        - focused_font: str,
+        - focused_font_color: Optional[str] = None,
         - disabled_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is disabled.
-        - disabled_font: Font,
+        - disabled_font: str,
+        - disbaled_font_color: Optional[str] = None,
         - initial_value: str
         - extra_characters: str
         - forbid_charcaters: str
@@ -92,13 +98,21 @@ Params:
             disabled_font = normal_font
         self._disabled_font = disabled_font
 
+        self._normal_font_color = normal_font_color
+        if focused_font_color is None:
+            focused_font_color = normal_font_color
+        self._focused_font_color = focused_font_color
+        if disbaled_font_color is None:
+            disbaled_font_color = normal_font_color
+        self._disabled_font_color = disabled_font
+
         self.max_length = max_length
 
         self._justify = justify
+        
         self._charet_index = len(self._text)
         self._charet_frequency = charet_frequency
-        self._charet = ColoredRectangle(self._focused_font.color, charet_width, self._focused_font.size('gh')[1])
-
+        self._charet = ColoredRectangle(self._focused_font_color, charet_width, self.game.typewriter.get_linesize(self._focused_font))
         self._show_caret = True
         self._charet_delta = 0
 
@@ -111,22 +125,22 @@ Params:
         return self._text
 
     def _get_disabled_surface(self) -> Surface:
-        return self._get_surface(self.disabled_background.get(), self._disabled_font, False)
+        return self._get_surface(self.disabled_background.get(), self._disabled_font, self._disabled_font_color, False)
 
     def _get_focused_surface(self) -> Surface:
-        return self._get_surface(self.focused_background.get(), self._disabled_font, self._show_caret)
+        return self._get_surface(self.focused_background.get(), self._focused_font, self._focused_font_color, self._show_caret)
 
     def _get_normal_surface(self) -> Surface:
-        return self._get_surface(self.normal_background.get(), self._normal_font, False)
+        return self._get_surface(self.normal_background.get(), self._normal_font, self._normal_font_color, False)
 
-    def _get_surface(self, background: Surface, font: Font, charet: bool):
-        rendered_text = font.render(self._text)
+    def _get_surface(self, background: Surface, font: str, color: Color, charet: bool):
+        rendered_text = self.game.typewriter.render(font, self._text, color)
         text_width, text_height = rendered_text.get_size()
         just_x = self._justify[0]*(background.get_width() - text_width)
         just_y = self._justify[1]*(background.get_height() - text_height)
         background.blit(rendered_text, (just_x, just_y))
         if charet:
-            charet_x = just_x + font.size(self._text[:self._charet_index])[0]
+            charet_x = just_x + self.game.typewriter.size(font, self._text[:self._charet_index])[0]
             background.blit(self._charet, (charet_x, just_y))
         return background
 
@@ -144,12 +158,12 @@ Params:
             self.add_new_characters(new_characters)
 
             # Move the charet if an arrow is tapped.
-            if self.game.keyboard.get_actions_down()['left']:
+            if self.game.keyboard.actions_down['left']:
                 self.move_to_the_left()
-            if self.game.keyboard.get_actions_down()['right']:
+            if self.game.keyboard.actions_down['right']:
                 self.move_to_the_right()
 
-            if self.game.keyboard.get_actions_down()['backspace']:
+            if self.game.keyboard.actions_down['backspace']:
                 self.del_one()
         else:
             self._show_caret = True

@@ -16,11 +16,26 @@ CREATE TABLE speeches (
     sound_path TEXT NOT NULL -- The path to the sound in this language in the folder assets/sounds
 );
 
--- Example: see localizations.sql
+-- Example: see speeches.sql
 
 CREATE TABLE sounds (
     name TEXT NOT NULL UNIQUE,
     phase_name TEXT NOT NULL,
     sound_path TEXT NOT NULL,
     category TEXT NOT NULL
+);
+
+-- Example: see sounds.sql
+
+CREATE TABLE fonts (
+    name TEXT NOT NULL UNIQUE,
+    phase_name TEXT NOT NULL,
+    font_path TEXT NOT NULL,
+    size INTEGER NOT NULL,
+    italic BOOLEAN DEFAULT FALSE,
+    bold BOOLEAN DEFAULT FALSE,
+    underline BOOLEAN DEFAULT FALSE,
+    strikethrough BOOLEAN DEFAULT FALSE
 )
+
+-- Example: see fonts.sql

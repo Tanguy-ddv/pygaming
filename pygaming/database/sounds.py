@@ -1,13 +1,13 @@
 """The Sound class is used to store sounds, the SoundBox class is used to manage them."""
 
 from ..settings import Settings
-from pygame.mixer import Sound as Sd
+from pygame.mixer import Sound as _Sd
 from ..error import PygamingException
 from ..file.file import get_file
 from .database import Database
 from .speeches import Speeches
 
-class Sound(Sd):
+class Sound(_Sd):
     """
     A Sound represent a sound stored in the assets/sounds folder.
     The category of the sound

@@ -229,3 +229,16 @@ class Database:
             """
         )[0]
         return {sound_name : (sound_path, category) for sound_name, sound_path, category in sounds}
+
+    def get_fonts(self, phase_name: str):
+        """
+        Return all the fonts of the phase.
+        """
+
+        fonts = self.execute_select_query(
+            f"""SELECT name, font_path, size, italic, bold, underline, strikethrough
+                FROM fonts
+                WHERE ( phase_name = '{phase_name}' OR phase_name = 'all' )
+            """
+        )[0]
+        return {font_name : (font_path, size, italic, bold, underline, strikethrough ) for font_name, font_path, size, italic, bold, underline, strikethrough in fonts}

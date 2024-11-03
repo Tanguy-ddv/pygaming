@@ -6,7 +6,8 @@ from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
 from .server import Server
-from .database import SoundBox
+from .database import SoundBox, TypeWriter
+
 
 
 class BasePhase(ABC):
@@ -175,10 +176,10 @@ class GamePhase(BasePhase, ABC):
 
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
-        # update texts, speeches and controls based on the new phase
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
-        self.game.update_language(self._name)
+        self.game.update_settings()
         self.game.soundbox = SoundBox(self.settings, self._name, self.database)
+        self.game.typewriter = TypeWriter(self.database, self.settings, self._name)
         # Start the phase
         self.start(**kwargs)
     
@@ -192,6 +193,11 @@ class GamePhase(BasePhase, ABC):
     def game(self) -> Game:
         """Alias for the game."""
         return self.runnable
+    
+    @property
+    def typewriter(self):
+        """Alias for self.game.typewriter"""
+        return self.game.typewriter
 
     @property
     def settings(self):
@@ -225,16 +231,6 @@ class GamePhase(BasePhase, ABC):
             return self.game.client
         raise PygamingException("The game is not connected yet, there is no network to reach.")
 
-    @property
-    def texts(self):
-        """Alias for self.game.texts"""
-        return self.game.texts
-
-    @property
-    def speeches(self):
-        """Alias for self.game.speeches"""
-        return self.game.speeches
-
     def loop(self, loop_duration: int):
         """Update the phase."""
         self.__update_focus()
@@ -255,8 +251,7 @@ class GamePhase(BasePhase, ABC):
                 else:
                     frame.remove_focus()
 
-        actions = self.keyboard.get_actions_down()
-        if "tab" in actions and actions["tab"]:
+        if "tab" in self.keyboard.actions_down and self.keyboard.actions_down["tab"]:
             for frame in self.frames:
                 frame.next_object_focus()
 

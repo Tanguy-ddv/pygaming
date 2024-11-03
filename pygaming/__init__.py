@@ -6,13 +6,13 @@ provides settings, loggers, inputs, files, music and sounds, network, and databa
 as well as multi-language support, screen, widgets and frames.
 """
 from .config import Config
-from .font import Font
 from .game import Game
 from .base import NO_NEXT, STAY
 from .logger import Logger
 from .phase import ServerPhase, GamePhase
 from .server import Server
 from .settings import Settings
+from .color import Color
 
 from .screen.screen import Screen
 from .screen.frame import Frame
@@ -29,17 +29,17 @@ from .screen.widget.entry import Entry
 from .screen.actor import Actor
 
 from .inputs import Inputs, Controls, Click, Keyboard, Mouse
-from .file import FontFile, DataFile, ImageFile, GIFFile, MusicFile, get_file
+from .file import DataFile, ImageFile, GIFFile, get_file
 from .connexion import Client, Server as Network, HEADER, ID, CONTENT, TIMESTAMP
 
-from .database import Database, Texts, Speeches
+from .database import Database, Texts, Speeches, TypeWriter, SoundBox
 from . import commands
 from .screen.colored_surfaces import ColoredRectangle, ColoredCircle, ColoredPolygon
 
 __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
            'Server', 'Settings', 'Screen', 'Frame', 'Actor', 'TextButton', 'CENTER_LEFT', 'CENTER_RIGHT', 'TOP_CENTER', 'BOTTOM_CENTER',
-           'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'FontFile',
-           'DataFile', 'ImageFile', 'GIFFile', 'MusicFile','get_file', 'Client', 'Keyboard', 'Mouse',
+           'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click',
+           'DataFile', 'ImageFile', 'GIFFile','get_file', 'Client', 'Keyboard', 'Mouse',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches', 'Button','Entry',
            'commands', 'ColoredRectangle', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT',
-           'Label', 'Widget', 'Slider', 'ColoredCircle', 'ColoredPolygon']
+           'Label', 'Widget', 'Slider', 'ColoredCircle', 'ColoredPolygon', 'TypeWriter', 'SoundBox', 'Color']

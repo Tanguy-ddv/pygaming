@@ -6,7 +6,7 @@ from ..frame import Frame
 from ..element import TOP_LEFT, CENTER
 from ..element import SurfaceLike
 from .widget import Widget, make_background
-from ...font import Font
+from ...color import Color
 
 class Button(Widget):
     """A Button is a basic widget used to get a player click."""
@@ -91,7 +91,7 @@ class Button(Widget):
         if (
             (   # This means the user is pressing 'return' while the button is focused
                 self.focused
-                and self.game.keyboard.get_actions_press()['return']
+                and self.game.keyboard.actions_down['return']
             )
             or ( # This means the user is clicking on the button
                 ck1 is not None
@@ -116,7 +116,8 @@ class TextButton(Button):
             x: int,
             y: int,
             normal_background: SurfaceLike,
-            font : Font,
+            font : str,
+            font_color: Color,
             localization_or_text: str,
             active_background: Optional[SurfaceLike] = None,
             focused_background: Optional[SurfaceLike] = None,
@@ -147,13 +148,14 @@ class TextButton(Button):
             command
         )
         self.font = font
+        self.font_color = font_color
         self.text = localization_or_text
         self.justify = jusitfy
         self._bg_width, self._bg_height = self.surface.width, self.surface.height
 
     def get_surface(self):
         bg = super().get_surface()
-        rendered_text = self.font.render(self.game.texts.get(self.text))
+        rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None)
         text_width, text_height = rendered_text.get_size()
         just_x = self.justify[0]*(bg.get_width() - text_width)
         just_y = self.justify[1]*(bg.get_height() - text_height)
