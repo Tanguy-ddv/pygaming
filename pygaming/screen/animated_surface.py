@@ -58,7 +58,7 @@ class AnimatedSurface:
         if self._n_bg > 1:
             self._time_since_last_change += loop_duration
             if self._time_since_last_change >= self._image_durations[self._index]:
-                self._time_since_last_change = 0
+                self._time_since_last_change -= self._image_durations[self._index]
                 self._index += 1
                 if self._index == self._n_bg:
                     self._index = self._image_introduction
