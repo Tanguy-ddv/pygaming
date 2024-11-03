@@ -1,7 +1,7 @@
 """The label module contains the Label Element used to display text."""
 import pygame
-from .element import Element, SurfaceLike, TOP_LEFT, CENTER
-from ..color import Color
+from ..element import Element, SurfaceLike, TOP_LEFT, CENTER
+from ...color import Color
 
 
 class Label(Element):

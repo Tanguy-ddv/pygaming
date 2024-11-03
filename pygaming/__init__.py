@@ -21,7 +21,7 @@ from .screen.element import (
     BOTTOM_RIGHT, SurfaceLike, CENTER_LEFT, CENTER_RIGHT, TOP_CENTER
 )
 from .screen.animated_surface import AnimatedSurface, SurfacesLike
-from .screen.label import Label
+from .screen.widget.label import Label
 from .screen.widget.widget import Widget
 from .screen.widget.slider import Slider
 from .screen.widget.button import Button, TextButton
