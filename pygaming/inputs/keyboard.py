@@ -24,7 +24,9 @@ class Keyboard:
         """Load the new controls"""
         self.controls = Controls(settings, config, phase_name)
         self._control_mapping = self.controls.get_reversed_mapping()
-        self.action_pressed = self.udpate_actions_down()
+        self.udpate_actions_down()
+        self.update_actions_up()
+        self.action_pressed = self.actions_down
     
     def update_settings(self):
         """Update the controls."""

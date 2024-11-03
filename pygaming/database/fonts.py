@@ -64,7 +64,7 @@ class TypeWriter:
         """Update the texts based on the new language."""
         self._texts = Texts(self._db, self._settings, self._phase_name)
     
-    def _get_font(self, font):
+    def _get_font(self, font: str) -> Font:
         """Get the font from the dict or return the default font"""
         if font in self._fonts:
             return self._fonts[font]
@@ -89,15 +89,14 @@ class TypeWriter:
         if "\n" in text_or_loc:
             lines = [line.strip() for line in text_or_loc.split('\n')]
             line_size = thefont.get_linesize()
-            line_spacing = line_size//20 + 1
             bg_width = max(thefont.size(line)[0] for line in lines)
-            bg_height = len(lines)*line_size + line_spacing*(len(lines) - 1)
+            bg_height = len(lines)*line_size
             background = ColoredRectangle(Color(0, 0, 0, 0) if background_color is None else background_color, bg_width, bg_height)
             line_y = 0
             for line in lines:
                 render = thefont.render(line, self._settings.antialias, color, background_color)
                 background.blit(render, (0, line_y))
-                line_y += line_spacing + line_size
+                line_y += line_size
             return background
 
         return thefont.render(self._texts.get(text_or_loc), self._settings.antialias, color, background_color)
@@ -122,9 +121,8 @@ class TypeWriter:
             lines = [line.strip() for line in text_or_loc.split('\n')]
             thefont = self._get_font(font)
             line_size = thefont.get_linesize()
-            line_spacing = line_size//20 + 1
             bg_width = max(thefont.size(line)[0] for line in lines)
-            bg_height = len(lines)*line_size + line_spacing*(len(lines) - 1)
+            bg_height = len(lines)*line_size
             return bg_width, bg_height
         
         return self._get_font(font).size(self._texts.get(text_or_loc))

@@ -109,10 +109,10 @@ Params:
         self.max_length = max_length
 
         self._justify = justify
+        
         self._charet_index = len(self._text)
         self._charet_frequency = charet_frequency
         self._charet = ColoredRectangle(self._focused_font_color, charet_width, self.game.typewriter.get_linesize(self._focused_font))
-
         self._show_caret = True
         self._charet_delta = 0
 
