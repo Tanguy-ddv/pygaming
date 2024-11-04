@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 import pygame.transform as tf
 from pygame import Surface
 from pygame import Rect
+from ...color import Color
 
 class Transformation(ABC):
 
@@ -82,9 +83,9 @@ class Resize(Transformation):
         rescaled_surfaces = (tf.scale(surf, self.size) for surf in surfaces)
         return rescaled_surfaces, durations, introduction, index
 
-class Subsurface(Transformation):
+class Crop(Transformation):
     """
-    The subsurface transformation create a new art object from a rectangular subsurface of it
+    The crop transformation crop the art to a smaller art.
 
     Example:
     ----
@@ -97,8 +98,34 @@ class Subsurface(Transformation):
         self.rect = rect
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
-        subsurfaces = (surf.subsurface(self.rect) for surf in surfaces)
-        return subsurfaces, durations, introduction, index
+        background = Surface(self.rect.size)
+        cropped_surfaces = []
+        for surf in surfaces:
+            background.blit(surf, 0, self.rect)
+            cropped_surfaces.append(background)
+        return tuple(cropped_surfaces), durations, introduction, index
+    
+class Padding(Transformation):
+    """
+    The pad transformation add a solid color extension on every side of the art. If the pad is negative, act like a crop.
+    """
+
+    def __init__(self, color: Color, left: int = 0, right = 0, top = 0, bottom = 0) -> None:
+        super().__init__()
+        self.color = color
+        self.left = left
+        self.right = right
+        self.top = top
+        self.bottom = bottom
+
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+        h, w = surfaces[0].get_size()
+        background = Surface((h + self.left + self.right, w + self.left + self.right))
+        padded_surfaces = []
+        for surf in surfaces:
+            background.blit(surf, (self.left, self.top))
+            padded_surfaces.append(background)
+        return tuple(padded_surfaces), durations, introduction, index
 
 class SetAlpha(Transformation):
     """
@@ -199,3 +226,31 @@ class SlowDown(Transformation):
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
         new_durations = (d*self.scale for d in durations)
         return surfaces, new_durations, introduction, index
+
+class Extract(Transformation):
+    """
+    The extract transformation returns a subset of the images and durations of the art. Bounds are included
+    """
+
+    def __init__(self, from_: int, to: int) -> None:
+        super().__init__()
+        if self.from_ <= 0:
+            raise ValueError(f"from argument cannot be negative, got {from_}")
+        if self.from_ > self.to:
+            raise ValueError(f'to argument must be superior to from_, got {to} and {from_}')
+        self.from_ = from_
+        self.to = to
+    
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+        this_to = len(surfaces) if self.to >= len(surfaces) else self.to
+
+        if index >= this_to:
+            index -= (self.from_ - this_to)
+        elif index > self.from_:
+            index = self.from_
+        
+        if introduction >= this_to:
+            introduction -= (self.from_ - this_to)
+        elif introduction > self.from_:
+            introduction = self.from_
+        return surfaces[self.from_ : this_to +1], durations[self.from_ : this_to + 1], introduction, index
