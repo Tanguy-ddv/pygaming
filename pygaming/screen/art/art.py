@@ -40,6 +40,10 @@ class Art(ABC):
     @property
     def width(self):
         return self.surfaces[0].get_width()
+    
+    @property
+    def is_loaded(self):
+        return self._loaded
 
     @abstractmethod
     def _load(self):
