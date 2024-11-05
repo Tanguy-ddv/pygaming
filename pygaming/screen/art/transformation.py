@@ -227,6 +227,47 @@ class SlowDown(Transformation):
         new_durations = (d*self.scale for d in durations)
         return surfaces, new_durations, introduction, index
 
+class ResetDurations(Transformation):
+    """
+    Reset the duration of every image in the art to a new value.
+    """
+
+    def __init__(self, new_duration: int) -> None:
+        super().__init__()
+        self.new_duration = new_duration
+
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+        return surfaces, (self.new_duration for _ in durations), introduction, index
+
+class SetIntroductionIndex(Transformation):
+    """
+    Set the introduction to a new index.
+    """
+    def __init__(self, introduction: int) -> None:
+        super().__init__()
+        self.introduction = introduction
+    
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+        return surfaces, durations, self.introduction, index
+
+class SetIntroductionTime(Transformation):
+    """
+    Set the introduction to a new index by specifying a time.
+    """
+    def __init__(self, introduction: int) -> None:
+        super().__init__()
+        self.introduction = introduction
+    
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+        
+        sum_dur = 0
+        new_intro_idx = 0
+        while sum_dur < self.introduction and new_intro_idx < len(durations):
+            sum_dur += durations[new_intro_idx]
+            new_intro_idx += 1
+
+        return surfaces, durations, new_intro_idx, index
+
 class Extract(Transformation):
     """
     The extract transformation returns a subset of the images and durations of the art. Bounds are included
@@ -237,7 +278,7 @@ class Extract(Transformation):
         if self.from_ <= 0:
             raise ValueError(f"from argument cannot be negative, got {from_}")
         if self.from_ > self.to:
-            raise ValueError(f'to argument must be superior to from_, got {to} and {from_}')
+            raise ValueError(f'to argument must be superior to from_, got {to} < {from_}')
         self.from_ = from_
         self.to = to
     
@@ -254,3 +295,21 @@ class Extract(Transformation):
         elif introduction > self.from_:
             introduction = self.from_
         return surfaces[self.from_ : this_to +1], durations[self.from_ : this_to + 1], introduction, index
+
+class First(Transformation):
+    """Extract the very first frame of the animation."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+        return (surfaces[0]), (0,), 0, 0
+
+class Last(Transformation):
+    """Extract the very last frame of the animation."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+        return (surfaces[-1]), (0,), 0, 0
