@@ -45,6 +45,12 @@ class Art(ABC):
     def is_loaded(self):
         return self._loaded
 
+    @property
+    def loop_duration(self):
+        if len(self.durations) > 1:
+            return sum(self.durations)
+        return 0
+
     @abstractmethod
     def _load(self):
         raise NotImplementedError()
