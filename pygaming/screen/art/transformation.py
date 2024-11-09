@@ -509,9 +509,9 @@ class DrawLines(Transformation):
 class DrawArc(Transformation):
     """Draw an arc on the art."""
 
-    def __init__(self, color: ColorLike, center: tuple[int, int], horizontal_radius: int, vertical_radius: int, from_angle: float, to_angle: float, thickness: int = 1) -> None:
+    def __init__(self, color: ColorLike, ellipsis_center: tuple[int, int], horizontal_radius: int, vertical_radius: int, from_angle: float, to_angle: float, thickness: int = 1) -> None:
         self.color = color
-        self.rect = (center[0] - horizontal_radius, center[1] - vertical_radius, horizontal_radius*2, vertical_radius*2)
+        self.rect = (ellipsis_center[0] - horizontal_radius, ellipsis_center[1] - vertical_radius, horizontal_radius*2, vertical_radius*2)
         self.thickness = thickness
         self.from_angle = from_angle
         self.to_angle = to_angle
