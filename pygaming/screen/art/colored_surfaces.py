@@ -29,18 +29,19 @@ class ColoredRectangle(Art):
         super().__init__(transformation)
 
         self.color = color
-        self.width = width
-        self.height = height
+        self._width = width
+        self._height = height
         self.thickness = thickness
         self.border_radius = border_radius
         self.border_top_left_radius = border_top_left_radius
         self.border_top_right_radius = border_top_right_radius
         self.border_bottom_left_radius = border_bottom_left_radius
         self.border_bottom_right_radius = border_bottom_right_radius
+        self._find_initial_dimension()
 
     def _load(self):
-        surf = Surface((self.width, self.height), SRCALPHA)
-        draw.rect(surf, self.color, (0, 0, self.width, self.height), self.thickness, self.border_radius,
+        surf = Surface((self._width, self._height), SRCALPHA)
+        draw.rect(surf, self.color, (0, 0, self._width, self._height), self.thickness, self.border_radius,
                   self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
         self.surfaces = (surf,)
         self.durations = (0,)
@@ -67,6 +68,9 @@ class ColoredCircle(Art):
         self.draw_top_left = draw_top_left
         self.draw_bottom_left = draw_bottom_left
         self.draw_bottom_right = draw_bottom_right
+        self._height = 2*radius
+        self._width = 2*radius
+        self._find_initial_dimension()
     
     def _load(self):
         surf = Surface((self.radius*2, self.radius*2), SRCALPHA)
@@ -87,13 +91,14 @@ class ColoredPolygon(Art):
         self.points = points
         self.thickness = thickness
         self.color = color
+
+        self._height = max(p[1] for p in self.points)
+        self._width = max(p[0] for p in self.points)
+        self._find_initial_dimension()
     
     def _load(self):
         
-        max_x = max(p[0] for p in self.points)
-        max_y = max(p[1] for p in self.points)
-        
-        surf = Surface((max_x, max_y))
+        surf = Surface((self._width, self._height), SRCALPHA)
         draw.polygon(surf, self.color, self.points, self.thickness)
 
         self.surfaces = (surf,)

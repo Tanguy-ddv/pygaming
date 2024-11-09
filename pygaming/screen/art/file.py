@@ -22,6 +22,8 @@ class ImageFile(Art):
     def __init__(self, file: str, transformation: Transformation = None) -> None:
         super().__init__(transformation)
         self.full_path = get_file('images', file)
+        self._width, self._height = Image.open(self.full_path).size
+        self._find_initial_dimension()
     
     def _load(self):
         self.surfaces = (load(self.full_path),)
@@ -48,9 +50,13 @@ class ImageFolder(Art):
         self.full_path = get_file('images', folder)
         self.durs = durations
         self._introduction = introduction
+        
+        self._paths = [os.path.join(self.full_path, f) for f in os.listdir(self.full_path) if os.path.isfile(os.path.join(self.full_path, f))]
+        self._width, self._height = Image.open(self._paths[0]).size
+        self._find_initial_dimension()
     
     def _load(self):
-        self.surfaces = (load(os.path.join(self.full_path, f)) for f in os.listdir(self.full_path) if os.path.isfile(os.path.join(self.full_path, f)))
+        self.surfaces = (load(path) for path in self._paths)
         if self._introduction > len(self.surfaces):
             raise PygamingException(f"The introduction specified for this ImageFolder is too high, got {self._introduction} while there is only {len(self.surfaces)} images.")
         if isinstance(self.durs, int):
@@ -78,6 +84,8 @@ class GIFFile(Art):
         super().__init__(transformation)
         self.full_path = get_file('images', file)
         self._introduction = introduction
+        self._width, self._height = Image.open(self.full_path).size
+        self._find_initial_dimension()
 
     def _load(self):
         gif = Image.open(self.full_path)

@@ -10,7 +10,7 @@ class Concatenate(Transformation):
         super().__init__()
         self.other = other
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
         need_to_unload = False
         if not self.other.is_loaded:
             self.other.load()
@@ -21,7 +21,7 @@ class Concatenate(Transformation):
         if need_to_unload:
             self.other.unload()
 
-        return surfaces, durations, introduction, index
+        return surfaces, durations, introduction, index, width, height
 
 def _combine_arts(*durations: tuple[int]) -> list[tuple[int, tuple[int]]]:
     """Combine a list of durations to create a new art."""
@@ -57,7 +57,7 @@ class Average(Transformation):
         super().__init__()
         self.others = others
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
         need_to_unloads = []
         for art in self.others:
             if not art.is_loaded:
@@ -79,7 +79,7 @@ class Average(Transformation):
             if need_to_unload:
                 other.unload()
 
-        return new_surfaces, new_durations, introduction, index 
+        return new_surfaces, new_durations, introduction, index, width, height
         
 class Blit(Transformation):
     """
@@ -91,7 +91,7 @@ class Blit(Transformation):
         self.other = other
         self.pos = (x,y)
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
         need_to_unload = False
         if not self.other.is_loaded:
             self.other.load()
@@ -109,4 +109,4 @@ class Blit(Transformation):
         if need_to_unload:
             self.other.unload()
 
-        return new_surfaces, new_durations, introduction, index 
+        return new_surfaces, new_durations, introduction, index, width, height

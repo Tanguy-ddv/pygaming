@@ -18,7 +18,13 @@ class Art(ABC):
         self._time_since_last_change = 0
         self._index = 0
 
+        self._height = -1
+        self._width = -1
         self._on_loading_transformation = transformation
+    
+    def _find_initial_dimension(self):
+        if self._on_loading_transformation:
+            self._width, self._height = self._on_loading_transformation.get_new_dimension(self._width, self._height)
     
     def _verify_sizes(self):
         """verify that all surfaces have the same sizes."""
@@ -31,15 +37,15 @@ class Art(ABC):
 
     @property
     def size(self):
-        return self.surfaces[0].get_size()
+        return (self.width, self._height)
     
     @property
     def height(self):
-        return self.surfaces[0].get_height()
+        return self._height
 
     @property
     def width(self):
-        return self.surfaces[0].get_width()
+        return self._width
     
     @property
     def is_loaded(self):
@@ -72,17 +78,7 @@ class Art(ABC):
         self._load()
         self._verify_sizes()
         if self._on_loading_transformation is not None:
-            (   
-                self.surfaces,
-                self.durations,
-                self.introduction,
-                self.index
-            ) = self._on_loading_transformation.apply(
-                self.surfaces,
-                self.durations,
-                self.introduction,
-                self.index
-            )
+            self.transform(self._on_loading_transformation)
 
         self._loaded = True
 
@@ -115,6 +111,19 @@ class Art(ABC):
     def transform(self, transfo: Transformation):
         """Apply a transformation"""
         if self._loaded:
-            self.surfaces, self.durations, self.introduction, self._index = transfo.apply(self.surfaces, self.durations, self.introduction, self._index)
+            (   self.surfaces,
+                self.durations,
+                self.introduction,
+                self._index,
+                self._width,
+                self._height
+            ) = transfo.apply(
+                self.surfaces,
+                self.durations,
+                self.introduction,
+                self._index,
+                self._width,
+                self._height
+            )
         else:
             raise PygamingException("A transformation have be called on an unload Art, please use the art's constructor to transform the initial art.")
