@@ -37,7 +37,6 @@ def _combine_arts(*durations: tuple[int]) -> list[tuple[int, tuple[int]]]:
         
         mn = min(dur[0] for dur in matrix_duration)
         output.append((mn, tuple(indexes)))
-        print(mn, matrix_duration, indexes)
         for i in range(len(matrix_duration)):
             matrix_duration[i][0] -= mn
             if matrix_duration[i][0] == 0:
@@ -97,7 +96,7 @@ class Blit(Transformation):
             self.other.load()
             need_to_unload = True
         
-        combined_arts = _combine_arts(durations, self.other.surfaces)
+        combined_arts = _combine_arts(durations, self.other.durations)
         new_surfaces = []
         new_durations = []
         for duration, (idx1, idx2) in combined_arts:

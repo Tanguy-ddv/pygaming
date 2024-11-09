@@ -78,7 +78,7 @@ class Element(ABC):
 
     def update_hover(self): #pylint: disable=unused-argument
         """Update the hover cursor and surface. To be overriden by element needing it."""
-        return self.hover_surface.get(), self.hover_cursor
+        return self.hover_surface.get() if self.hover_surface else None, self.hover_cursor
 
     @abstractmethod
     def get_surface(self) -> pygame.Surface:

@@ -2,8 +2,7 @@
 from abc import ABC, abstractmethod
 from math import cos, sin, radians
 import pygame.transform as tf
-from pygame import Surface
-from pygame import Rect
+from pygame import Surface, SRCALPHA, Rect
 from ...color import Color
 
 class Transformation(ABC):
@@ -20,16 +19,15 @@ class Transformation(ABC):
         index: int,
         width: int,
         height: int
-    ) -> tuple[tuple[Surface], tuple[int], int, int]:
+    ) -> tuple[tuple[Surface], tuple[int], int, int, int, int]:
         """Apply the transformation"""
         raise NotImplementedError()
 
     def get_new_dimension(self, width, height):
         """Calculate the new dimensions of the art after transformation."""
-
         return width, height
     
-class TransformationPipeline(Transformation):
+class Pipeline(Transformation):
     """A Transformation pipeline is a successive list of transformations."""
 
     def __init__(self, *transfos) -> None:
@@ -53,7 +51,7 @@ class Rotate(Transformation):
         super().__init__()
         self.angle = angle
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         rotated_surfaces = tuple(tf.rotate(surf, self.angle) for surf in surfaces)
         return rotated_surfaces, durations, introduction, index, *rotated_surfaces[0].get_size()
 
@@ -85,11 +83,11 @@ class Zoom(Transformation):
         super().__init__()
         self.scale = scale
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         if self.scale == 2:
-            rescaled_surfaces = (tf.scale2x(surf) for surf in surfaces)
+            rescaled_surfaces = tuple(tf.scale2x(surf) for surf in surfaces)
         else:
-            rescaled_surfaces = (tf.scale_by(surf, self.scale) for surf in surfaces)
+            rescaled_surfaces = tuple(tf.scale_by(surf, self.scale) for surf in surfaces)
         return rescaled_surfaces, durations, introduction, index, int(width*self.scale), int(height*self.scale)
 
     def get_new_dimension(self, width, height):
@@ -109,7 +107,7 @@ class Resize(Transformation):
         super().__init__()
         self.size = size
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         rescaled_surfaces = tuple(tf.scale(surf, self.size) for surf in surfaces)
         return rescaled_surfaces, durations, introduction, index, *self.size
     
@@ -130,12 +128,12 @@ class Crop(Transformation):
         super().__init__()
         self.rect = Rect(left, top, width, height)
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         background = Surface(self.rect.size)
         cropped_surfaces = []
         for surf in surfaces:
-            background.blit(surf, 0, self.rect)
-            cropped_surfaces.append(background)
+            background.blit(surf, (0,0), self.rect)
+            cropped_surfaces.append(background.copy())
         return tuple(cropped_surfaces), durations, introduction, index, *self.rect.size
 
     def get_new_dimension(self, width, height):
@@ -154,12 +152,13 @@ class Padding(Transformation):
         self.top = top
         self.bottom = bottom
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
-        background = Surface((width + self.left + self.right, height + self.left + self.right))
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+        background = Surface((width + self.left + self.right, height + self.left + self.right), SRCALPHA)
+        background.fill(self.color)
         padded_surfaces = []
         for surf in surfaces:
             background.blit(surf, (self.left, self.top))
-            padded_surfaces.append(background)
+            padded_surfaces.append(background.copy())
         return tuple(padded_surfaces), durations, introduction, index, width + self.left + self.right, height + self.left + self.right
 
     def get_new_dimension(self, width, height):
@@ -175,9 +174,10 @@ class SetAlpha(Transformation):
         super().__init__()
         self.alpha = alpha
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
-        alpha_surfaces = tuple(surf.set_alpha(self.alpha) for surf in surfaces)
-        return alpha_surfaces, durations, introduction, index, width, height
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+        for surf in surfaces:
+            surf.set_alpha(self.alpha)
+        return surfaces, durations, introduction, index, width, height
     
 class Flip(Transformation):
     """
@@ -189,7 +189,7 @@ class Flip(Transformation):
         self.horizontal = horizontal
         self.vertical = vertical
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         flipped_surfaces = tuple(tf.flip(surf, self.horizontal, self.vertical) for surf in surfaces)
         return flipped_surfaces, durations, introduction, index, height, width
 
@@ -205,7 +205,7 @@ class VerticalChop(Transformation):
         super().__init__()
         self.rect = (from_, 0, to - from_, 0)
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         chopped_surfaces = tuple(tf.chop(surf, self.rect) for surf in surfaces)
         return chopped_surfaces, durations, introduction, index, width - self.rect[2], height
     
@@ -221,12 +221,12 @@ class HorizontalChop(Transformation):
         super().__init__()
         self.rect = (0, from_, 0, to - from_)
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         chopped_surfaces = tuple(tf.chop(surf, self.rect) for surf in surfaces)
         return chopped_surfaces, durations, introduction, index, width, height - self.rect[3]
 
     def get_new_dimension(self, width, height):
-        return height - self.rect[3]
+        return width, height - self.rect[3]
 
 class GrayScale(Transformation):
     """
@@ -236,7 +236,7 @@ class GrayScale(Transformation):
     def __init__(self) -> None:
         super().__init__()
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         graysurfeaces = tuple(tf.grayscale(surf) for surf in surfaces)
         return graysurfeaces, durations, introduction, index, width, height
 
@@ -253,7 +253,7 @@ class SpeedUp(Transformation):
         super().__init__()
         self.scale = scale
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         new_durations = tuple(d/self.scale for d in durations)
         return surfaces, new_durations, introduction, index, width, height
 
@@ -270,7 +270,7 @@ class SlowDown(Transformation):
         super().__init__()
         self.scale = scale
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         new_durations = tuple(d*self.scale for d in durations)
         return surfaces, new_durations, introduction, index, width, height
 
@@ -283,7 +283,7 @@ class ResetDurations(Transformation):
         super().__init__()
         self.new_duration = new_duration
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         return surfaces, tuple(self.new_duration for _ in durations), introduction, index, width, height
 
 class SetIntroductionIndex(Transformation):
@@ -294,7 +294,7 @@ class SetIntroductionIndex(Transformation):
         super().__init__()
         self.introduction = introduction
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         return surfaces, durations, self.introduction, index, width, height
 
 class SetIntroductionTime(Transformation):
@@ -305,7 +305,7 @@ class SetIntroductionTime(Transformation):
         super().__init__()
         self.introduction = introduction
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         
         sum_dur = 0
         new_intro_idx = 0
@@ -315,21 +315,21 @@ class SetIntroductionTime(Transformation):
 
         return surfaces, durations, new_intro_idx, index, width, height
 
-class Extract(Transformation):
+class ExtractMany(Transformation):
     """
-    The extract transformation returns a subset of the images and durations of the art. Bounds are included
+    This transformation returns a subset of the images and durations of the art. Bounds are included
     """
 
     def __init__(self, from_: int, to: int) -> None:
         super().__init__()
-        if self.from_ <= 0:
+        if from_ <= 0:
             raise ValueError(f"from argument cannot be negative, got {from_}")
-        if self.from_ > self.to:
+        if from_ > to:
             raise ValueError(f'to argument must be superior to from_, got {to} < {from_}')
         self.from_ = from_
         self.to = to
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         this_to = len(surfaces) if self.to >= len(surfaces) else self.to
 
         if index >= this_to:
@@ -349,8 +349,8 @@ class First(Transformation):
     def __init__(self) -> None:
         super().__init__()
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
-        return (surfaces[0]), (0,), 0, 0, width, height
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+        return (surfaces[0],), (0,), 0, 0, width, height
 
 class Last(Transformation):
     """Extract the very last frame of the animation."""
@@ -358,5 +358,15 @@ class Last(Transformation):
     def __init__(self) -> None:
         super().__init__()
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
-        return (surfaces[-1]), (0,), 0, 0, width, height
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+        return (surfaces[-1],), (0,), 0, 0, width, height
+
+class ExtractOne(Transformation):
+    """Extract the one frame of the animation."""
+
+    def __init__(self, index: int) -> None:
+        super().__init__()
+        self.index = index
+
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+        return (surfaces[self.index],), (0,), 0, 0, width, height

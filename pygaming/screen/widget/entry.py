@@ -1,7 +1,7 @@
 """Then entry module contains the entry widget."""
 
 from typing import Optional
-from pygame import Cursor, Rect, Surface
+from pygame import Cursor, Rect, Surface, draw
 from .widget import Widget
 from ..element import TOP_LEFT, CENTER
 from ..art.colored_surfaces import ColoredRectangle
@@ -110,11 +110,10 @@ class Entry(Widget):
         self.max_length = max_length
 
         self._justify = justify
+        self._charet_width = charet_width
         
         self._charet_index = len(self._text)
         self._charet_frequency = charet_frequency
-        # change that, maybe add a .load for each widget as well.
-        self._charet = ColoredRectangle(self._focused_font_color, charet_width, self.game.typewriter.get_linesize(self._focused_font))
         self._show_caret = True
         self._charet_delta = 0
 
@@ -142,8 +141,9 @@ class Entry(Widget):
         just_y = self._justify[1]*(background.get_height() - text_height)
         background.blit(rendered_text, (just_x, just_y))
         if charet:
+            charet_height = self.game.typewriter.get_linesize(font)
             charet_x = just_x + self.game.typewriter.size(font, self._text[:self._charet_index])[0]
-            background.blit(self._charet, (charet_x, just_y))
+            draw.line(background, self._focused_font_color, (charet_x, just_y), (charet_x, just_y + charet_height), self._charet_width)
         return background
 
     def update(self, loop_duration: int):

@@ -80,7 +80,7 @@ class GIFFile(Art):
     When all the images have been displayed, do not loop on the very first but on the 10th.
     """
 
-    def __init__(self, file: str, introduction: int = 0, transformation: Transformation = None) -> None:
+    def __init__(self, file: str, transformation: Transformation = None, introduction: int = 0) -> None:
         super().__init__(transformation)
         self.full_path = get_file('images', file)
         self._introduction = introduction

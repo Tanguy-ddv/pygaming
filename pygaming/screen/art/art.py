@@ -77,10 +77,10 @@ class Art(ABC):
         self._index = 0
         self._load()
         self._verify_sizes()
+        self._loaded = True
         if self._on_loading_transformation is not None:
             self.transform(self._on_loading_transformation)
 
-        self._loaded = True
 
     def update(self, loop_duration: float):
         """Update the instance animation."""
@@ -120,7 +120,7 @@ class Art(ABC):
             ) = transfo.apply(
                 self.surfaces,
                 self.durations,
-                self.introduction,
+                self._introduction,
                 self._index,
                 self._width,
                 self._height
