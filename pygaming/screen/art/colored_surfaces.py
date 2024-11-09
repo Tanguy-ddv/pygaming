@@ -1,7 +1,7 @@
 """The colored_surface module contains the ColoredSurface class which is a pygame Surface."""
 
 from typing import Union, Sequence
-from pygame import Surface, SRCALPHA, draw
+from pygame import Surface, SRCALPHA, draw, gfxdraw
 from ...color import Color
 from .art import Art
 from .art import Transformation
@@ -10,7 +10,7 @@ from .art import Transformation
 ColorLike = Union[Color, tuple[int, int, int], tuple[int, int, int, int]]
 
 class ColoredRectangle(Art):
-    """A ColoredRectangle is a Surface with only one color."""
+    """A ColoredRectangle is an Art with only one color."""
 
     def __init__(
         self,
@@ -18,7 +18,7 @@ class ColoredRectangle(Art):
         width: int,
         height: int,
         thickness: int = 0,
-        border_radius: int = -1,
+        border_radius: int = 0,
         border_top_left_radius: int = -1,
         border_top_right_radius: int = -1,
         border_bottom_left_radius: int = -1,
@@ -47,7 +47,7 @@ class ColoredRectangle(Art):
         self.durations = (0,)
 
 class ColoredCircle(Art):
-    """A ColoredCircle is a Surface with a colored circle at the center of it."""
+    """A ColoredCircle is an Art with a colored circle at the center of it."""
 
     def __init__(
         self,
@@ -80,7 +80,23 @@ class ColoredCircle(Art):
         self.surfaces = (surf,)
         self.durations = (0,)
 
+class ColoredEllipse(Art):
+    """A ColoredEllipse is an Art with a colored ellipse at the center."""
+
+    def __init__(self, color: ColorLike, horizontal_radius: int, vertical_radius: int, thickness: int = 0, transformation: Transformation = None) -> None:
+        self.color = color
+        self.rect = (0, 0, horizontal_radius*2, vertical_radius*2)
+        self.thickness = thickness
+        super().__init__(transformation)
+    
+    def _load(self):
+        surf = Surface(self.rect[2:4], SRCALPHA)
+        draw.ellipse(surf, self.color, self.rect, self.thickness)
+        self.surfaces = (surf,)
+        self.durations = (0,)
+
 class ColoredPolygon(Art):
+    """A ColoredEllips is an Art with a colored polygon at the center."""
 
     def __init__(
         self,
@@ -88,12 +104,16 @@ class ColoredPolygon(Art):
         points: Sequence[tuple[int, int]],
         thickness: int = 0
     ):
+        for p in points:
+            if p[0] < 0 or p[1] < 0:
+                raise ValueError(f"All points coordinates of a polygon must have a positive value, got {p}")
+        
         self.points = points
         self.thickness = thickness
         self.color = color
 
-        self._height = max(p[1] for p in self.points)
-        self._width = max(p[0] for p in self.points)
+        self._height = max(p[1] for p in self.points) + max(0, (thickness-1)//2)
+        self._width = max(p[0] for p in self.points) + max(0, (thickness-1)//2)
         self._find_initial_dimension()
     
     def _load(self):
