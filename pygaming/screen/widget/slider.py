@@ -1,11 +1,10 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
 from typing import Optional, Iterable, Callable, Any
 from pygame import Cursor, Surface, Rect
-from ..animated_surface import AnimatedSurface
 from ...error import PygamingException
-from .widget import Widget, TOP_LEFT, make_background
-from ..element import SurfaceLike
+from .widget import Widget, TOP_LEFT
 from ..frame import Frame
+from ..art.art import Art
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -16,13 +15,13 @@ class Slider(Widget):
         x: int,
         y: int,
         values: Iterable,
-        normal_background: SurfaceLike,
-        normal_cursor: SurfaceLike,
+        normal_background: Art,
+        normal_cursor: Art,
         initial_value: Optional[Any] = None,
-        focused_background: Optional[SurfaceLike] = None,
-        focused_cursor: Optional[SurfaceLike] = None,
-        disabled_background:  Optional[SurfaceLike] = None,
-        disabled_cursor:  Optional[SurfaceLike] = None,
+        focused_background: Optional[Art] = None,
+        focused_cursor: Optional[Art] = None,
+        disabled_background:  Optional[Art] = None,
+        disabled_cursor:  Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         active_area: Optional[Rect] = None,
         layer: int = 0,
@@ -75,9 +74,9 @@ class Slider(Widget):
             continue_animation
         )
 
-        self.normal_cursor = make_background(normal_cursor, None)
-        self.focused_cursor = make_background(focused_cursor, self.normal_cursor)
-        self.disabled_cursor = make_background(disabled_cursor, self.normal_cursor)
+        self.normal_cursor = normal_cursor
+        self.focused_cursor = focused_cursor if focused_cursor else normal_cursor
+        self.disabled_cursor = disabled_cursor if disabled_cursor else normal_cursor
 
         # initial value and index
         self._values= list(values)
@@ -166,9 +165,9 @@ class Slider(Widget):
 
         # Verify the use of the arrows
         if self.focused:
-            if self.game.keyboard.get_actions_down()['left'] and self._index > 0:
+            if self.game.keyboard.actions_down['left'] and self._index > 0:
                 self.start_transition(self._index - 1)
-            if self.game.keyboard.get_actions_down()['right'] and self._index < len(self._values) - 1:
+            if self.game.keyboard.actions_down['right'] and self._index < len(self._values) - 1:
                 self.start_transition(self._index + 1)
 
 
@@ -191,7 +190,7 @@ class Slider(Widget):
         cursor = self.disabled_cursor
         return self._get_surface(background, cursor)
 
-    def _get_surface(self, background: AnimatedSurface, cursor: AnimatedSurface) -> Surface:
+    def _get_surface(self, background: Art, cursor: Art) -> Surface:
         """Make the surface with the cursor and the background."""
         bg = background.get()
         x = self._cursor_position - self.normal_cursor.width//2

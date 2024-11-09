@@ -3,10 +3,11 @@
 from typing import Optional
 from pygame import Cursor, Rect, Surface
 from .widget import Widget
-from ..element import SurfaceLike, TOP_LEFT, CENTER
-from ..colored_surfaces import ColoredRectangle
+from ..element import TOP_LEFT, CENTER
+from ..art.colored_surfaces import ColoredRectangle
 from ..frame import Frame
 from ...color import Color
+from ..art.art import Art
 
 class Entry(Widget):
     """The Entry widget is used to allow the user to add a textual input."""
@@ -16,13 +17,13 @@ class Entry(Widget):
         master: Frame,
         x: int,
         y: int,
-        normal_background: SurfaceLike,
+        normal_background: Art,
         normal_font: str,
         normal_font_color: Color,
-        focused_background: Optional[SurfaceLike] = None,
+        focused_background: Optional[Art] = None,
         focused_font: Optional[str] = None,
         focused_font_color: Optional[str] = None,
-        disabled_background: Optional[SurfaceLike] = None,
+        disabled_background: Optional[Art] = None,
         disabled_font: Optional[str] = None,
         disbaled_font_color: Optional[str] = None,
         initial_value: str = '',
@@ -42,7 +43,7 @@ class Entry(Widget):
         """
         The Entry widget is used to allow the user to add a textual input.
         
-Params:
+        Params:
         ---
         - master: Frame. The Frame in which this widget is placed.
         - x: int, the coordinate of the anchor in the master Frame
@@ -112,6 +113,7 @@ Params:
         
         self._charet_index = len(self._text)
         self._charet_frequency = charet_frequency
+        # change that, maybe add a .load for each widget as well.
         self._charet = ColoredRectangle(self._focused_font_color, charet_width, self.game.typewriter.get_linesize(self._focused_font))
         self._show_caret = True
         self._charet_delta = 0

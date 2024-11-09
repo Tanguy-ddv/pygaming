@@ -1,7 +1,9 @@
 """The actor module contain the actor."""
 import math
 from ..phase import GamePhase
-from .element import Element, TOP_LEFT, SurfaceLike
+from .element import Element, TOP_LEFT
+from .art.art import Art
+from .art.transformation import Rotate
 
 class Actor(Element):
     """An actor is an object that is made to move and possibly rotate in a frame."""
@@ -9,7 +11,7 @@ class Actor(Element):
     def __init__(
         self,
         master: GamePhase | Element,
-        main_surface: SurfaceLike,
+        main_surface: Art,
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
@@ -37,7 +39,7 @@ class Actor(Element):
     
     def update_animation(self, loop_duration):
         """Update the animation of the main surface. Override this method if you have more surfaces."""
-        self.main_surface.update_animation(loop_duration)
+        self.main_surface.update(loop_duration)
 
     def loop(self, loop_duration):
         """Update the frame at every loop."""
@@ -58,7 +60,7 @@ class Actor(Element):
         w, h = self.main_surface.width, self.main_surface.height
         # rotate every frame
         for surface in self.surfaces:
-            surface.rotate(angle)
+            surface.transform(Rotate(angle))
         # determine the new anchor
         new_w, new_h = self.main_surface.width, self.main_surface.height
         center_x, center_y = w / 2, h / 2

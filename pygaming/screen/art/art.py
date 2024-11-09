@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 from pygame import Surface
 
-from transformation import Transformation
+from .transformation import Transformation
 from ...error import PygamingException
 
 class Art(ABC):

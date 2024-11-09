@@ -4,22 +4,8 @@ from abc import ABC, abstractmethod
 from ..frame import Frame
 from typing import Optional
 from pygame import Cursor, Surface, Rect
-from ..element import Element, TOP_LEFT, SurfaceLike
-from ..animated_surface import AnimatedSurface
-
-def make_background(background: Optional[SurfaceLike], reference: AnimatedSurface):
-    """
-    Return an AnimatedSurface based on the inputs:
-    If background is None, return a copy of the reference.
-    If background is an animated surface, return it
-    If background is a surface, create an animated surface with it.
-    """
-    if background is None:
-        return reference.copy()
-    elif isinstance(background, Surface):
-        return AnimatedSurface([background], 4, 0)
-    else:
-        return background
+from ..element import Element, TOP_LEFT
+from ..art.art import Art
 
 class Widget(Element, ABC):
     """
@@ -33,9 +19,9 @@ class Widget(Element, ABC):
         master: Frame,
         x: int,
         y: int,
-        normal_background: SurfaceLike,
-        focused_background: Optional[SurfaceLike] = None,
-        disabled_background: Optional[SurfaceLike] = None,
+        normal_background: Art,
+        focused_background: Optional[Art] = None,
+        disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         active_area: Optional[Rect] = None,
         layer: int = 0,
@@ -60,8 +46,15 @@ class Widget(Element, ABC):
         self._active_area = active_area
         self._absolute_active_area = self._active_area.move(self.absolute_left, self.absolute_top)
         self._continue_animation = continue_animation
-        self.focused_background = make_background(focused_background, self.surface)
-        self.disabled_background = make_background(disabled_background, self.surface)
+        if focused_background is None:
+            self.focused_background = self.surface
+        else:
+            self.focused_background = focused_background
+
+        if disabled_background is None:
+            self.disabled_background = self.surface
+        else:
+            self.disabled_background = disabled_background
 
     @property
     def normal_background(self):
@@ -101,15 +94,17 @@ class Widget(Element, ABC):
         """Call this method every loop iteration."""
         if not self._continue_animation:
             if self.disabled:
-                self.disabled_background.update_animation(loop_duration)
+                self.disabled_background.update(loop_duration)
             elif self.focused:
-                self.focused_background.update_animation(loop_duration)
+                self.focused_background.update(loop_duration)
             else:
-                self.normal_background.update_animation(loop_duration)
+                self.normal_background.update(loop_duration)
         else:
-            self.disabled_background.update_animation(loop_duration)
-            self.focused_background.update_animation(loop_duration)
-            self.normal_background.update_animation(loop_duration)
+            self.normal_background.update(loop_duration)
+            if self.normal_background != self.disabled_background:
+                self.disabled_background.update(loop_duration)
+            if self.normal_background != self.focused_background:
+                self.focused_background.update(loop_duration)
 
         self.update(loop_duration)
 

@@ -4,8 +4,8 @@ from typing import Optional, Callable, Any
 from pygame import Cursor, Rect, Surface
 from ..frame import Frame
 from ..element import TOP_LEFT, CENTER
-from ..element import SurfaceLike
-from .widget import Widget, make_background
+from .widget import Widget
+from ..art.art import Art
 from ...color import Color
 
 class Button(Widget):
@@ -16,10 +16,10 @@ class Button(Widget):
         master: Frame,
         x: int,
         y: int,
-        normal_background: SurfaceLike,
-        active_background: Optional[SurfaceLike] = None,
-        focused_background: Optional[SurfaceLike] = None,
-        disabled_background: Optional[SurfaceLike] = None,
+        normal_background: Art,
+        active_background: Optional[Art] = None,
+        focused_background: Optional[Art] = None,
+        disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         active_area: Optional[Rect] = None,
         layer: int = 0,
@@ -64,7 +64,7 @@ class Button(Widget):
             hover_cursor,
             continue_animation
         )
-        self.active_background = make_background(active_background, self.normal_background)
+        self.active_background = active_background if active_background else normal_background
         self._is_clicked = False
         self._command = command
 
@@ -115,13 +115,13 @@ class TextButton(Button):
             master: Frame,
             x: int,
             y: int,
-            normal_background: SurfaceLike,
+            normal_background: Art,
             font : str,
             font_color: Color,
             localization_or_text: str,
-            active_background: Optional[SurfaceLike] = None,
-            focused_background: Optional[SurfaceLike] = None,
-            disabled_background: Optional[SurfaceLike] = None,
+            active_background: Optional[Art] = None,
+            focused_background: Optional[Art] = None,
+            disabled_background: Optional[Art] = None,
             anchor: tuple[float | int, float | int] = TOP_LEFT,
             active_area: Rect | None = None,
             layer: int = 0,

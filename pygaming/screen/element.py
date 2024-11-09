@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Union
 import pygame
 from ..phase import GamePhase
-from .animated_surface import AnimatedSurface
+from .art.art import Art
 
 # Anchors
 
@@ -18,20 +18,18 @@ BOTTOM_CENTER = 0.5, 1
 CENTER_LEFT = 0, 0.5
 CENTER_RIGHT = 1, 0.5
 
-SurfaceLike = Union[AnimatedSurface, pygame.Surface]
-
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
 
     def __init__(
         self,
         master : Union[GamePhase | Element], # Frame or phase, no direct typing of frame to avoid circular import
-        surface: SurfaceLike,
+        surface: Art,
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
-        hover_surface: Optional[pygame.Surface] = None,
+        hover_surface: Optional[Art] = None,
         hover_cursor: Optional[pygame.Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True
@@ -60,10 +58,7 @@ class Element(ABC):
         self.can_be_disabled = can_be_disabled
         self.disabled = False
 
-        if isinstance(surface, pygame.Surface):
-            self.surface = AnimatedSurface([surface], 2, 0)
-        else:
-            self.surface = surface.copy()
+        self.surface = surface
 
         self.width, self.height = self.surface.width, self.surface.height
         self._x = x
@@ -83,7 +78,7 @@ class Element(ABC):
 
     def update_hover(self): #pylint: disable=unused-argument
         """Update the hover cursor and surface. To be overriden by element needing it."""
-        return self.hover_surface, self.hover_cursor
+        return self.hover_surface.get(), self.hover_cursor
 
     @abstractmethod
     def get_surface(self) -> pygame.Surface:
@@ -92,7 +87,7 @@ class Element(ABC):
 
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
-        self.surface.update_animation(loop_duration)
+        self.surface.update(loop_duration)
         self.update(loop_duration)
 
     @abstractmethod
