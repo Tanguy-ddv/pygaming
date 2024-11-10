@@ -72,13 +72,13 @@ class Button(Widget):
         """Return true if the button is clicked, false otherwise."""
         return self._is_clicked
 
-    def _get_disabled_surface(self) -> Surface:
+    def _make_disabled_surface(self) -> Surface:
         return self.disabled_background.get()
 
-    def _get_normal_surface(self) -> Surface:
+    def _make_normal_surface(self) -> Surface:
         return self.normal_background.get()
 
-    def _get_focused_surface(self) -> Surface:
+    def _make_focused_surface(self) -> Surface:
         if self._is_clicked:
             return self.active_background.get()
         return self.focused_background.get()
@@ -100,12 +100,18 @@ class Button(Widget):
             )
         ):
             # We verify if the user just clicked or if it is a long click.
-            if not self._is_clicked and self._command is not None:
-                self._command()
+            if not self._is_clicked:
+                self.notify_change()
+                if self._command is not None:
+                    self._command()
+            else:
+                self.notify_change()
 
             self._is_clicked = True
 
         else:
+            if self._is_clicked:
+                self.notify_change()
             self._is_clicked = False
 
 class TextButton(Button):
@@ -153,7 +159,7 @@ class TextButton(Button):
         self.justify = jusitfy
         self._bg_width, self._bg_height = self.surface.width, self.surface.height
 
-    def get_surface(self):
+    def make_surface(self):
         bg = super().get_surface()
         rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None)
         text_width, text_height = rendered_text.get_size()
