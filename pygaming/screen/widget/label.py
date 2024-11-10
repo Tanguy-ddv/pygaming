@@ -68,3 +68,4 @@ class Label(Element):
             just_y = self.justify[1]*(bg.get_height() - text_height)
             bg.blit(rendered_text, (just_x, just_y))
         return bg
+

@@ -1,13 +1,10 @@
 """The colored_surface module contains the ColoredSurface class which is a pygame Surface."""
 
-from typing import Union, Sequence
-from pygame import Surface, SRCALPHA, draw, gfxdraw
-from ...color import Color
+from typing import Sequence
+from pygame import Surface, SRCALPHA, draw
+from ...color import Color, ColorLike
 from .art import Art
 from .art import Transformation
-
-
-ColorLike = Union[Color, tuple[int, int, int], tuple[int, int, int, int]]
 
 class ColoredRectangle(Art):
     """A ColoredRectangle is an Art with only one color."""
@@ -23,10 +20,11 @@ class ColoredRectangle(Art):
         border_top_right_radius: int = -1,
         border_bottom_left_radius: int = -1,
         border_bottom_right_radius: int = -1,
-        transformation: Transformation = None
+        transformation: Transformation = None,
+        force_load_on_start: bool = False
     ):
         """Create a rectangle"""
-        super().__init__(transformation)
+        super().__init__(transformation, force_load_on_start)
 
         self.color = color
         self._width = width
@@ -58,9 +56,10 @@ class ColoredCircle(Art):
         draw_top_left: bool = False,
         draw_bottom_left: bool = False,
         draw_bottom_right: bool = False,
-        transformation: Transformation = None
+        transformation: Transformation = None,
+        force_load_on_start: bool = False
     ):
-        super().__init__(transformation)
+        super().__init__(transformation, force_load_on_start)
         self.radius = radius
         self.color = color
         self.thickness = thickness
@@ -83,11 +82,13 @@ class ColoredCircle(Art):
 class ColoredEllipse(Art):
     """A ColoredEllipse is an Art with a colored ellipse at the center."""
 
-    def __init__(self, color: ColorLike, horizontal_radius: int, vertical_radius: int, thickness: int = 0, transformation: Transformation = None) -> None:
+    def __init__(self, color: ColorLike, horizontal_radius: int, vertical_radius: int,
+            thickness: int = 0, transformation: Transformation = None, force_load_on_start: bool = False) -> None:
         self.color = color
         self.rect = (0, 0, horizontal_radius*2, vertical_radius*2)
         self.thickness = thickness
-        super().__init__(transformation)
+        super().__init__(transformation, force_load_on_start)
+        self._find_initial_dimension()
     
     def _load(self):
         surf = Surface(self.rect[2:4], SRCALPHA)
@@ -102,7 +103,9 @@ class ColoredPolygon(Art):
         self,
         color: ColorLike,
         points: Sequence[tuple[int, int]],
-        thickness: int = 0
+        thickness: int = 0,
+        transformation: Transformation = None,
+        force_load_on_start: bool = False
     ):
         for p in points:
             if p[0] < 0 or p[1] < 0:
@@ -111,6 +114,7 @@ class ColoredPolygon(Art):
         self.points = points
         self.thickness = thickness
         self.color = color
+        super().__init__(transformation, force_load_on_start)
 
         self._height = max(p[1] for p in self.points) + max(0, (thickness-1)//2)
         self._width = max(p[0] for p in self.points) + max(0, (thickness-1)//2)

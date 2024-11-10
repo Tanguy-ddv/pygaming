@@ -4,8 +4,7 @@ from math import cos, sin, radians
 from typing import Sequence
 import pygame.transform as tf
 from pygame import Surface, SRCALPHA, Rect, draw, gfxdraw
-from ...color import Color
-from .colored_surfaces import ColorLike
+from ...color import Color, ColorLike
 
 class Transformation(ABC):
 

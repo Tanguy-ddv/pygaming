@@ -150,6 +150,20 @@ class Frame(Element):
                 self.focused_background.reset()
             else:
                 self.surface.reset()
+    
+    def start(self):
+        """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
+        self.surface.start()
+        for child in self.children:
+            child.start()
+        self.focused_background.start()
+
+    def end(self):
+        """Execute this method at the end of the phase, unload all the arts."""
+        self.surface.unload()
+        for child in self.children:
+            child.end()
+        self.focused_background.unload()
 
     def loop(self, loop_duration: int):
         """Update the frame every loop iteration."""

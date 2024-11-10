@@ -8,7 +8,7 @@ from ...error import PygamingException
 class Art(ABC):
     """The art class is the base for all the surfaces and animated surfaces of the game."""
 
-    def __init__(self, transformation: Transformation = None) -> None:
+    def __init__(self, transformation: Transformation = None, force_load_on_start: bool = False) -> None:
         super().__init__()
         self.surfaces: tuple[Surface] = ()
         self.durations: tuple[int] = ()
@@ -21,9 +21,16 @@ class Art(ABC):
         self._height = -1
         self._width = -1
         self._on_loading_transformation = transformation
+
+        self._force_load_on_start = force_load_on_start
+    
+    def start(self):
+        """Call this method at the start of the phase."""
+        if self._force_load_on_start and not self._loaded:
+            self.load()
     
     def _find_initial_dimension(self):
-        if self._on_loading_transformation:
+        if self._on_loading_transformation :
             self._width, self._height = self._on_loading_transformation.get_new_dimension(self._width, self._height)
     
     def _verify_sizes(self):
@@ -80,7 +87,6 @@ class Art(ABC):
         self._loaded = True
         if self._on_loading_transformation is not None:
             self.transform(self._on_loading_transformation)
-
 
     def update(self, loop_duration: float):
         """Update the instance animation."""

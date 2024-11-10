@@ -120,3 +120,15 @@ class Widget(Element, ABC):
             else:
                 self.disabled_background.reset()
                 self.focused_background.reset()
+
+    def start(self):
+        """Execute this method at the beginning of the phase, load the arts that are set to force_load."""
+        self.normal_background.start()
+        self.focused_background.start()
+        self.disabled_background.start()
+
+    def end(self):
+        """Execute this method at the end of the phase, unload all the arts."""
+        self.normal_background.unload()
+        self.focused_background.unload()
+        self.disabled_background.unload()

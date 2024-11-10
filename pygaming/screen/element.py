@@ -89,6 +89,14 @@ class Element(ABC):
         """Update the element every loop iteration."""
         self.surface.update(loop_duration)
         self.update(loop_duration)
+    
+    def start(self):
+        """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
+        self.surface.start()
+
+    def end(self):
+        """Execute this method at the end of the phase, unload all the arts."""
+        self.surface.unload()
 
     @abstractmethod
     def update(self, loop_duration: int):
