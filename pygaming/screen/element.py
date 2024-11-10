@@ -71,6 +71,9 @@ class Element(ABC):
         self.hover_cursor = hover_cursor
         self.hover_surface = hover_surface
 
+        self._last_surface: pygame.Surface = None
+        self._surface_changed: bool = True
+
     @property
     def game(self):
         """Return the game."""
@@ -80,14 +83,26 @@ class Element(ABC):
         """Update the hover cursor and surface. To be overriden by element needing it."""
         return self.hover_surface.get() if self.hover_surface else None, self.hover_cursor
 
-    @abstractmethod
     def get_surface(self) -> pygame.Surface:
-        """Return the surface to be blitted."""
+        """Return the surface to his parent."""
+        if self._surface_changed:
+            self._last_surface = self.make_surface()
+            self._surface_changed = False
+        return self._last_surface
+
+    @abstractmethod
+    def make_surface(self) -> pygame.Surface:
+        """Make the new surface to be returned to his parent."""
         raise NotImplementedError()
+
+    def notify_change(self):
+        """Notify the need to remake the last surface."""
+        self._surface_changed = True
+        self.master.notify_change()
 
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
-        self.surface.update(loop_duration)
+        self._surface_changed = self.surface.update(loop_duration)
         self.update(loop_duration)
     
     def start(self):

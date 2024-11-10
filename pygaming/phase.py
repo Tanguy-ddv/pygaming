@@ -169,6 +169,7 @@ class GamePhase(BasePhase, ABC):
         self.absolute_left = 0
         self.absolute_top = 0
         self.current_hover_surface = None
+        self._surface_changed = True
 
     def add_child(self, frame):
         """Add a new frame to the phase."""
@@ -286,10 +287,10 @@ class GamePhase(BasePhase, ABC):
     def visible_frames(self):
         """Return all the visible frames sorted by increasing layer."""
         return sorted(filter(lambda f: f.visible, self.frames), key= lambda w: w.layer)
-
-    def get_surface(self, width, height):
-        """Return the surface to be displayed by the phase."""
-        bg = pygame.Surface((width, height), pygame.SRCALPHA)
+    
+    def make_surface(self) -> pygame.Surface:
+        """Make the new surface to be returned to his parent."""
+        bg = pygame.Surface(self.config.dimension, pygame.SRCALPHA)
         for frame in self.visible_frames:
             surf = frame.get_surface()
             bg.blit(surf, (frame.relative_left, frame.relative_top))
@@ -298,3 +299,14 @@ class GamePhase(BasePhase, ABC):
             x, y = self.mouse.get_position()
             bg.blit(self.current_hover_surface, (x, y - self.current_hover_surface.get_height()))
         return bg
+
+    def notify_change(self):
+        """Notify the need to remake the last surface."""
+        self._surface_changed = True
+
+    def get_surface(self) -> pygame.Surface:
+        """Return the surface to his parent."""
+        if self._surface_changed:
+            self._last_surface = self.make_surface()
+            self._surface_changed = False
+        return self._last_surface

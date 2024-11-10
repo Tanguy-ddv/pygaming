@@ -88,8 +88,12 @@ class Art(ABC):
         if self._on_loading_transformation is not None:
             self.transform(self._on_loading_transformation)
 
-    def update(self, loop_duration: float):
-        """Update the instance animation."""
+    def update(self, loop_duration: float) -> bool:
+        """
+        Update the instance animation.
+        
+        Return True if the index changed.
+        """
         if len(self.surfaces) > 1:
             self._time_since_last_change += loop_duration
             if self._time_since_last_change >= self.durations[self._index]:
@@ -97,6 +101,10 @@ class Art(ABC):
                 self._index += 1
                 if self._index == len(self.surfaces):
                     self._index = self._introduction
+                return True
+            return False
+        else:
+            return False
             
     def reset(self):
         """Reset the animation."""

@@ -114,7 +114,7 @@ class Frame(Element):
         super().unfocus()
         for child in self.children:
             child.unfocus()
-
+        self.notify_change()
 
     def next_object_focus(self):
         """Change the focused object."""
@@ -150,6 +150,7 @@ class Frame(Element):
                 self.focused_background.reset()
             else:
                 self.surface.reset()
+        self.notify_change()
     
     def start(self):
         """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
@@ -169,11 +170,15 @@ class Frame(Element):
         """Update the frame every loop iteration."""
         if not self._continue_animation:
             if not self.focused:
-                self.surface.update(loop_duration)
+                has_changed = self.surface.update(loop_duration)
             else:
-                self.focused_background.update(loop_duration)
+                has_changed = self.focused_background.update(loop_duration)
+            if has_changed:
+                self.notify_change()
         else:
-            self.surface.update(loop_duration)
+            has_changed = self.surface.update(loop_duration)
+            if has_changed:
+                self.notify_change()
             if self.focused_background != self.surface:
                 self.focused_background.update(loop_duration)
         self.update(loop_duration)
@@ -191,13 +196,13 @@ class Frame(Element):
     @property
     def _widget_children(self):
         """Return the list of visible widgets in the frame."""
-        return list(filter(lambda elem: not isinstance(elem, Frame) and elem.can_be_focused, self.visible_children))
+        return list(filter(lambda elem: not isinstance(elem, Frame) and elem.can_be_focused and not elem.disabled, self.visible_children))
 
     @property
     def _frame_childern(self) -> list[Frame]:
         return list(filter(lambda elem: isinstance(elem, Frame), self.visible_children))
 
-    def get_surface(self):
+    def make_surface(self):
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
             background = self.focused_background.get()

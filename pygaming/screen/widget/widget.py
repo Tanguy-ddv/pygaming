@@ -67,44 +67,52 @@ class Widget(Element, ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def _get_normal_surface(self) -> Surface:
+    def _make_normal_surface(self) -> Surface:
         """Return the surface based on its current state when the widget it is neither focused nor disabled."""
         raise NotImplementedError()
 
     @abstractmethod
-    def _get_focused_surface(self) -> Surface:
+    def _make_focused_surface(self) -> Surface:
         """Return the surface based on its current state when the widget is focused."""
         raise NotImplementedError()
 
     @abstractmethod
-    def _get_disabled_surface(self) -> Surface:
+    def _make_disabled_surface(self) -> Surface:
         """Return the surface based on its current state when the widget is disabled."""
         raise NotImplementedError()
 
-    def get_surface(self):
+    def make_surface(self):
         """Return the surface of the widget."""
         if self.disabled:
-            return self._get_disabled_surface()
+            return self._make_disabled_surface()
         elif self.focused:
-            return self._get_focused_surface()
+            return self._make_focused_surface()
         else:
-            return self._get_normal_surface()
+            return self._make_normal_surface()
 
     def loop(self, loop_duration: int):
         """Call this method every loop iteration."""
         if not self._continue_animation:
             if self.disabled:
-                self.disabled_background.update(loop_duration)
+                has_changed = self.disabled_background.update(loop_duration)
             elif self.focused:
-                self.focused_background.update(loop_duration)
+                has_changed = self.focused_background.update(loop_duration)
             else:
-                self.normal_background.update(loop_duration)
+                has_changed = self.normal_background.update(loop_duration)
+            if has_changed:
+                self.notify_change()
         else:
-            self.normal_background.update(loop_duration)
+            has_changed = self.normal_background.update(loop_duration)
+            if has_changed:
+                self.notify_change()
             if self.normal_background != self.disabled_background:
-                self.disabled_background.update(loop_duration)
+                has_changed = self.disabled_background.update(loop_duration)
+                if self.disabled and has_changed:
+                    self.notify_change()
             if self.normal_background != self.focused_background:
-                self.focused_background.update(loop_duration)
+                has_changed = self.focused_background.update(loop_duration)
+                if self.focused and has_changed:
+                    self.notify_change()
 
         self.update(loop_duration)
 
@@ -120,6 +128,8 @@ class Widget(Element, ABC):
             else:
                 self.disabled_background.reset()
                 self.focused_background.reset()
+
+        self.notify_change()
 
     def start(self):
         """Execute this method at the beginning of the phase, load the arts that are set to force_load."""
