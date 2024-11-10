@@ -145,6 +145,7 @@ class Slider(Widget):
 
                 local_x = min(max(self._positions[0], local_x), self._positions[-1])
                 self._cursor_position = local_x
+                self.notify_change()
 
                 self._index = self._get_index_of_click(local_x)
 
@@ -153,6 +154,7 @@ class Slider(Widget):
             self._holding_cursor = False
             # if we are doing a transition
             if self._current_transition is not None:
+                self.notify_change()
                 self._current_transition_delta += loop_duration/self._transition_duration
                 t = self._transition_func(self._current_transition_delta)
                 self._cursor_position = self._current_transition[0]*(1-t) + t*self._current_transition[1]
@@ -175,22 +177,22 @@ class Slider(Widget):
         """Get the index the closest to the click"""
         return min(range(len(self._positions)), key=lambda i: abs(self._positions[i] - x))
 
-    def _get_normal_surface(self) -> Surface:
+    def _make_normal_surface(self) -> Surface:
         background = self.normal_background
         cursor = self.normal_cursor
-        return self._get_surface(background, cursor)
+        return self._make_surface(background, cursor)
 
-    def _get_focused_surface(self) -> Surface:
+    def _make_focused_surface(self) -> Surface:
         background = self.focused_background
         cursor = self.focused_cursor
-        return self._get_surface(background, cursor)
+        return self._make_surface(background, cursor)
 
-    def _get_disabled_surface(self) -> Surface:
+    def _make_disabled_surface(self) -> Surface:
         background = self.disabled_background
         cursor = self.disabled_cursor
-        return self._get_surface(background, cursor)
+        return self._make_surface(background, cursor)
 
-    def _get_surface(self, background: Art, cursor: Art) -> Surface:
+    def _make_surface(self, background: Art, cursor: Art) -> Surface:
         """Make the surface with the cursor and the background."""
         bg = background.get()
         x = self._cursor_position - self.normal_cursor.width//2

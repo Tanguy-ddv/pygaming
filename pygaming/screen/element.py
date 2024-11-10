@@ -102,7 +102,9 @@ class Element(ABC):
 
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
-        self._surface_changed = self.surface.update(loop_duration)
+        has_changed = self.surface.update(loop_duration)
+        if has_changed:
+            self.notify_change()
         self.update(loop_duration)
     
     def start(self):
@@ -167,6 +169,7 @@ class Element(ABC):
         Switch background when the widget is disabled, focused, enabled or unfocused.
         Don't do anything for basic elements, to be overriden by other elements.
         """
+        self.notify_change()
 
     @property
     def relative_coordinate(self):

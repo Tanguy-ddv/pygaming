@@ -125,16 +125,16 @@ class Entry(Widget):
         """Return the textual value currently entered."""
         return self._text
 
-    def _get_disabled_surface(self) -> Surface:
-        return self._get_surface(self.disabled_background.get(), self._disabled_font, self._disabled_font_color, False)
+    def _make_disabled_surface(self) -> Surface:
+        return self._make_surface(self.disabled_background.get(), self._disabled_font, self._disabled_font_color, False)
 
-    def _get_focused_surface(self) -> Surface:
-        return self._get_surface(self.focused_background.get(), self._focused_font, self._focused_font_color, self._show_caret)
+    def _make_focused_surface(self) -> Surface:
+        return self._make_surface(self.focused_background.get(), self._focused_font, self._focused_font_color, self._show_caret)
 
-    def _get_normal_surface(self) -> Surface:
-        return self._get_surface(self.normal_background.get(), self._normal_font, self._normal_font_color, False)
+    def _make_normal_surface(self) -> Surface:
+        return self._make_surface(self.normal_background.get(), self._normal_font, self._normal_font_color, False)
 
-    def _get_surface(self, background: Surface, font: str, color: Color, charet: bool):
+    def _make_surface(self, background: Surface, font: str, color: Color, charet: bool):
         rendered_text = self.game.typewriter.render(font, self._text, color)
         text_width, text_height = rendered_text.get_size()
         just_x = self._justify[0]*(background.get_width() - text_width)
@@ -152,6 +152,7 @@ class Entry(Widget):
         if self.focused:
             self._charet_delta += loop_duration/self._charet_frequency
             if self._charet_delta > 1:
+                self.notify_change()
                 self._charet_delta = 0
                 self._show_caret = not self._show_caret
 
@@ -179,19 +180,23 @@ class Entry(Widget):
         if new_characters:
             self._text = self._text[:self._charet_index] + new_characters + self._text[self._charet_index:]
             self._charet_index += len(new_characters)
+            self.notify_change()
 
     def del_one(self):
         """Delete a character."""
         if self._charet_index > 0:
             self._text = self._text[:self._charet_index - 1] + self._text[self._charet_index:]
             self._charet_index -= 1
+            self.notify_change()
 
     def move_to_the_right(self):
         """Move the charet to the right."""
         if self._charet_index < len(self._text):
             self._charet_index += 1
+            self.notify_change()
 
     def move_to_the_left(self):
         """Move the charet to the left."""
         if self._charet_index > 0:
             self._charet_index -= 1
+            self.notify_change()
