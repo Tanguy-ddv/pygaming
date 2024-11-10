@@ -120,16 +120,17 @@ class Entry(Widget):
     def set_text(self, new_text: str):
         """Set a new value for the entry."""
         self._text = str(new_text)
+        self.notify_change()
 
     def get(self):
         """Return the textual value currently entered."""
         return self._text
 
     def _make_disabled_surface(self) -> Surface:
-        return self._make_surface(self.disabled_background.get(), self._disabled_font, self._disabled_font_color, False)
+        return self._make_surface(self.disabled_background.get(self.surface if self._continue_animation else None), self._disabled_font, self._disabled_font_color, False)
 
     def _make_focused_surface(self) -> Surface:
-        return self._make_surface(self.focused_background.get(), self._focused_font, self._focused_font_color, self._show_caret)
+        return self._make_surface(self.focused_background.get(self.surface if self._continue_animation else None), self._focused_font, self._focused_font_color, self._show_caret)
 
     def _make_normal_surface(self) -> Surface:
         return self._make_surface(self.normal_background.get(), self._normal_font, self._normal_font_color, False)

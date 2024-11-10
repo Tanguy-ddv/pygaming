@@ -105,14 +105,6 @@ class Widget(Element, ABC):
             has_changed = self.normal_background.update(loop_duration)
             if has_changed:
                 self.notify_change()
-            if self.normal_background != self.disabled_background:
-                has_changed = self.disabled_background.update(loop_duration)
-                if self.disabled and has_changed:
-                    self.notify_change()
-            if self.normal_background != self.focused_background:
-                has_changed = self.focused_background.update(loop_duration)
-                if self.focused and has_changed:
-                    self.notify_change()
 
         self.update(loop_duration)
 

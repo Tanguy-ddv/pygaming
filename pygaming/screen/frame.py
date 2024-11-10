@@ -179,8 +179,6 @@ class Frame(Element):
             has_changed = self.surface.update(loop_duration)
             if has_changed:
                 self.notify_change()
-            if self.focused_background != self.surface:
-                self.focused_background.update(loop_duration)
         self.update(loop_duration)
 
     def update(self, loop_duration: int):
@@ -205,7 +203,7 @@ class Frame(Element):
     def make_surface(self):
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
-            background = self.focused_background.get()
+            background = self.focused_background.get(match=self.surface)
         else:
             background = self.surface.get()
         for child in self.visible_children:
