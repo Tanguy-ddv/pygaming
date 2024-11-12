@@ -1,7 +1,8 @@
 """The label module contains the Label Element used to display text."""
 import pygame
-from .element import Element, SurfaceLike, TOP_LEFT, CENTER
-from ..color import Color
+from ..element import Element, TOP_LEFT, CENTER
+from ...color import Color
+from ..art.art import Art
 
 
 class Label(Element):
@@ -10,7 +11,7 @@ class Label(Element):
     def __init__(
         self,
         master,
-        background: SurfaceLike,
+        background: Art,
         font: str,
         font_color: Color,
         localization_or_text: str,
@@ -47,7 +48,9 @@ class Label(Element):
 
     def set_localization_or_text(self, localization_or_text: str):
         """Set the label text to a new value."""
-        self.text = str(localization_or_text)
+        if self.text != localization_or_text:
+            self.text = str(localization_or_text)
+            self.notify_change()
 
     def update(self, loop_duration: int):
         """Update the blinking of the text."""
@@ -56,14 +59,16 @@ class Label(Element):
             if self._time_since_last_blink > self._blinking_period//2:
                 self._show_text = not self._show_text
                 self._time_since_last_blink = 0
+                self.notify_change()
 
-    def get_surface(self) -> pygame.Surface:
+    def make_surface(self) -> pygame.Surface:
         """Return the surface of the Label."""
         bg = self.surface.get()
         if self._show_text:
             rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None)
             text_width, text_height = rendered_text.get_size()
-            just_x = self.justify[0]*(bg.get_width() - text_width)
-            just_y = self.justify[1]*(bg.get_height() - text_height)
+            just_x = self.justify[0]*(self.surface.width - text_width)
+            just_y = self.justify[1]*(self.surface.height - text_height)
             bg.blit(rendered_text, (just_x, just_y))
         return bg
+

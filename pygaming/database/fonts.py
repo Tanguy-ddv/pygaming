@@ -1,7 +1,6 @@
 """The Font module contain the font class."""
 from pygame.font import Font as _Ft
-from pygame import Surface
-from ..screen.colored_surfaces import ColoredRectangle
+from pygame import Surface, SRCALPHA
 from ..color import Color
 from .texts import Texts
 from .database import Database
@@ -91,7 +90,8 @@ class TypeWriter:
             line_size = thefont.get_linesize()
             bg_width = max(thefont.size(line)[0] for line in lines)
             bg_height = len(lines)*line_size
-            background = ColoredRectangle(Color(0, 0, 0, 0) if background_color is None else background_color, bg_width, bg_height)
+            background = Surface((bg_width, bg_height), SRCALPHA)
+            background.fill(Color(0, 0, 0, 0) if background_color is None else background_color)
             line_y = 0
             for line in lines:
                 render = thefont.render(line, self._settings.antialias, color, background_color)

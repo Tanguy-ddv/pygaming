@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Union
 import pygame
 from ..phase import GamePhase
-from .animated_surface import AnimatedSurface
+from .art.art import Art
 
 # Anchors
 
@@ -18,20 +18,18 @@ BOTTOM_CENTER = 0.5, 1
 CENTER_LEFT = 0, 0.5
 CENTER_RIGHT = 1, 0.5
 
-SurfaceLike = Union[AnimatedSurface, pygame.Surface]
-
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
 
     def __init__(
         self,
         master : Union[GamePhase | Element], # Frame or phase, no direct typing of frame to avoid circular import
-        surface: SurfaceLike,
+        surface: Art,
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
-        hover_surface: Optional[pygame.Surface] = None,
+        hover_surface: Optional[Art] = None,
         hover_cursor: Optional[pygame.Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True
@@ -60,10 +58,7 @@ class Element(ABC):
         self.can_be_disabled = can_be_disabled
         self.disabled = False
 
-        if isinstance(surface, pygame.Surface):
-            self.surface = AnimatedSurface([surface], 2, 0)
-        else:
-            self.surface = surface.copy()
+        self.surface = surface
 
         self.width, self.height = self.surface.width, self.surface.height
         self._x = x
@@ -76,6 +71,9 @@ class Element(ABC):
         self.hover_cursor = hover_cursor
         self.hover_surface = hover_surface
 
+        self._last_surface: pygame.Surface = None
+        self._surface_changed: bool = True
+
     @property
     def game(self):
         """Return the game."""
@@ -83,17 +81,39 @@ class Element(ABC):
 
     def update_hover(self): #pylint: disable=unused-argument
         """Update the hover cursor and surface. To be overriden by element needing it."""
-        return self.hover_surface, self.hover_cursor
+        return self.hover_surface.get() if self.hover_surface else None, self.hover_cursor
+
+    def get_surface(self) -> pygame.Surface:
+        """Return the surface to his parent."""
+        if self._surface_changed:
+            self._last_surface = self.make_surface()
+            self._surface_changed = False
+        return self._last_surface
 
     @abstractmethod
-    def get_surface(self) -> pygame.Surface:
-        """Return the surface to be blitted."""
+    def make_surface(self) -> pygame.Surface:
+        """Make the new surface to be returned to his parent."""
         raise NotImplementedError()
+
+    def notify_change(self):
+        """Notify the need to remake the last surface."""
+        self._surface_changed = True
+        self.master.notify_change()
 
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
-        self.surface.update_animation(loop_duration)
+        has_changed = self.surface.update(loop_duration)
+        if has_changed:
+            self.notify_change()
         self.update(loop_duration)
+    
+    def start(self):
+        """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
+        self.surface.start()
+
+    def end(self):
+        """Execute this method at the end of the phase, unload all the arts."""
+        self.surface.unload()
 
     @abstractmethod
     def update(self, loop_duration: int):
@@ -149,6 +169,7 @@ class Element(ABC):
         Switch background when the widget is disabled, focused, enabled or unfocused.
         Don't do anything for basic elements, to be overriden by other elements.
         """
+        self.notify_change()
 
     @property
     def relative_coordinate(self):

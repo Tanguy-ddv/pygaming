@@ -65,3 +65,5 @@ class Color(_Cl):
         h, s, l, _a = self.hsla
         s = 100 - (100 - s)* (1 - percentage)
         return _from_hsla(h, s, l, self.a/255)
+
+ColorLike = Union[Color|tuple[int, int, int], tuple[int, int, int, int]]

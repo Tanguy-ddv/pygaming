@@ -1,12 +1,13 @@
 """Then entry module contains the entry widget."""
 
 from typing import Optional
-from pygame import Cursor, Rect, Surface
+from pygame import Cursor, Rect, Surface, draw
 from .widget import Widget
-from ..element import SurfaceLike, TOP_LEFT, CENTER
-from ..colored_surfaces import ColoredRectangle
+from ..element import TOP_LEFT, CENTER
+from ..art.colored_surfaces import ColoredRectangle
 from ..frame import Frame
 from ...color import Color
+from ..art.art import Art
 
 class Entry(Widget):
     """The Entry widget is used to allow the user to add a textual input."""
@@ -16,13 +17,13 @@ class Entry(Widget):
         master: Frame,
         x: int,
         y: int,
-        normal_background: SurfaceLike,
+        normal_background: Art,
         normal_font: str,
         normal_font_color: Color,
-        focused_background: Optional[SurfaceLike] = None,
+        focused_background: Optional[Art] = None,
         focused_font: Optional[str] = None,
         focused_font_color: Optional[str] = None,
-        disabled_background: Optional[SurfaceLike] = None,
+        disabled_background: Optional[Art] = None,
         disabled_font: Optional[str] = None,
         disbaled_font_color: Optional[str] = None,
         initial_value: str = '',
@@ -42,7 +43,7 @@ class Entry(Widget):
         """
         The Entry widget is used to allow the user to add a textual input.
         
-Params:
+        Params:
         ---
         - master: Frame. The Frame in which this widget is placed.
         - x: int, the coordinate of the anchor in the master Frame
@@ -109,39 +110,41 @@ Params:
         self.max_length = max_length
 
         self._justify = justify
+        self._charet_width = charet_width
         
         self._charet_index = len(self._text)
         self._charet_frequency = charet_frequency
-        self._charet = ColoredRectangle(self._focused_font_color, charet_width, self.game.typewriter.get_linesize(self._focused_font))
         self._show_caret = True
         self._charet_delta = 0
 
     def set_text(self, new_text: str):
         """Set a new value for the entry."""
         self._text = str(new_text)
+        self.notify_change()
 
     def get(self):
         """Return the textual value currently entered."""
         return self._text
 
-    def _get_disabled_surface(self) -> Surface:
-        return self._get_surface(self.disabled_background.get(), self._disabled_font, self._disabled_font_color, False)
+    def _make_disabled_surface(self) -> Surface:
+        return self._make_surface(self.disabled_background.get(self.surface if self._continue_animation else None), self._disabled_font, self._disabled_font_color, False)
 
-    def _get_focused_surface(self) -> Surface:
-        return self._get_surface(self.focused_background.get(), self._focused_font, self._focused_font_color, self._show_caret)
+    def _make_focused_surface(self) -> Surface:
+        return self._make_surface(self.focused_background.get(self.surface if self._continue_animation else None), self._focused_font, self._focused_font_color, self._show_caret)
 
-    def _get_normal_surface(self) -> Surface:
-        return self._get_surface(self.normal_background.get(), self._normal_font, self._normal_font_color, False)
+    def _make_normal_surface(self) -> Surface:
+        return self._make_surface(self.normal_background.get(), self._normal_font, self._normal_font_color, False)
 
-    def _get_surface(self, background: Surface, font: str, color: Color, charet: bool):
+    def _make_surface(self, background: Surface, font: str, color: Color, charet: bool):
         rendered_text = self.game.typewriter.render(font, self._text, color)
         text_width, text_height = rendered_text.get_size()
         just_x = self._justify[0]*(background.get_width() - text_width)
         just_y = self._justify[1]*(background.get_height() - text_height)
         background.blit(rendered_text, (just_x, just_y))
         if charet:
+            charet_height = self.game.typewriter.get_linesize(font)
             charet_x = just_x + self.game.typewriter.size(font, self._text[:self._charet_index])[0]
-            background.blit(self._charet, (charet_x, just_y))
+            draw.line(background, self._focused_font_color, (charet_x, just_y), (charet_x, just_y + charet_height), self._charet_width)
         return background
 
     def update(self, loop_duration: int):
@@ -150,6 +153,7 @@ Params:
         if self.focused:
             self._charet_delta += loop_duration/self._charet_frequency
             if self._charet_delta > 1:
+                self.notify_change()
                 self._charet_delta = 0
                 self._show_caret = not self._show_caret
 
@@ -177,19 +181,23 @@ Params:
         if new_characters:
             self._text = self._text[:self._charet_index] + new_characters + self._text[self._charet_index:]
             self._charet_index += len(new_characters)
+            self.notify_change()
 
     def del_one(self):
         """Delete a character."""
         if self._charet_index > 0:
             self._text = self._text[:self._charet_index - 1] + self._text[self._charet_index:]
             self._charet_index -= 1
+            self.notify_change()
 
     def move_to_the_right(self):
         """Move the charet to the right."""
         if self._charet_index < len(self._text):
             self._charet_index += 1
+            self.notify_change()
 
     def move_to_the_left(self):
         """Move the charet to the left."""
         if self._charet_index > 0:
             self._charet_index -= 1
+            self.notify_change()

@@ -2,10 +2,10 @@
 from __future__ import annotations
 from typing import Optional
 import pygame
-from .animated_surface import AnimatedSurface
 from ..phase import GamePhase
 from ..error import PygamingException
-from .element import Element, TOP_LEFT, SurfaceLike
+from .element import Element, TOP_LEFT
+from .art.art import Art
 
 class Frame(Element):
     """
@@ -17,8 +17,8 @@ class Frame(Element):
         self,
         master: GamePhase | Frame, # Frame or phase, no direct typing to avoid circular import
         window: pygame.Rect,
-        background: SurfaceLike,
-        focused_background: Optional[SurfaceLike] = None,
+        background: Art,
+        focused_background: Optional[Art] = None,
         background_window: Optional[pygame.Rect] = None,
         layer: int = 0,
         continue_animation: bool = False
@@ -68,9 +68,7 @@ class Frame(Element):
         self.focused = False
         self._current_object_focus = None
         if focused_background is None:
-            self.focused_background = self.surface.copy()
-        elif isinstance(focused_background, pygame.Surface):
-            self.focused_background = AnimatedSurface([focused_background], 4, 0)
+            self.focused_background = self.surface
         else:
             self.focused_background = focused_background
 
@@ -116,7 +114,7 @@ class Frame(Element):
         super().unfocus()
         for child in self.children:
             child.unfocus()
-
+        self.notify_change()
 
     def next_object_focus(self):
         """Change the focused object."""
@@ -152,17 +150,35 @@ class Frame(Element):
                 self.focused_background.reset()
             else:
                 self.surface.reset()
+        self.notify_change()
+    
+    def start(self):
+        """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
+        self.surface.start()
+        for child in self.children:
+            child.start()
+        self.focused_background.start()
+
+    def end(self):
+        """Execute this method at the end of the phase, unload all the arts."""
+        self.surface.unload()
+        for child in self.children:
+            child.end()
+        self.focused_background.unload()
 
     def loop(self, loop_duration: int):
         """Update the frame every loop iteration."""
         if not self._continue_animation:
             if not self.focused:
-                self.surface.update_animation(loop_duration)
+                has_changed = self.surface.update(loop_duration)
             else:
-                self.focused_background.update_animation(loop_duration)
+                has_changed = self.focused_background.update(loop_duration)
+            if has_changed:
+                self.notify_change()
         else:
-            self.surface.update_animation(loop_duration)
-            self.focused_background.update_animation(loop_duration)
+            has_changed = self.surface.update(loop_duration)
+            if has_changed:
+                self.notify_change()
         self.update(loop_duration)
 
     def update(self, loop_duration: int):
@@ -178,16 +194,16 @@ class Frame(Element):
     @property
     def _widget_children(self):
         """Return the list of visible widgets in the frame."""
-        return list(filter(lambda elem: not isinstance(elem, Frame) and elem.can_be_focused, self.visible_children))
+        return list(filter(lambda elem: not isinstance(elem, Frame) and elem.can_be_focused and not elem.disabled, self.visible_children))
 
     @property
     def _frame_childern(self) -> list[Frame]:
         return list(filter(lambda elem: isinstance(elem, Frame), self.visible_children))
 
-    def get_surface(self):
+    def make_surface(self):
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
-            background = self.focused_background.get()
+            background = self.focused_background.get(match=self.surface)
         else:
             background = self.surface.get()
         for child in self.visible_children:

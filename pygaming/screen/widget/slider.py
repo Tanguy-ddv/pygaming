@@ -1,11 +1,10 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
 from typing import Optional, Iterable, Callable, Any
 from pygame import Cursor, Surface, Rect
-from ..animated_surface import AnimatedSurface
 from ...error import PygamingException
-from .widget import Widget, TOP_LEFT, make_background
-from ..element import SurfaceLike
+from .widget import Widget, TOP_LEFT
 from ..frame import Frame
+from ..art.art import Art
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -16,13 +15,13 @@ class Slider(Widget):
         x: int,
         y: int,
         values: Iterable,
-        normal_background: SurfaceLike,
-        normal_cursor: SurfaceLike,
+        normal_background: Art,
+        normal_cursor: Art,
         initial_value: Optional[Any] = None,
-        focused_background: Optional[SurfaceLike] = None,
-        focused_cursor: Optional[SurfaceLike] = None,
-        disabled_background:  Optional[SurfaceLike] = None,
-        disabled_cursor:  Optional[SurfaceLike] = None,
+        focused_background: Optional[Art] = None,
+        focused_cursor: Optional[Art] = None,
+        disabled_background:  Optional[Art] = None,
+        disabled_cursor:  Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         active_area: Optional[Rect] = None,
         layer: int = 0,
@@ -75,9 +74,9 @@ class Slider(Widget):
             continue_animation
         )
 
-        self.normal_cursor = make_background(normal_cursor, None)
-        self.focused_cursor = make_background(focused_cursor, self.normal_cursor)
-        self.disabled_cursor = make_background(disabled_cursor, self.normal_cursor)
+        self.normal_cursor = normal_cursor
+        self.focused_cursor = focused_cursor if focused_cursor else normal_cursor
+        self.disabled_cursor = disabled_cursor if disabled_cursor else normal_cursor
 
         # initial value and index
         self._values= list(values)
@@ -146,6 +145,7 @@ class Slider(Widget):
 
                 local_x = min(max(self._positions[0], local_x), self._positions[-1])
                 self._cursor_position = local_x
+                self.notify_change()
 
                 self._index = self._get_index_of_click(local_x)
 
@@ -154,6 +154,7 @@ class Slider(Widget):
             self._holding_cursor = False
             # if we are doing a transition
             if self._current_transition is not None:
+                self.notify_change()
                 self._current_transition_delta += loop_duration/self._transition_duration
                 t = self._transition_func(self._current_transition_delta)
                 self._cursor_position = self._current_transition[0]*(1-t) + t*self._current_transition[1]
@@ -166,9 +167,9 @@ class Slider(Widget):
 
         # Verify the use of the arrows
         if self.focused:
-            if self.game.keyboard.get_actions_down()['left'] and self._index > 0:
+            if self.game.keyboard.actions_down['left'] and self._index > 0:
                 self.start_transition(self._index - 1)
-            if self.game.keyboard.get_actions_down()['right'] and self._index < len(self._values) - 1:
+            if self.game.keyboard.actions_down['right'] and self._index < len(self._values) - 1:
                 self.start_transition(self._index + 1)
 
 
@@ -176,24 +177,24 @@ class Slider(Widget):
         """Get the index the closest to the click"""
         return min(range(len(self._positions)), key=lambda i: abs(self._positions[i] - x))
 
-    def _get_normal_surface(self) -> Surface:
+    def _make_normal_surface(self) -> Surface:
         background = self.normal_background
         cursor = self.normal_cursor
-        return self._get_surface(background, cursor)
+        return self._make_surface(background, cursor)
 
-    def _get_focused_surface(self) -> Surface:
+    def _make_focused_surface(self) -> Surface:
         background = self.focused_background
         cursor = self.focused_cursor
-        return self._get_surface(background, cursor)
+        return self._make_surface(background, cursor)
 
-    def _get_disabled_surface(self) -> Surface:
+    def _make_disabled_surface(self) -> Surface:
         background = self.disabled_background
         cursor = self.disabled_cursor
-        return self._get_surface(background, cursor)
+        return self._make_surface(background, cursor)
 
-    def _get_surface(self, background: AnimatedSurface, cursor: AnimatedSurface) -> Surface:
+    def _make_surface(self, background: Art, cursor: Art) -> Surface:
         """Make the surface with the cursor and the background."""
-        bg = background.get()
+        bg = background.get(self.surface if self._continue_animation else None)
         x = self._cursor_position - self.normal_cursor.width//2
         y = (background.height - cursor.height)//2
         bg.blit(cursor.get(), (x,y))
