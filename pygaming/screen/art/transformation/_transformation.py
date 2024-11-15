@@ -1,10 +1,9 @@
 """The transformation module contains the base class Transformation and all the subclasses."""
 from abc import ABC, abstractmethod
 from math import cos, sin, radians
-from typing import Sequence
 import pygame.transform as tf
-from pygame import Surface, SRCALPHA, Rect, draw, gfxdraw
-from ...color import Color, ColorLike
+from pygame import Surface, SRCALPHA, Rect
+from ....color import ColorLike
 
 class Transformation(ABC):
 
@@ -77,18 +76,22 @@ class Zoom(Transformation):
     ----
     If the art have a size of (100, 100), calling this transformation with a scale of 1.2 would modify the art
     to a size (120, 120). Calling this transformation with a scale of 0.6 would modify the art
-    to a size (60, 60).
+    to a size (60, 60). You can also specify two scales (one for horizontal and one for vertical) by passing
+    a tuple as scale. If smooth is True, use a smooth zooming instead.
     """
 
-    def __init__(self, scale: float) -> None:
+    def __init__(self, scale: float | tuple[float, float], smooth: bool = False) -> None:
         super().__init__()
         self.scale = scale
+        self.smooth = smooth
     
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        if self.scale == 2:
+        if (self.scale == (2, 2) or self.scale == 2) and not self.smooth:
             rescaled_surfaces = tuple(tf.scale2x(surf) for surf in surfaces)
-        else:
+        elif not self.smooth:
             rescaled_surfaces = tuple(tf.scale_by(surf, self.scale) for surf in surfaces)
+        else:
+            rescaled_surfaces = tuple(tf.smoothscale_by(surf, self.scale) for surf in surfaces)
         return rescaled_surfaces, durations, introduction, index, int(width*self.scale), int(height*self.scale)
 
     def get_new_dimension(self, width, height):
@@ -101,15 +104,19 @@ class Resize(Transformation):
     Example:
     ----
     If the art have a size of (100, 100), calling this transformation with a zie of (120, 60) would modify the art
-    to a size (120, 60)
+    to a size (120, 60). If smooth is True, use a smooth resizing instead.
     """
 
-    def __init__(self, size: tuple[int, int]) -> None:
+    def __init__(self, size: tuple[int, int], smooth: bool = False) -> None:
         super().__init__()
         self.size = size
+        self.smooth = smooth
     
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        rescaled_surfaces = tuple(tf.scale(surf, self.size) for surf in surfaces)
+        if self.smooth:
+            rescaled_surfaces = tuple(tf.smoothscale(surf, self.size) for surf in surfaces)
+        else:
+            rescaled_surfaces = tuple(tf.scale(surf, self.size) for surf in surfaces)
         return rescaled_surfaces, durations, introduction, index, *self.size
     
     def get_new_dimension(self, width, height):
@@ -145,7 +152,7 @@ class Padding(Transformation):
     The pad transformation add a solid color extension on every side of the art. If the pad is negative, act like a crop.
     """
 
-    def __init__(self, color: Color, left: int = 0, right = 0, top = 0, bottom = 0) -> None:
+    def __init__(self, color: ColorLike, left: int = 0, right = 0, top = 0, bottom = 0) -> None:
         super().__init__()
         self.color = color
         self.left = left
@@ -165,20 +172,6 @@ class Padding(Transformation):
     def get_new_dimension(self, width, height):
         return width + self.left + self.right, height + self.left + self.right
 
-class SetAlpha(Transformation):
-    """
-    The setalpha transformation replace the alpha value of all the pixel by a new value.
-    Pixels that are transparent from the begining will not change.
-    """
-
-    def __init__(self, alpha: int) -> None:
-        super().__init__()
-        self.alpha = alpha
-
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        for surf in surfaces:
-            surf.set_alpha(self.alpha)
-        return surfaces, durations, introduction, index, width, height
     
 class Flip(Transformation):
     """
@@ -194,6 +187,18 @@ class Flip(Transformation):
         flipped_surfaces = tuple(tf.flip(surf, self.horizontal, self.vertical) for surf in surfaces)
         return flipped_surfaces, durations, introduction, index, height, width
 
+    def get_new_dimension(self, width, height):
+        return width, height
+
+class Transpose(Transformation):
+
+    def __init__(self) -> None:
+        super().__init__()
+    
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+        tp_surfaces = tuple(tf.flip(tf.rotate(surf, 270), True, False) for surf in surfaces)
+        return tp_surfaces, durations, introduction, index, width, height
+    
     def get_new_dimension(self, width, height):
         return height, width
 
@@ -228,18 +233,6 @@ class HorizontalChop(Transformation):
 
     def get_new_dimension(self, width, height):
         return width, height - self.rect[3]
-
-class GrayScale(Transformation):
-    """
-    The gray scale transformation turn the art into a black and white art.
-    """
-
-    def __init__(self) -> None:
-        super().__init__()
-    
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        graysurfeaces = tuple(tf.grayscale(surf) for surf in surfaces)
-        return graysurfeaces, durations, introduction, index, width, height
 
 class SpeedUp(Transformation):
     """
@@ -371,166 +364,3 @@ class ExtractOne(Transformation):
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
         return (surfaces[self.index],), (0,), 0, 0, width, height
-
-class DrawCircle(Transformation):
-    """Draw a circle on the art."""
-
-    def __init__(
-        self,
-        color: ColorLike,
-        radius: int,
-        center: tuple[int, int],
-        thickness: int = 0,
-        draw_top_right: bool = False,
-        draw_top_left: bool = False,
-        draw_bottom_left: bool = False,
-        draw_bottom_right: bool = False,
-    ) -> None:
-        super().__init__()
-
-        self.radius = radius
-        self.color = color
-        self.thickness = thickness
-        self.draw_top_right = draw_top_right
-        self.draw_top_left = draw_top_left
-        self.draw_bottom_left = draw_bottom_left
-        self.draw_bottom_right = draw_bottom_right
-        self.center = center
-
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        for surf in surfaces:
-            draw.circle(surf, self.color, self.center, self.radius, self.thickness, self.draw_top_right, self.draw_top_left, self.draw_bottom_left, self.draw_bottom_right)
-        return surfaces, durations, introduction, index, width, height
-
-class DrawRectangle(Transformation):
-    """Draw a rectangle on the art."""
-    def __init__(
-        self,
-        color: ColorLike,
-        left: int,
-        top: int,
-        width: int,
-        height: int,
-        thickness: int = 0,
-        border_radius: int = 0,
-        border_top_left_radius: int = -1,
-        border_top_right_radius: int = -1,
-        border_bottom_left_radius: int = -1,
-        border_bottom_right_radius: int = -1,
-    ) -> None:
-        super().__init__()  
-        self.color = color
-        self.left = left
-        self.top = top
-        self.width = width
-        self.height = height
-        self.thickness = thickness
-        self.border_radius = border_radius
-        self.border_top_left_radius = border_top_left_radius
-        self.border_top_right_radius = border_top_right_radius
-        self.border_bottom_left_radius = border_bottom_left_radius
-        self.border_bottom_right_radius = border_bottom_right_radius
-    
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        for surf in surfaces:
-            draw.rect(
-                surf,
-                self.color,
-                (self.left, self.top, self.width, self.height),
-                self.thickness,
-                self.border_radius,
-                self.border_top_left_radius,
-                self.border_top_right_radius,
-                self.border_bottom_left_radius,
-                self.border_bottom_right_radius)
-        
-        return surfaces, durations, introduction, index, width, height
-    
-class DrawPolygon(Transformation):
-    """Draw a polygon on the art."""
-
-    def __init__(
-        self,
-        color: ColorLike,
-        points: Sequence[tuple[int, int]],
-        thickness: int = 0) -> None:
-        super().__init__()
-
-        self.color = color
-        self.points = points
-        self.thickness = thickness
-
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        for surf in surfaces:
-            draw.polygon(surf, self.color, self.points, self.thickness)
-        return surfaces, durations, introduction, index, width, height
-
-class DrawLine(Transformation):
-    """Draw one line on the art."""
-
-    def __init__(self, color: ColorLike, p1: tuple[int, int], p2: tuple[int, int], thickness: int = 1) -> None:
-        self.color = color
-        self.p1 = p1
-        self.p2 = p2
-        self.thickness = thickness
-        super().__init__()
-
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        if self.thickness == 1 and self.p1[0] == self.p2[0]:
-            for surf in surfaces:
-                gfxdraw.vline(surf, self.p1[0], self.p1[1], self.p2[1], self.color)
-        elif self.thickness == 1 and self.p1[1] == self.p2[0]:
-            for surf in surfaces:
-                gfxdraw.hline(surf, self.p1[0], self.p2[0], self.p2[1], self.color)
-        elif self.thickness == 1:
-            for surf in surfaces:
-                gfxdraw.line(surf, self.p1[0], self.p1[1], self.p2[0], self.p2[1], self.color)
-        else:
-            for surf in surfaces:
-                draw.line(surf, self.color, (self.p1[0], self.p1[1]), (self.p2[0], self.p2[1]), self.thickness)
-        return surfaces, durations, introduction, index, width, height
-
-class DrawLines(Transformation):
-    """Draw lines on the art."""
-
-    def __init__(self, color: ColorLike, points: Sequence[tuple[int, int]], thickness: int = 1, closed: bool = False) -> None:
-        self.color = color
-        self.points = points
-        self.thickness = thickness
-        self.closed = closed
-        super().__init__()
-
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        for surf in surfaces:
-            draw.lines(surf, self.color, self.closed, self.points, self.thickness)
-        return surfaces, durations, introduction, index, width, height
-
-class DrawArc(Transformation):
-    """Draw an arc on the art."""
-
-    def __init__(self, color: ColorLike, ellipsis_center: tuple[int, int], horizontal_radius: int, vertical_radius: int, from_angle: float, to_angle: float, thickness: int = 1) -> None:
-        self.color = color
-        self.rect = (ellipsis_center[0] - horizontal_radius, ellipsis_center[1] - vertical_radius, horizontal_radius*2, vertical_radius*2)
-        self.thickness = thickness
-        self.from_angle = from_angle
-        self.to_angle = to_angle
-        super().__init__()
-
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        for surf in surfaces:
-            draw.arc(surf, self.color, self.rect, self.from_angle, self.to_angle, self.thickness)
-        return surfaces, durations, introduction, index, width, height
-
-class DrawBezier(Transformation):
-    """Draw a bezier curb on the art."""
-
-    def __init__(self, color: ColorLike, points: Sequence[tuple[int, int]], steps: int) -> None:
-        self.color = color
-        self.points = points
-        self.steps = steps
-        super().__init__()
-
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        for surf in surfaces:
-            gfxdraw.bezier(surf, self.points, self.steps, self.color)
-        return surfaces, durations, introduction, index, width, height

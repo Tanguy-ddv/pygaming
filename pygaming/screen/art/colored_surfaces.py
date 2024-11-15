@@ -2,9 +2,9 @@
 
 from typing import Sequence
 from pygame import Surface, SRCALPHA, draw
-from ...color import Color, ColorLike
+from ...color import ColorLike
 from .art import Art
-from .art import Transformation
+from .transformation import Transformation
 
 class ColoredRectangle(Art):
     """A ColoredRectangle is an Art with only one color."""

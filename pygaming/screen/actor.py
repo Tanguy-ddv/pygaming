@@ -3,7 +3,7 @@ import math
 from ..phase import GamePhase
 from .element import Element, TOP_LEFT
 from .art.art import Art
-from .art.transformation import Rotate
+from .art.transformation._transformation import Rotate
 
 class Actor(Element):
     """An actor is an object that is made to move and possibly rotate in a frame."""

@@ -2,3 +2,4 @@ pygame
 pyinstaller
 numpy
 pillow
+opencv-python
