@@ -2,17 +2,16 @@
 from abc import ABC, abstractmethod
 from pygame import Surface
 
-from .transformation import Transformation
 from ...error import PygamingException
 
 class Art(ABC):
     """The art class is the base for all the surfaces and animated surfaces of the game."""
 
-    def __init__(self, transformation: Transformation = None, force_load_on_start: bool = False) -> None:
+    def __init__(self, transformation = None, force_load_on_start: bool = False) -> None:
         super().__init__()
         self.surfaces: tuple[Surface] = ()
         self.durations: tuple[int] = ()
-        self._introduction = 0
+        self.introduction = 0
         self._loaded = False
 
         self._time_since_last_change = 0
@@ -100,7 +99,7 @@ class Art(ABC):
                 self._time_since_last_change -= self.durations[self._index]
                 self._index += 1
                 if self._index == len(self.surfaces):
-                    self._index = self._introduction
+                    self._index = self.introduction
                 return True
             return False
         else:
@@ -122,7 +121,7 @@ class Art(ABC):
             self.load()
         return self.surfaces[index].copy()
 
-    def transform(self, transfo: Transformation):
+    def transform(self, transformation):
         """Apply a transformation"""
         if self._loaded:
             (   self.surfaces,
@@ -131,10 +130,10 @@ class Art(ABC):
                 self._index,
                 self._width,
                 self._height
-            ) = transfo.apply(
+            ) = transformation.apply(
                 self.surfaces,
                 self.durations,
-                self._introduction,
+                self.introduction,
                 self._index,
                 self._width,
                 self._height

@@ -4,7 +4,6 @@ from typing import Optional
 from pygame import Cursor, Rect, Surface, draw
 from .widget import Widget
 from ..element import TOP_LEFT, CENTER
-from ..art.colored_surfaces import ColoredRectangle
 from ..frame import Frame
 from ...color import Color
 from ..art.art import Art
@@ -36,8 +35,8 @@ class Entry(Widget):
         hover_cursor: Cursor | None = None,
         continue_animation: bool = False,
         justify = CENTER,
-        charet_frequency: int = 500,
-        charet_width: int = 2,
+        caret_frequency: int = 500,
+        caret_width: int = 2,
         max_length: int = 10,
     ) -> None:
         """
@@ -68,8 +67,8 @@ class Entry(Widget):
         - hover_cursor: Cursor The cursor of the mouse to use when the widget is hovered,
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
         - justify: str, the position of the text in the entry. can be TEXT_CENTERED, TEXT_RIGHT, TEXT_LEFT
-        - charet_frequency: int, The blinking frequency of the charet (ms)
-        - charet_width: int, The width of the charet in pixel.
+        - caret_frequency: int, The blinking frequency of the caret (ms)
+        - caret_width: int, The width of the caret in pixel.
         - max_length: The maximum number of characters the entry can support.
         """
 
@@ -110,12 +109,12 @@ class Entry(Widget):
         self.max_length = max_length
 
         self._justify = justify
-        self._charet_width = charet_width
+        self._caret_width = caret_width
         
-        self._charet_index = len(self._text)
-        self._charet_frequency = charet_frequency
+        self._caret_index = len(self._text)
+        self._caret_frequency = caret_frequency
         self._show_caret = True
-        self._charet_delta = 0
+        self._caret_delta = 0
 
     def set_text(self, new_text: str):
         """Set a new value for the entry."""
@@ -135,33 +134,33 @@ class Entry(Widget):
     def _make_normal_surface(self) -> Surface:
         return self._make_surface(self.normal_background.get(), self._normal_font, self._normal_font_color, False)
 
-    def _make_surface(self, background: Surface, font: str, color: Color, charet: bool):
+    def _make_surface(self, background: Surface, font: str, color: Color, caret: bool):
         rendered_text = self.game.typewriter.render(font, self._text, color)
         text_width, text_height = rendered_text.get_size()
         just_x = self._justify[0]*(background.get_width() - text_width)
         just_y = self._justify[1]*(background.get_height() - text_height)
         background.blit(rendered_text, (just_x, just_y))
-        if charet:
-            charet_height = self.game.typewriter.get_linesize(font)
-            charet_x = just_x + self.game.typewriter.size(font, self._text[:self._charet_index])[0]
-            draw.line(background, self._focused_font_color, (charet_x, just_y), (charet_x, just_y + charet_height), self._charet_width)
+        if caret:
+            caret_height = self.game.typewriter.get_linesize(font)
+            caret_x = just_x + self.game.typewriter.size(font, self._text[:self._caret_index])[0]
+            draw.line(background, self._focused_font_color, (caret_x, just_y), (caret_x, just_y + caret_height), self._caret_width)
         return background
 
     def update(self, loop_duration: int):
         """Update the entry with the inputs."""
-        # Update the charet
+        # Update the caret
         if self.focused:
-            self._charet_delta += loop_duration/self._charet_frequency
-            if self._charet_delta > 1:
+            self._caret_delta += loop_duration/self._caret_frequency
+            if self._caret_delta > 1:
                 self.notify_change()
-                self._charet_delta = 0
+                self._caret_delta = 0
                 self._show_caret = not self._show_caret
 
             # Modify the text if a character is typed
             new_characters = ''.join(self.game.keyboard.get_characters(self.extra_characters, self.forbid_characters))
             self.add_new_characters(new_characters)
 
-            # Move the charet if an arrow is tapped.
+            # Move the caret if an arrow is tapped.
             if self.game.keyboard.actions_down['left']:
                 self.move_to_the_left()
             if self.game.keyboard.actions_down['right']:
@@ -179,25 +178,25 @@ class Entry(Widget):
             new_characters = new_characters[:margin]
 
         if new_characters:
-            self._text = self._text[:self._charet_index] + new_characters + self._text[self._charet_index:]
-            self._charet_index += len(new_characters)
+            self._text = self._text[:self._caret_index] + new_characters + self._text[self._caret_index:]
+            self._caret_index += len(new_characters)
             self.notify_change()
 
     def del_one(self):
         """Delete a character."""
-        if self._charet_index > 0:
-            self._text = self._text[:self._charet_index - 1] + self._text[self._charet_index:]
-            self._charet_index -= 1
+        if self._caret_index > 0:
+            self._text = self._text[:self._caret_index - 1] + self._text[self._caret_index:]
+            self._caret_index -= 1
             self.notify_change()
 
     def move_to_the_right(self):
-        """Move the charet to the right."""
-        if self._charet_index < len(self._text):
-            self._charet_index += 1
+        """Move the caret to the right."""
+        if self._caret_index < len(self._text):
+            self._caret_index += 1
             self.notify_change()
 
     def move_to_the_left(self):
-        """Move the charet to the left."""
-        if self._charet_index > 0:
-            self._charet_index -= 1
+        """Move the caret to the left."""
+        if self._caret_index > 0:
+            self._caret_index -= 1
             self.notify_change()

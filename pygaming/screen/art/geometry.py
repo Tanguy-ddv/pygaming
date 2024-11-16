@@ -1,10 +1,10 @@
 """The colored_surface module contains the ColoredSurface class which is a pygame Surface."""
 
 from typing import Sequence
-from pygame import Surface, SRCALPHA, draw
-from ...color import Color, ColorLike
+from pygame import Surface, SRCALPHA, draw, gfxdraw
+from ...color import ColorLike
 from .art import Art
-from .art import Transformation
+from .transformation import Transformation
 
 class ColoredRectangle(Art):
     """A ColoredRectangle is an Art with only one color."""
@@ -127,3 +127,47 @@ class ColoredPolygon(Art):
 
         self.surfaces = (surf,)
         self.durations = (0,)
+
+class TexturedPolygon(Art):
+
+    def __init__(
+        self,
+        points: Sequence[tuple[int, int]],
+        texture: Art,
+        texture_top_left: tuple[int, int] = (0, 0),
+        transformation: Transformation = None,
+        force_load_on_start: bool = False
+    ):
+        for p in points:
+            if p[0] < 0 or p[1] < 0:
+                raise ValueError(f"All points coordinates of a polygon must have a positive value, got {p}")
+        
+        self.points = points
+        super().__init__(transformation, force_load_on_start)
+
+        self._height = max(p[1] for p in self.points)
+        self._width = max(p[0] for p in self.points)
+        self._find_initial_dimension()
+
+        self.texture = texture
+        self.texture_top_left = texture_top_left
+    
+    def _load(self):
+
+        surfaces = []
+
+        if not self.texture.is_loaded:
+            need_to_unload = True
+            self.texture.load()
+        
+        for surf in self.texture.surfaces:
+            background = Surface((self._width, self._height), SRCALPHA)
+            gfxdraw.textured_polygon(background, self.points, surf, *self.texture_top_left)
+            surfaces.append(background)
+
+        self.surfaces = tuple(surfaces)
+        self.durations = self.texture.durations
+        self.introduction = self.texture.introduction
+
+        if need_to_unload:
+            self.texture.unload()
