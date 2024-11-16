@@ -22,6 +22,7 @@ class Art(ABC):
         self._on_loading_transformation = transformation
 
         self._force_load_on_start = force_load_on_start
+        self._copies: list[Art] = []
     
     def start(self):
         """Call this method at the start of the phase."""
@@ -87,6 +88,10 @@ class Art(ABC):
         if self._on_loading_transformation is not None:
             self.transform(self._on_loading_transformation)
 
+        for copy in self._copies:
+            if not copy.is_loaded:
+                copy.load()
+
     def update(self, loop_duration: float) -> bool:
         """
         Update the instance animation.
@@ -139,4 +144,32 @@ class Art(ABC):
                 self._height
             )
         else:
-            raise PygamingException("A transformation have be called on an unload Art, please use the art's constructor to transform the initial art.")
+            raise PygamingException("A transformation have be called on an unloaded Art, please use the art's constructor to transform the initial art.")
+
+    def copy(self) -> 'Art':
+        """
+        Return an independant copy of the art.
+        
+        If force_load_on_start is set to True, the copy will be loaded at the start of the phase. Set it to true if 
+        """
+        copy = _ArtFromCopy(self)
+        self._copies.append(copy)
+        return copy
+
+
+class _ArtFromCopy(Art):
+
+    def __init__(self, original: Art):
+        super().__init__(original._on_loading_transformation, original._force_load_on_start)
+        self._original = original
+        self._height = self._original.height
+        self._width = self._original.width
+        self._find_initial_dimension()
+
+    def _load(self):
+        if not self._original.is_loaded:
+            self._original.load()
+        
+        self.surfaces = tuple(surf.copy() for surf in self._original.surfaces)
+        self.durations = self._original.durations
+        self.introduction = self._original.introduction
