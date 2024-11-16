@@ -85,7 +85,7 @@ class Saturate(Transformation):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
-            hls_array[:, 3] = 255 - (255 - hls_array[:, 3])* (1 - self.factor)
+            hls_array[:,:, 2] = 255 - (255 - hls_array[:,:, 2])* (1 - self.factor)
             rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:]
         return surfaces, durations, introduction, index, width, height
 
@@ -100,7 +100,7 @@ class Desaturate(Transformation):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
-            hls_array[:, 3] = hls_array[:, 3] * (1 - self.factor)
+            hls_array[:,:, 2] = hls_array[:,:, 2] * (1 - self.factor)
             rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:]
         return surfaces, durations, introduction, index, width, height
 
@@ -115,7 +115,7 @@ class Darken(Transformation):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
-            hls_array[:, 2] = hls_array[:, 2] * (1 - self.factor)
+            hls_array[:,:, 1] = hls_array[:,:, 1] * (1 - self.factor)
             rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:]
         return surfaces, durations, introduction, index, width, height
 
@@ -130,7 +130,7 @@ class Lighten(Transformation):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
-            hls_array[:, 2] = 255 - (255 - hls_array[:, 2])* (1 - self.factor)
+            hls_array[:,:, 1] = 255 - (255 - hls_array[:,:, 1])* (1 - self.factor)
             rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:]
         return surfaces, durations, introduction, index, width, height
 

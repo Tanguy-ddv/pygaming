@@ -160,7 +160,8 @@ class Art(ABC):
 class _ArtFromCopy(Art):
 
     def __init__(self, original: Art):
-        super().__init__(original._on_loading_transformation, original._force_load_on_start)
+        super().__init__(None, original._force_load_on_start)
+        # The on load transformation has been removed because the transformation are executed during the loading of the original
         self._original = original
         self._height = self._original.height
         self._width = self._original.width
