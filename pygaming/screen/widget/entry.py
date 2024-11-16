@@ -4,7 +4,6 @@ from typing import Optional
 from pygame import Cursor, Rect, Surface, draw
 from .widget import Widget
 from ..element import TOP_LEFT, CENTER
-from ..art.colored_surfaces import ColoredRectangle
 from ..frame import Frame
 from ...color import Color
 from ..art.art import Art

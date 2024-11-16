@@ -11,7 +11,7 @@ class Art(ABC):
         super().__init__()
         self.surfaces: tuple[Surface] = ()
         self.durations: tuple[int] = ()
-        self._introduction = 0
+        self.introduction = 0
         self._loaded = False
 
         self._time_since_last_change = 0
@@ -99,7 +99,7 @@ class Art(ABC):
                 self._time_since_last_change -= self.durations[self._index]
                 self._index += 1
                 if self._index == len(self.surfaces):
-                    self._index = self._introduction
+                    self._index = self.introduction
                 return True
             return False
         else:
@@ -133,7 +133,7 @@ class Art(ABC):
             ) = transformation.apply(
                 self.surfaces,
                 self.durations,
-                self._introduction,
+                self.introduction,
                 self._index,
                 self._width,
                 self._height

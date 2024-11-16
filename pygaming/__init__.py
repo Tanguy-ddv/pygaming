@@ -30,18 +30,18 @@ from .screen.actor import Actor
 from .screen.art.art import Art
 from .screen.art import transformation
 from .screen.art.file import ImageFile, ImageFolder, GIFFile
-from .screen.art.colored_surfaces import ColoredRectangle, ColoredCircle, ColoredPolygon
+from .screen.art.geometry import ColoredRectangle, ColoredCircle, ColoredPolygon, TexturedPolygon
 
 from .inputs import Inputs, Controls, Click, Keyboard, Mouse
 from .connexion import Client, Server as Network, HEADER, ID, CONTENT, TIMESTAMP
 
 from .database import Database, Texts, Speeches, TypeWriter, SoundBox
 from . import commands
-from .screen.art.colored_surfaces import ColoredRectangle, ColoredCircle, ColoredPolygon
+from .screen.art.geometry import ColoredRectangle, ColoredCircle, ColoredPolygon
 
 __all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
            'Server', 'Settings', 'Screen', 'Frame', 'Actor', 'TextButton', 'CENTER_LEFT', 'CENTER_RIGHT', 'TOP_CENTER', 'BOTTOM_CENTER',
-           'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click',
+           'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'TexturedPolygon',
            'get_file', 'Client', 'Keyboard', 'Mouse', 'ImageFile', 'ImageFolder', 'GIFFile', 'transformation',
            'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches', 'Button','Entry', 'Art',
            'commands', 'ColoredRectangle', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT',
