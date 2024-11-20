@@ -4,8 +4,9 @@ from typing import Optional
 import pygame
 from ..phase import GamePhase
 from ..error import PygamingException
-from .element import Element, TOP_LEFT
+from .element import Element
 from .art.art import Art
+from .window import Window, WindowLike
 
 class Frame(Element):
     """
@@ -16,10 +17,10 @@ class Frame(Element):
     def __init__(
         self,
         master: GamePhase | Frame, # Frame or phase, no direct typing to avoid circular import
-        window: pygame.Rect,
+        window: WindowLike,
         background: Art,
         focused_background: Optional[Art] = None,
-        background_window: Optional[pygame.Rect] = None,
+        background_window: Optional[WindowLike] = None,
         layer: int = 0,
         continue_animation: bool = False
     ) -> None:
@@ -29,28 +30,38 @@ class Frame(Element):
         Params:
         ----
         - master: Another Frame or a phase.
-        - window: pygame.Rect, the rectangle in which show the frame in the master
+        - window: Window or tuple[x, y, width, height] or tuple[x, y, width, height, anchor],
+        the window in which the frame will be display. The window might have a mask.
+        If a tuple of for int is specified, act like a window without any mask, where the two first values are the top_left coordinate of the
+        frame in its master, the two next are the dimension
+        If a tuple of for int and an anchor is specified, act like a window without any mask but with a specify anchor. In this case, 
+        the two first values are the coordinate of the anchor (last element of the tuple) point on the frame.
         - background: The AnimatedSurface or Surface representing the background of the Frame.
         - focused_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
         If None, copy the background
-        - background_window: pygame.Rect, the rectangle of the background to get the image from. Use if you have a big background
+        - background_window: WindowLike, the rectangle of the background to get the image from. Use if you have a big background
         If None, the top left is 0,0 and the dimensions are the window dimensions.
         - layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
         - continue_animation: bool. If set to False, switching from focused to unfocused will reset the animations.
         """
         self.children: list[Element] = []
-        x = window.left
-        y = window.top
-        self.window = window
+
+
+        if isinstance(window, Window):
+            self.window = window
+        elif len(window) in [4, 5]:
+            self.window = Window(*window)
+        else:
+            raise ValueError("window msut be either a Window, or a tuple (x,y, width, height) or a tuple (x,y, width, height, anchor)")
+
         self.has_a_widget_focused = False
 
         Element.__init__(
             self,
             master,
             background,
-            x,
-            y,
-            TOP_LEFT,
+            *window.coordinate,
+            window.anchor,
             layer,
             None,
             None,
@@ -60,7 +71,7 @@ class Frame(Element):
         self._continue_animation = continue_animation
 
         if background_window is None:
-            background_window = pygame.Rect(0, 0, self.window.width, self.window.height)
+            background_window = pygame.Rect(0, 0, *self.window.coordinate)
         if self.window.size != background_window.size:
             raise PygamingException(f"window and background window must have the same dimension, got {self.window.size} and {background_window.size}")
         self.background_window = background_window
@@ -198,9 +209,10 @@ class Frame(Element):
 
     @property
     def _frame_childern(self) -> list[Frame]:
+        """Return all children that are frames."""
         return list(filter(lambda elem: isinstance(elem, Frame), self.visible_children))
 
-    def make_surface(self):
+    def make_surface(self) -> pygame.Surface:
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
             background = self.focused_background.get(match=self.surface)
@@ -211,12 +223,15 @@ class Frame(Element):
             y = child.relative_top
             surface = child.get_surface()
             background.blit(surface, (x,y))
-        return background.subsurface(self.background_window)
+
+        return self.window.get_surface(background.subsurface(self.background_window))
 
     def move_background(self, dx, dy):
         """Move the background in the window."""
         self.background_window.move(dx, dy)
+        self.notify_change()
 
     def set_background_position(self, new_x, new_y):
         """Reset the background position in the window with a new value."""
         self.background_window = pygame.Rect(new_x, new_y, *self.background_window.size)
+        self.notify_change()
