@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from pygame import Surface, surfarray as sa
+from typing import Callable
+from pygame import Surface, surfarray as sa, SRCALPHA, draw, Rect
 from ...error import PygamingException
 import cv2
 
@@ -56,18 +57,18 @@ class Mask(ABC):
 
             if DARKEN in effects:
                 hls_array[:,:, 1] = hls_array[:,:, 1] * (1 - self.matrix * effects[DARKEN]) 
-            
-            if LIGHTEN in effects:
+
+            elif LIGHTEN in effects:
                 hls_array[:,:, 1] = 255 - (255 - hls_array[:,:, 1]) * (1 - self.matrix * effects[LIGHTEN]) 
 
             if DESATURATE in effects:
                 hls_array[:,:, 2] = hls_array[:,:, 2] * (1 - self.matrix * effects[DESATURATE])
-            
-            if SATURATE in effects:
+
+            elif SATURATE in effects:
                 hls_array[:,:, 2] = 255 - (255 - hls_array[:,:, 2]) * (1 - self.matrix * effects[SATURATE])
 
-            rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:]
-    
+            rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:].astype(rgb_array.dtype)
+
     def __bool__(self):
         return True
 
@@ -154,3 +155,60 @@ class Rectangle(Mask):
     def _load(self):
         grid_y, grid_x = np.ogrid[:self._height, :self._width]
         self.matrix = 1 - ((self.left <= grid_x) & (grid_x <= self.right) & (self.top <= grid_y) & (grid_y <= self.bottom)).astype(int)
+
+class Polygon(Mask):
+    """
+    A Polygon is a mask with two values: 0 inside the polygon and 1 outside the polygon.
+    The Polygon is defined from a list of points. If points are outside of [0, width] x [0, height],
+    the polygon is cropped.
+    """
+
+    def __init__(self, width: int, height: int, points: list[tuple[int, int]]) -> None:
+        super().__init__(width, height)
+        
+        self.points = points
+    
+    def _load(self):
+        surf = Surface((self._width, self._height), SRCALPHA)
+        draw.polygon(surf, (0, 0, 0, 255), self.points)
+        self.matrix = 1 - sa.array_alpha(surf)/255
+
+class RoundedRectangle(Mask):
+    """A RoundedRectangle mask is a mask with two values: 0 inside of the rectangle with rounded vertexes, and 1 outside."""
+
+    def __init__(self, width: int, height: int, left: int, top: int, right: int, bottom: int, radius: int):
+        super().__init__(width, height)
+        self.left = left%self._width
+        self.top = top%self._height
+        self.right = right%self._width
+        self.bottom = bottom%self._height
+        self.radius = radius
+    
+    def _load(self):
+        surf = Surface((self._width, self._height), SRCALPHA)
+        draw.rect(surf, (0, 0, 0, 255), Rect(self.left, self.top, self.right - self.left, self.bottom - self.top), 0, self.radius)
+        self.matrix = 1 - sa.array_alpha(surf)/255
+
+class GradientCircle(Mask):
+    """
+    A GradientCircle mask is a mask where the values ranges from 0 to 1. All pixels in the inner circle are set to 0,
+    all pixels out of the outer cirlce are set to 1, and pixels in between have an intermediate value.
+
+    The intermediate value is defined by the transition function. This function must be vectorized.
+    """
+
+    def __init__(self, height: int, width: int, inner_radius: int, outer_radius: int, transition: Callable[[float], float] = lambda x:x, center: tuple[int, int] = None):
+        super().__init__(width, height)
+        self.inner_radius = inner_radius
+        self.outer_radius = outer_radius
+        self.transition = transition
+
+        if center is None:
+            center = width/2 - 0.5, height/2 - 0.5
+        self.center = center
+
+    def _load(self):
+        grid_x, grid_y = np.ogrid[:self._width, :self._height]
+        distances = np.sqrt((grid_x - self.center[0]) ** 2 + (grid_y - self.center[1]) ** 2)
+        self.matrix = np.clip((distances - self.inner_radius)/(self.outer_radius - self.inner_radius), 0, 1)
+        self.matrix = self.transition(self.matrix)
