@@ -25,6 +25,14 @@ class Mask(ABC):
         self._width = width
         self._height = height
         self.matrix = None
+    
+    @property
+    def width(self):
+        return self._width
+    
+    @property
+    def height(self):
+        return self._height
 
     @abstractmethod
     def _load(self):
@@ -37,6 +45,9 @@ class Mask(ABC):
     def unload(self):
         self.matrix = None
         self._loaded = False
+    
+    def is_loaded(self):
+        return self._loaded
     
     def apply(self, surface: Surface, effects: dict[str, float]):
         """Apply the mask to an image."""
@@ -296,3 +307,65 @@ class FromImageColor(Mask):
             raise PygamingException(f"The image {self.path} do not have any alpha layer and thus cannot create a mask.")
 
         self.matrix = rgba_array[:, :, 3]
+
+class _MaskCombination(Mask, ABC):
+    """MaskCombinations are abstract class for all mask combinations: sum, products and average"""
+
+    def __init__(self, *masks: Mask):
+
+        if any(mask.width != masks[0].width or mask.height != masks[0].height for mask in masks):
+            raise PygamingException("All masks must have the same shape.")
+        super().__init__(masks[0].width, masks[0].height)
+        self.masks = masks
+    
+    @abstractmethod
+    def _combine(self, *matrices: np.ndarray) -> np.ndarray:
+        raise NotImplementedError()
+
+    def _load(self):
+        for mask in self.masks:
+            if not mask.is_loaded():
+                mask.load()
+        
+        self.matrix = self._combine(*(mask.matrix for mask in self.masks))
+
+class SumOfMasks(_MaskCombination):
+
+
+    def _combine(self, *matrices):
+        return np.clip(np.sum(matrices))
+
+class ProductOfMasks(_MaskCombination):
+
+    def _combine(self, *matrices):
+        return np.prod(matrices)
+
+class AverageOfMasks(_MaskCombination):
+
+    def __init__(self, *masks: Mask, weights= None):
+        if weights is None:
+            weights = [1]*len(masks)
+        super().__init__(*masks)
+        self.weights = weights
+
+    def _combine(self, *matrices):
+        self.matrix = 0
+        for matrix, weight in zip(matrices, self.weights):
+            self.matrix += matrix*weight
+        
+        self.matrix /= sum(self.weights)
+    
+class BlitMaskOnMask(_MaskCombination):
+
+    def __init__(self, background: Mask, foreground: Mask, threshold: float = 0, reverse: bool = False):
+        super().__init__(background, foreground)
+        self.threshold = threshold
+        self.reverse = reverse
+
+    def _combine(self, background_matrix, foreground_matrix) -> np.ndarray:
+        self.matrix = background_matrix
+        if not self.reverse:
+            positions_to_keep = foreground_matrix > self.threshold
+        else:
+            positions_to_keep = foreground_matrix < self.threshold
+        self.matrix[positions_to_keep] = foreground_matrix[positions_to_keep]
