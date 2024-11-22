@@ -1,5 +1,5 @@
 import pygame
-from typing import Union
+from typing import Union, Sequence
 from .element import TOP_LEFT
 from .mask import Mask, ALPHA, DARKEN, LIGHTEN, DESATURATE, SATURATE
 from ..error import PygamingException
@@ -24,8 +24,8 @@ class Window:
         width: int,
         height: int,
         anchor: tuple[float, float] = TOP_LEFT,
-        mask: Mask = None,
-        mask_effects: dict[str, float] = {ALPHA : 1.},
+        mask: Mask | Sequence[Mask] = None,
+        mask_effects: dict[str, float] | Sequence[dict[str, float]] = {ALPHA : 1.},
         fill_color: ColorLike = Color(0, 0, 0, 0)
     ):
         """
@@ -53,12 +53,24 @@ class Window:
         not be transformed. The pixels outside of the rectangle of shape(60, 60) will be darken by 50%, the other pixels will be darken by
         a factor between 0% and 50%, as a gradient from the inner to the outer rectangle.
         """
-        if DARKEN in mask_effects.keys() and LIGHTEN in mask_effects.keys():
-            raise PygamingException("DARKEN and LIGHTEN cannot be effects of the same mask.")
-        if SATURATE in mask_effects.keys() and DESATURATE in mask_effects.keys():
-            raise PygamingException("SATURATE and DESATURATE cannot be effects of the same mask.")
-        if any(key not in _EFFECT_LIST for key in mask_effects.keys()):
-            raise PygamingException(f"Invalid keys for mask effects, key allowed are pygaming.ALPHA, pygaming.LIGHTEN, pygaming.DARKEN, pygaming.SATURATE, pygaming.DESATURATE")
+        if isinstance(mask, Sequence):
+            if not isinstance(mask_effects, Sequence) or len(mask_effects) != len(mask):
+                raise PygamingException(f"Unmatching mask and mask effect numbers, got {len(mask)} masks and {len(mask_effects)} mask effects.")
+        elif isinstance(mask_effects, Sequence):
+            raise PygamingException(f"Both mask_effects and mask must be a Sequence at the same time, or be a simple element.")
+        
+        elif not (mask is None):
+            mask = [mask]
+            mask_effects = [mask_effects]
+        
+        for mask_eff in mask_effects:
+
+            if DARKEN in mask_eff and LIGHTEN in mask_eff:
+                raise PygamingException("DARKEN and LIGHTEN cannot be effects of the same mask.")
+            if SATURATE in mask_eff and DESATURATE in mask_eff:
+                raise PygamingException("SATURATE and DESATURATE cannot be effects of the same mask.")
+            if any(key not in _EFFECT_LIST for key in mask_eff):
+                raise PygamingException(f"Invalid keys for mask effects, key allowed are pygaming.ALPHA, pygaming.LIGHTEN, pygaming.DARKEN, pygaming.SATURATE, pygaming.DESATURATE")
 
         self._effects = mask_effects
     
@@ -90,7 +102,8 @@ class Window:
             surf = surface.copy()
         if self.mask:
             surface = surf.subsurface(self._rect)
-            self.mask.apply(surface, self._effects)
+            for mask, effects in zip(self.mask, self._effects):
+                mask.apply(surface, effects)
             return surface
         else:
             return surf.subsurface(self._rect)
