@@ -3,6 +3,8 @@ import numpy as np
 from typing import Callable
 from pygame import Surface, surfarray as sa, SRCALPHA, draw, Rect
 from ...error import PygamingException
+from ...file import get_file
+from PIL import Image
 import cv2
 
 # Mask effects
@@ -212,3 +214,85 @@ class GradientCircle(Mask):
         distances = np.sqrt((grid_x - self.center[0]) ** 2 + (grid_y - self.center[1]) ** 2)
         self.matrix = np.clip((distances - self.inner_radius)/(self.outer_radius - self.inner_radius), 0, 1)
         self.matrix = self.transition(self.matrix)
+
+class FromArtAlpha(Mask):
+    """A mask from the alpha layer of an art."""
+    
+    def __init__(self, art, index: int= 0) -> None:
+
+        super().__init__(art.width, art.height)
+        self.art = art
+        self.index = index
+    
+    def _load(self):
+        need_to_unload = False
+        if not self.art.is_loaded:
+            need_to_unload = True
+            self.art.load()
+        
+        self.matrix = 1 - sa.array_alpha(self.art.surfaces[self.index])/255
+
+        if need_to_unload:
+            self.art.unload()
+
+class FromArtColor(Mask):
+    """
+    A mask from a mapping of the color layers.
+    
+    Every pixel of the art is mapped to a value betwenn 0 and 1.
+    Selects only one image of the art based on the index.
+    """
+
+    def __init__(self, width: int, height: int, art, map: Callable[[int, int, int], float], index: int = 0) -> None:
+        super().__init__(art.width, art.height)
+        self.art = art
+        self.index = index
+        self.map = map
+
+    def _load(self):
+        need_to_unload = False
+        if not self.art.is_loaded:
+            need_to_unload = True
+            self.art.load()
+        
+        self.matrix = np.apply_along_axis(self.map, 2, sa.array2d(self.art.surfaces[self.index]))
+
+        if need_to_unload:
+            self.art.unload()
+
+class FromImageColor(Mask):
+    """
+    A mask from an image.
+    
+    Every pixel of the image is mapped to a value betwenn 0 and 1.
+    """
+
+    def __init__(self, width: int, height: int, path: str, map: Callable[[int, int, int], float]) -> None:
+        self.path = get_file('images', path)
+        self.im = Image.open(self.path)
+        width, height = self.im.size
+        super().__init__(width, height)
+        self.map = map
+    
+    def _load(self):
+        rgb_array = np.array(self.im.convert('RGB'))
+        self.matrix = np.apply_along_axis(self.map, 2, rgb_array)
+
+class FromImageColor(Mask):
+    """
+    A mask from the alpha layer of an image.
+    """
+
+    def __init__(self, width: int, height: int, path: str) -> None:
+        self.path = get_file('images', path)
+        self.im = Image.open(self.path)
+        width, height = self.im.size
+        super().__init__(width, height)
+    
+    def _load(self):
+        try:
+            rgba_array = np.array(self.im.convert('RGBA'))
+        except:
+            raise PygamingException(f"The image {self.path} do not have any alpha layer and thus cannot create a mask.")
+
+        self.matrix = rgba_array[:, :, 3]
