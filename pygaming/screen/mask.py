@@ -1,9 +1,19 @@
+"""
+The mask module contains masks. Masks are objects used to select part of an image on which apply an effect.
+There are 5 types of Masks:
+The first type is composed of only one class: MatrixMask
+The second one is composed of binary geometrical masks: Circle, Ellipsis, Rectangle etc.
+The third one is composed of gradient geometrical masks: GradientCircle, GradientRectangle etc.
+The fourth one is composed of masks extracted from arts or from images.
+The last one is combinations or transformation of other masks.
+"""
+
 from abc import ABC, abstractmethod
 import numpy as np
 from typing import Callable
 from pygame import Surface, surfarray as sa, SRCALPHA, draw, Rect
-from ...error import PygamingException
-from ...file import get_file
+from ..error import PygamingException
+from ..file import get_file
 from PIL import Image
 import cv2
 
@@ -380,3 +390,18 @@ class InvertedMask(Mask):
         if not self._mask.is_loaded():
             self._mask.load()
         self.matrix = 1 - self._mask.matrix
+
+class Transformed(Mask):
+
+    def __init__(self, mask: Mask, transformation: Callable[[float], float]):
+        super().__init__(mask.width, mask.height)
+        self._mask = mask
+        self.transformation = transformation
+    
+    def _load(self):
+        if not self._mask.is_loaded():
+            self._mask.load()
+        
+        self.matrix = np.clip(self.transformation(self._mask.matrix), 0, 1)
+        if self.matrix.shape != self._mask.matrix.shape:
+            raise PygamingException(f"Shape of the mask changed from {self._mask.matrix.shape} to {self.matrix.shape}")
