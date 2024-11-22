@@ -327,7 +327,7 @@ class _MaskCombination(Mask, ABC):
             if not mask.is_loaded():
                 mask.load()
         
-        self.matrix = self._combine(*(mask.matrix for mask in self.masks))
+        self._combine(*(mask.matrix for mask in self.masks))
 
 class SumOfMasks(_MaskCombination):
 
@@ -369,3 +369,14 @@ class BlitMaskOnMask(_MaskCombination):
         else:
             positions_to_keep = foreground_matrix < self.threshold
         self.matrix[positions_to_keep] = foreground_matrix[positions_to_keep]
+
+class InvertedMask(Mask):
+
+    def __init__(self, mask: Mask):
+        super().__init__(mask.width, mask.height)
+        self._mask = mask
+    
+    def _load(self):
+        if not self._mask.is_loaded():
+            self._mask.load()
+        self.matrix = 1 - self._mask.matrix
