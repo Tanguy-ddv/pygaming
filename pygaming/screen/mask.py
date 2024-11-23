@@ -170,10 +170,10 @@ class Rectangle(Mask):
         """
 
         super().__init__(width, height)
-        self.left = left%self._width
-        self.top = top%self._height
-        self.right = right%self._width
-        self.bottom = bottom%self._height
+        self.left = left
+        self.top = top
+        self.right = right
+        self.bottom = bottom
 
     def _load(self):
         grid_y, grid_x = np.ogrid[:self._height, :self._width]
@@ -201,10 +201,10 @@ class RoundedRectangle(Mask):
 
     def __init__(self, width: int, height: int, left: int, top: int, right: int, bottom: int, radius: int):
         super().__init__(width, height)
-        self.left = left%self._width
-        self.top = top%self._height
-        self.right = right%self._width
-        self.bottom = bottom%self._height
+        self.left = left
+        self.top = top
+        self.right = right
+        self.bottom = bottom
         self.radius = radius
     
     def _load(self):
@@ -220,7 +220,15 @@ class GradientCircle(Mask):
     The intermediate value is defined by the transition function. This function must be vectorized.
     """
 
-    def __init__(self, height: int, width: int, inner_radius: int, outer_radius: int, transition: Callable[[float], float] = lambda x:x, center: tuple[int, int] = None):
+    def __init__(
+            self,
+            width: int,
+            height: int,
+            inner_radius: int,
+            outer_radius: int,
+            transition: Callable[[float], float] = lambda x:x,
+            center: tuple[int, int] = None
+        ):
         super().__init__(width, height)
         self.inner_radius = inner_radius
         self.outer_radius = outer_radius
@@ -235,6 +243,73 @@ class GradientCircle(Mask):
         distances = np.sqrt((grid_x - self.center[0]) ** 2 + (grid_y - self.center[1]) ** 2)
         self.matrix = np.clip((distances - self.inner_radius)/(self.outer_radius - self.inner_radius), 0, 1)
         self.matrix = self.transition(self.matrix)
+
+class GradientRectangle(Mask):
+    """
+    A GradientRectangle mask is a mask where values range from 0 to 1. All pixel in the inner rectangle are set to 0.
+    All pixels out of the outer rectangle are set to 1. All pixels in between have an intermediate value.
+
+    The intermediate value is defined by the transition function.
+    """
+
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        inner_left: int,
+        inner_right: int,
+        inner_top: int,
+        inner_bottom: int,
+        outer_left: int = None,
+        outer_right: int = None,
+        outer_top: int = None,
+        outer_bottom: int = None,
+        transition: Callable[[float], float] = lambda x:x,
+    ):
+        
+        super().__init__(width, height)
+
+        if outer_left is None:
+            outer_left = 0
+        if outer_right is None:
+            outer_right = width - 1
+        if outer_top is None:
+            outer_top = 0
+        if outer_bottom is None:
+            outer_bottom = height - 1
+
+
+        if outer_bottom < inner_bottom or outer_top > inner_top or outer_left > inner_left or outer_right < inner_right:
+            raise ValueError(
+                f"The outer rectangle cannot be inside of the inner rectangle, got
+                inner = ({inner_left, inner_right, inner_top, inner_bottom}) and outer = ({outer_left, outer_right, outer_top, outer_bottom})"
+            )
+
+        
+        self.inner_left = inner_left
+        self.inner_right = inner_right
+        self.inner_bottom = inner_bottom
+        self.inner_top = inner_top
+
+        self.outer_left = outer_left
+        self.outer_right = outer_right
+        self.outer_bottom = outer_bottom
+        self.outer_top = outer_top
+
+        self.transition = transition
+
+    def _load(self):
+        # Create coordinate grids
+        y_indices, x_indices = np.meshgrid(np.arange(self.height), np.arange(self.width), indexing='ij')
+
+        # Calculate distances from the inner and outer bounds
+        left_dist = np.clip((self.inner_left - x_indices) / (self.inner_left - self.outer_left + 1), 0, 1)
+        right_dist = np.clip((x_indices - self.inner_right) / (self.outer_right - self.inner_right + 1), 0, 1)
+        top_dist = np.clip((self.inner_top - y_indices) / (self.inner_top - self.outer_top + 1), 0, 1)
+        bottom_dist = np.clip((y_indices - self.inner_bottom) / (self.outer_bottom - self.inner_bottom + 1), 0, 1)
+
+        self.matrix = self.transition(np.clip(np.sqrt(left_dist**2 + right_dist**2 + top_dist**2 + bottom_dist**2), 0, 1))
+
 
 class FromArtAlpha(Mask):
     """A mask from the alpha layer of an art."""
@@ -341,7 +416,6 @@ class _MaskCombination(Mask, ABC):
 
 class SumOfMasks(_MaskCombination):
 
-
     def _combine(self, *matrices):
         return np.clip(np.sum(matrices))
 
@@ -391,7 +465,7 @@ class InvertedMask(Mask):
             self._mask.load()
         self.matrix = 1 - self._mask.matrix
 
-class Transformed(Mask):
+class TransformedMask(Mask):
 
     def __init__(self, mask: Mask, transformation: Callable[[float], float]):
         super().__init__(mask.width, mask.height)
