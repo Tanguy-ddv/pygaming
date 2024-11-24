@@ -156,11 +156,9 @@ class Rectangle(Mask):
         - right: int, the coordinate of the right of the rectangle, included.
         - bottom: int, the coordinate of the bottom of the rectangle, included.
 
-        If a negative number is passed, then count from the end (as any iterable in python)
-
         Example:
         ----
-        >>> r = Rectangle(6, 4, 2, 1, 4, -2)
+        >>> r = Rectangle(6, 4, 2, 1, 4, 5)
         >>> r.load()
         >>> print(r.matrix)
         >>> [[1 1 1 1 1 1]
@@ -246,8 +244,8 @@ class GradientCircle(Mask):
 
 class GradientRectangle(Mask):
     """
-    A GradientRectangle mask is a mask where values range from 0 to 1. All pixel in the inner rectangle are set to 0.
-    All pixels out of the outer rectangle are set to 1. All pixels in between have an intermediate value.
+    A GradientRectangle mask is a mask where values range from 0 to 1. All pixels inside the inner rectangle are set to 0.
+    All pixels outside the outer rectangle are set to 1. All pixels in between have an intermediate value.
 
     The intermediate value is defined by the transition function.
     """
@@ -281,8 +279,8 @@ class GradientRectangle(Mask):
 
         if outer_bottom < inner_bottom or outer_top > inner_top or outer_left > inner_left or outer_right < inner_right:
             raise ValueError(
-                f"The outer rectangle cannot be inside of the inner rectangle, got
-                inner = ({inner_left, inner_right, inner_top, inner_bottom}) and outer = ({outer_left, outer_right, outer_top, outer_bottom})"
+                f"""The outer rectangle cannot be inside of the inner rectangle, got
+                inner = ({inner_left, inner_right, inner_top, inner_bottom}) and outer = ({outer_left, outer_right, outer_top, outer_bottom})"""
             )
 
         
@@ -299,16 +297,15 @@ class GradientRectangle(Mask):
         self.transition = transition
 
     def _load(self):
-        # Create coordinate grids
         y_indices, x_indices = np.meshgrid(np.arange(self.height), np.arange(self.width), indexing='ij')
 
-        # Calculate distances from the inner and outer bounds
         left_dist = np.clip((self.inner_left - x_indices) / (self.inner_left - self.outer_left + 1), 0, 1)
         right_dist = np.clip((x_indices - self.inner_right) / (self.outer_right - self.inner_right + 1), 0, 1)
         top_dist = np.clip((self.inner_top - y_indices) / (self.inner_top - self.outer_top + 1), 0, 1)
         bottom_dist = np.clip((y_indices - self.inner_bottom) / (self.outer_bottom - self.inner_bottom + 1), 0, 1)
 
         self.matrix = self.transition(np.clip(np.sqrt(left_dist**2 + right_dist**2 + top_dist**2 + bottom_dist**2), 0, 1))
+
 
 
 class FromArtAlpha(Mask):
