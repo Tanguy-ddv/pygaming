@@ -7,7 +7,7 @@ from ..color import ColorLike, Color
 
 _EFFECT_LIST = [ALPHA, DARKEN, LIGHTEN, SATURATE, DESATURATE]
 
-class Window:
+class Window(pygame.Rect):
     """
     A window represent a portion of the screen, or of another frame.
     it is used to define the position of a Frame.
@@ -81,7 +81,7 @@ class Window:
         self.anchor = anchor
         self.mask = mask
 
-        self._rect = pygame.Rect(self._x, self._y, self._width, self._height)
+        super().__init__(self._x, self._y, self._width, self._height)
         self._fill_color = fill_color
     
     @property
@@ -101,11 +101,11 @@ class Window:
         else:
             surf = surface.copy()
         if self.mask:
-            surface = surf.subsurface(self._rect)
+            surface = surf.subsurface(self)
             for mask, effects in zip(self.mask, self._effects):
                 mask.apply(surface, effects)
             return surface
         else:
-            return surf.subsurface(self._rect)
+            return surf.subsurface(self)
 
-WindowLike = Union[Window, tuple[int, int, int, int], tuple[int, int, int, int, tuple[float, float]]]
+WindowLike = Union[Window, tuple[int, int, int, int], tuple[int, int, int, int, tuple[float, float]], pygame.Rect]
