@@ -307,7 +307,6 @@ class GradientRectangle(Mask):
         self.matrix = self.transition(np.clip(np.sqrt(left_dist**2 + right_dist**2 + top_dist**2 + bottom_dist**2), 0, 1))
 
 
-
 class FromArtAlpha(Mask):
     """A mask from the alpha layer of an art."""
     
@@ -412,16 +411,27 @@ class _MaskCombination(Mask, ABC):
         self._combine(*(mask.matrix for mask in self.masks))
 
 class SumOfMasks(_MaskCombination):
+    """
+    A sum of mask is a mask based on the sum of the matrixes of the masks, clamped between 0 and 1.
+    For binary masks, it acts like union.
+    """
 
     def _combine(self, *matrices):
         return np.clip(np.sum(matrices))
 
 class ProductOfMasks(_MaskCombination):
+    """
+    A product of mask is a mask based on the product of the matrixes of the masks.
+    For binary masks, it acts like intersections.
+    """
 
     def _combine(self, *matrices):
         return np.prod(matrices)
 
 class AverageOfMasks(_MaskCombination):
+    """
+    An average of mask is a mask based on the average of the matrixes of the masks.
+    """
 
     def __init__(self, *masks: Mask, weights= None):
         if weights is None:
@@ -437,21 +447,28 @@ class AverageOfMasks(_MaskCombination):
         self.matrix /= sum(self.weights)
     
 class BlitMaskOnMask(_MaskCombination):
+    """
+    A blit mask on mask is a mask where the values of the background below (or above) a given threshold are replaced
+    by the values on the foreground.
+    """
 
-    def __init__(self, background: Mask, foreground: Mask, threshold: float = 0, reverse: bool = False):
+    def __init__(self, background: Mask, foreground: Mask, threshold: float = 0, reversed: bool = False):
         super().__init__(background, foreground)
         self.threshold = threshold
-        self.reverse = reverse
+        self.reversed = reversed
 
     def _combine(self, background_matrix, foreground_matrix) -> np.ndarray:
         self.matrix = background_matrix
-        if not self.reverse:
-            positions_to_keep = foreground_matrix > self.threshold
+        if self.reversed:
+            positions_to_keep = background_matrix < self.threshold
         else:
-            positions_to_keep = foreground_matrix < self.threshold
+            positions_to_keep = background_matrix > self.threshold
         self.matrix[positions_to_keep] = foreground_matrix[positions_to_keep]
 
 class InvertedMask(Mask):
+    """
+    An inverted mask is a mask whose value are the opposite of the parent mask.
+    """
 
     def __init__(self, mask: Mask):
         super().__init__(mask.width, mask.height)
@@ -463,8 +480,12 @@ class InvertedMask(Mask):
         self.matrix = 1 - self._mask.matrix
 
 class TransformedMask(Mask):
+    """
+    A Transformed mask is a mask whose matrix is the transformation of the matrix of another mask.
+    The transformation must be a numpy vectorized function or a function matrix -> matrix.
+    """
 
-    def __init__(self, mask: Mask, transformation: Callable[[float], float]):
+    def __init__(self, mask: Mask, transformation: Callable[[float], float] | Callable[[np.ndarray], np.ndarray]):
         super().__init__(mask.width, mask.height)
         self._mask = mask
         self.transformation = transformation
@@ -476,3 +497,28 @@ class TransformedMask(Mask):
         self.matrix = np.clip(self.transformation(self._mask.matrix), 0, 1)
         if self.matrix.shape != self._mask.matrix.shape:
             raise PygamingException(f"Shape of the mask changed from {self._mask.matrix.shape} to {self.matrix.shape}")
+
+class BinaryMask(Mask):
+    """
+    A binary mask is a mask where every values are 0 or 1. It is based on another mask.
+    The matrix of this mask is that every component is 1 if the value on the parent mask
+    is above a thresold and 0 otherwise. (this is reversed if reversed is set to True).
+    """
+
+    def __init__(self, mask: Mask, threshold: float, reversed: bool = False):
+        super().__init__(mask.width, mask.height)
+        self.threshold = threshold
+        self._mask = mask
+        self.reversed = reversed
+    
+    def _load(self):
+        if not self._mask.is_loaded():
+            self._mask.load()
+        
+        if self.reversed:
+            positions_to_keep = self._mask.matrix < self.threshold
+        else:
+            positions_to_keep = self._mask.matrix > self.threshold
+
+        self.matrix = np.zeros_like(self._mask.matrix)
+        self.matrix[positions_to_keep] = 1
