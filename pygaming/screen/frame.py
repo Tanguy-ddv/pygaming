@@ -72,7 +72,7 @@ class Frame(Element):
         self._continue_animation = continue_animation
 
         if background_window is None:
-            background_window = pygame.Rect(0, 0, *self.window.coordinate)
+            background_window = pygame.Rect(0, 0, *self.window.size)
         if self.window.size != background_window.size:
             raise PygamingException(f"window and background window must have the same dimension, got {self.window.size} and {background_window.size}")
         self.background_window = background_window
