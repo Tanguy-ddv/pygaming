@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from pygame import Surface
 
 from ...error import PygamingException
+from ..window import Window
 
 class Art(ABC):
     """The art class is the base for all the surfaces and animated surfaces of the game."""
@@ -155,6 +156,10 @@ class Art(ABC):
         copy = _ArtFromCopy(self)
         self._copies.append(copy)
         return copy
+
+    def to_window(self, x: int, y: int, anchor: tuple[float, float] = (0, 0)) -> Window:
+        """Create a window without masked based on this art."""
+        return Window(x, y, self.width, self.height, anchor)
 
 
 class _ArtFromCopy(Art):
