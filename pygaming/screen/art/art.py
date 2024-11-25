@@ -6,10 +6,12 @@ from ...error import PygamingException
 from ..window import Window
 from ..anchors import TOP_LEFT
 
+from .transformation import Transformation, Pipeline
+
 class Art(ABC):
     """The art class is the base for all the surfaces and animated surfaces of the game."""
 
-    def __init__(self, transformation = None, force_load_on_start: bool = False) -> None:
+    def __init__(self, transformation = Transformation, force_load_on_start: bool = False) -> None:
         super().__init__()
         self.surfaces: tuple[Surface] = ()
         self.durations: tuple[int] = ()
@@ -128,7 +130,7 @@ class Art(ABC):
             self.load()
         return self.surfaces[index].copy()
 
-    def transform(self, transformation):
+    def transform(self, transformation: Transformation):
         """Apply a transformation"""
         if self._loaded:
             (   self.surfaces,
@@ -166,7 +168,7 @@ class Art(ABC):
 class _ArtFromCopy(Art):
 
     def __init__(self, original: Art):
-        super().__init__(None, original._force_load_on_start)
+        super().__init__(original._force_load_on_start)
         # The on load transformation has been removed because the transformation are executed during the loading of the original
         self._original = original
         self._height = self._original.height
@@ -180,3 +182,16 @@ class _ArtFromCopy(Art):
         self.surfaces = tuple(surf.copy() for surf in self._original.surfaces)
         self.durations = self._original.durations
         self.introduction = self._original.introduction
+
+    def add_on_load_transformation(self, *transformation: Transformation):
+        """
+        Add new transformation for a copy of an Art. This transformation will be apply at the loading of the copy of the art
+        and will not transform the original. Note that calling this method would work only for copies. Note that calling this
+        method after loading will not do anything. Please use the .transform() method in this case.
+        """
+        if self._on_loading_transformation: #The method can be used more than once
+            self._on_loading_transformation = Pipeline(self._on_loading_transformation, *transformation)
+        else: # At the creation of the copy, it does not have any on loeading transformation.
+            self._on_loading_transformation = Pipeline(*transformation)
+        self._find_initial_dimension()
+    

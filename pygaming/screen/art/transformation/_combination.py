@@ -1,12 +1,11 @@
 """The binary transformation file contains transformation that include other arts."""
 from pygame import Surface, transform as tf
 from ._transformation import Transformation
-from ..art import Art
 
 class Concatenate(Transformation):
     """The concatenate transformation concatenante two arts into one bigger animation."""
 
-    def __init__(self, *others: Art) -> None:
+    def __init__(self, *others) -> None:
         super().__init__()
         self.others = others
     
@@ -64,7 +63,7 @@ class Average(Transformation):
     Take the average of the images of the art.
     """
 
-    def __init__(self, *others: Art) -> None:
+    def __init__(self, *others) -> None:
         super().__init__()
         self.others = others
     
@@ -97,7 +96,7 @@ class Blit(Transformation):
     Copy an art over another one.
     """
 
-    def __init__(self, other: Art, x: int, y: int) -> None:
+    def __init__(self, other, x: int, y: int) -> None:
         super().__init__()
         self.other = other
         self.pos = (x,y)
