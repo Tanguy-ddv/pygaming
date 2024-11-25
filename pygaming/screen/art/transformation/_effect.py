@@ -24,9 +24,12 @@ class SetAlpha(Transformation):
             for surf in surfaces:
                 surf.set_alpha(self.alpha)
         else:
+            if not self.mask.is_loaded():
+                self.mask.load()
             for surf in surfaces:
                 alpha_array = sa.pixels_alpha(surf)
-                alpha_array[:] = (1 - self.mask)*255
+                alpha_array[:] = (1 - self.mask.matrix)*255
+        
         return surfaces, durations, introduction, index, width, height
 
 class GrayScale(Transformation):
@@ -59,7 +62,9 @@ class RBGMap(Transformation):
             if self.mask is None:
                 rgb_array[:] = np.apply_along_axis(self.function, 2, rgb_array)
             else:
-                rgb_array[self.mask > self.mask_threshold] = np.apply_along_axis(self.function, 2, rgb_array)[self.mask > self.mask_threshold]
+                if not self.mask.is_loaded():
+                    self.mask.load()
+                rgb_array[self.mask.matrix > self.mask_threshold] = np.apply_along_axis(self.function, 2, rgb_array)[self.mask.matrix > self.mask_threshold]
 
         return surfaces, durations, introduction, index, width, height
     
@@ -90,9 +95,11 @@ class RGBAMap(Transformation):
                 rgb_array[:, :, 2] = new_b
                 alpha_array[:] = new_a
             else:
-                rgb_array[:, :, 0][self.mask > self.mask_threshold] = new_r[self.mask > self.mask_threshold]
-                rgb_array[:, :, 1][self.mask > self.mask_threshold] = new_g[self.mask > self.mask_threshold]
-                rgb_array[:, :, 2][self.mask > self.mask_threshold] = new_b[self.mask > self.mask_threshold]
+                if not self.mask.is_loaded():
+                    self.mask.load()
+                rgb_array[:, :, 0][self.mask.matrix > self.mask_threshold] = new_r[self.mask.matrix > self.mask_threshold]
+                rgb_array[:, :, 1][self.mask.matrix > self.mask_threshold] = new_g[self.mask.matrix > self.mask_threshold]
+                rgb_array[:, :, 2][self.mask.matrix > self.mask_threshold] = new_b[self.mask.matrix > self.mask_threshold]
                 alpha_array[self.mask > self.mask_threshold] = new_a[self.mask > self.mask_threshold]
 
         return surfaces, durations, introduction, index, width, height
@@ -112,9 +119,11 @@ class Saturate(Transformation):
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
             hls_array[:,:, 2] = 255 - (255 - hls_array[:,:, 2])* (1 - self.factor)
             if self.mask is None:
-                rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:]
+                rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)
             else:
-                rgb_array[self.mask > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:][self.mask > self.mask_threshold]
+                if not self.mask.is_loaded():
+                    self.mask.load()
+                rgb_array[self.mask.matrix > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:][self.mask.matrix > self.mask_threshold]
 
         return surfaces, durations, introduction, index, width, height
 
@@ -133,9 +142,11 @@ class Desaturate(Transformation):
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
             hls_array[:,:, 2] = hls_array[:,:, 2] * (1 - self.factor)
             if self.mask is None:
-                rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:]
+                rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)
             else:
-                rgb_array[self.mask > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:][self.mask > self.mask_threshold]
+                if not self.mask.is_loaded():
+                    self.mask.load()
+                rgb_array[self.mask.matrix > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[self.mask.matrix > self.mask_threshold]
         return surfaces, durations, introduction, index, width, height
 
 class Darken(Transformation):
@@ -153,9 +164,11 @@ class Darken(Transformation):
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
             hls_array[:,:, 1] = hls_array[:,:, 1] * (1 - self.factor)
             if self.mask is None:
-                rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:]
+                rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)
             else:
-                rgb_array[self.mask > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:][self.mask > self.mask_threshold]
+                if not self.mask.is_loaded():
+                    self.mask.load()
+                rgb_array[self.mask.matrix > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[self.mask.matrix > self.mask_threshold]
         return surfaces, durations, introduction, index, width, height
 
 class Lighten(Transformation):
@@ -173,9 +186,11 @@ class Lighten(Transformation):
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
             hls_array[:,:, 1] = 255 - (255 - hls_array[:,:, 1])* (1 - self.factor)
             if self.mask is None:
-                rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:]
+                rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)
             else:
-                rgb_array[self.mask > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:][self.mask > self.mask_threshold]
+                if not self.mask.is_loaded():
+                    self.mask.load()
+                rgb_array[self.mask.matrix > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[self.mask.matrix > self.mask_threshold]
         return surfaces, durations, introduction, index, width, height
 
 class Invert(Transformation):
@@ -192,7 +207,9 @@ class Invert(Transformation):
             if self.mask is None:
                 rgb_array[:] = 255 - rgb_array
             else:
-                rgb_array[self.mask > self.mask_threshold] = 255 - rgb_array[self.mask > self.mask_threshold]
+                if not self.mask.is_loaded():
+                    self.mask.load()
+                rgb_array[self.mask.matrix > self.mask_threshold] = 255 - rgb_array[self.mask.matrix > self.mask_threshold]
         return surfaces, durations, introduction, index, width, height
 
 class AdjustContrast(Transformation):
@@ -211,7 +228,10 @@ class AdjustContrast(Transformation):
             if self.mask is None:
                 rgb_array[:] = np.clip((self.factor * (rgb_array - 128) + 128).astype(int), 0, 255)
             else:
-                rgb_array[self.mask > self.mask_threshold] = np.clip((self.factor * (rgb_array - 128) + 128).astype(int), 0, 255)[self.mask > self.mask_threshold]
+                if not self.mask.is_loaded():
+                    self.mask.load()
+                rgb_array[self.mask.matrix > self.mask_threshold] = np.clip(
+                    (self.factor * (rgb_array - 128) + 128).astype(int), 0, 255)[self.mask.matrix > self.mask_threshold]
 
         return surfaces, durations, introduction, index, width, height
 
@@ -230,7 +250,9 @@ class AdjustBrightness(Transformation):
             if self.mask is None:
                 rgb_array[:] = np.clip(rgb_array + self.brightness, 0, 255)
             else:
-                rgb_array[self.mask > self.mask_threshold] = np.clip(rgb_array + self.brightness, 0, 255)[self.mask > self.mask_threshold]
+                if not self.mask.is_loaded():
+                    self.mask.load()
+                rgb_array[self.mask.matrix > self.mask_threshold] = np.clip(rgb_array + self.brightness, 0, 255)[self.mask.matrix > self.mask_threshold]
         return surfaces, durations, introduction, index, width, height
 
 class Gamma(Transformation):
@@ -252,6 +274,9 @@ class Gamma(Transformation):
             if self.mask is None:
                 rgb_array[:] = np.clip(((rgb_array/255)**self.gamma * 255).astype(int), 0, 255)
             else:
-                rgb_array[self.mask > self.mask_threshold] = np.clip(((rgb_array/255)**self.gamma * 255).astype(int), 0, 255)[self.mask > self.mask_threshold]
+                if not self.mask.is_loaded():
+                    self.mask.load()
+                rgb_array[self.mask.matrix > self.mask_threshold] = np.clip(
+                    ((rgb_array/255)**self.gamma * 255).astype(int), 0, 255)[self.mask.matrix > self.mask_threshold]
 
         return surfaces, durations, introduction, index, width, height
