@@ -5,8 +5,9 @@ from pygame import Cursor, Rect, Surface
 from ..frame import Frame
 from ..element import TOP_LEFT, CENTER
 from .widget import Widget
-from ..art.art import Art
+from ..art import Art
 from ...color import Color
+from ..mask import Mask
 
 class Button(Widget):
     """A Button is a basic widget used to get a player click."""
@@ -21,7 +22,7 @@ class Button(Widget):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[Rect] = None,
+        active_area: Optional[Mask] = None,
         layer: int = 0,
         hover_surface: Optional[Surface] = None,
         hover_cursor: Optional[Cursor] = None,
@@ -95,8 +96,8 @@ class Button(Widget):
             )
             or ( # This means the user is clicking on the button
                 ck1 is not None
-                and self._absolute_active_area.collidepoint(ck1.x, ck1.y)
-                and self._absolute_active_area.collidepoint(ck1.start_x, ck1.start_y)
+                and self.is_contact((ck1.x - self.absolute_left, ck1.y - self.absolute_top))
+                and self.is_contact((ck1.start_x - self.absolute_left, ck1.start_y - self.absolute_top))
             )
         ):
             # We verify if the user just clicked or if it is a long click.
@@ -117,26 +118,26 @@ class Button(Widget):
 class TextButton(Button):
 
     def __init__(
-            self,
-            master: Frame,
-            x: int,
-            y: int,
-            normal_background: Art,
-            font : str,
-            font_color: Color,
-            localization_or_text: str,
-            active_background: Optional[Art] = None,
-            focused_background: Optional[Art] = None,
-            disabled_background: Optional[Art] = None,
-            anchor: tuple[float | int, float | int] = TOP_LEFT,
-            active_area: Rect | None = None,
-            layer: int = 0,
-            hover_surface: Surface | None = None,
-            hover_cursor: Cursor | None = None,
-            continue_animation: bool = False,
-            command: Callable[[], Any] | None = None,
-            jusitfy = CENTER
-        ) -> None:
+        self,
+        master: Frame,
+        x: int,
+        y: int,
+        normal_background: Art,
+        font : str,
+        font_color: Color,
+        localization_or_text: str,
+        active_background: Optional[Art] = None,
+        focused_background: Optional[Art] = None,
+        disabled_background: Optional[Art] = None,
+        anchor: tuple[float | int, float | int] = TOP_LEFT,
+        active_area: Rect | None = None,
+        layer: int = 0,
+        hover_surface: Surface | None = None,
+        hover_cursor: Cursor | None = None,
+        continue_animation: bool = False,
+        command: Callable[[], Any] | None = None,
+        jusitfy = CENTER
+    ) -> None:
         super().__init__(
             master,
             x,

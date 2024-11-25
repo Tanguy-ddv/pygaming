@@ -1,10 +1,12 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
 from typing import Optional, Iterable, Callable, Any
-from pygame import Cursor, Surface, Rect
+from pygame import Cursor, Surface, Rect, surfarray as sa
 from ...error import PygamingException
 from .widget import Widget, TOP_LEFT
 from ..frame import Frame
 from ..art.art import Art
+from ..mask import Mask
+import numpy as np
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -23,7 +25,7 @@ class Slider(Widget):
         disabled_background:  Optional[Art] = None,
         disabled_cursor:  Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[Rect] = None,
+        active_area: Optional[Mask] = None,
         layer: int = 0,
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,
@@ -88,8 +90,23 @@ class Slider(Widget):
             raise PygamingException(f"{initial_value} is not a valid initial value as it is not in the values list.")
 
         # the positions of the cursor for each value
-        x_min = self._active_area.left + self.normal_cursor.width//2
-        x_max = self._active_area.right - self.normal_cursor.width//2
+        if isinstance(self._active_area, Mask):
+            # For pygaming masks
+            if self._active_area.is_empty():
+                raise PygamingException("The active area cannot be empty.")
+            x_min = self._active_area.not_null_columns[0] + self.normal_cursor.width//2
+            x_max = self._active_area.not_null_columns[-1] - self.normal_cursor.width//2
+        else:
+            # For pygame masks
+            temp_surf = self._active_area.to_surface(setcolor=(0, 0, 0, 1), unsetcolor=(0, 0, 0, 0))
+            matrix = sa.array_alpha(temp_surf)
+            not_null_columns = np.where(matrix.any(axis=0))[0]
+            if not_null_columns:
+                x_min = not_null_columns[0]
+                x_max = not_null_columns[-1]
+            else:
+                raise PygamingException("The active area cannot be empty.")
+
         self._positions = [
               x_max*(t/(len(self._values)-1))
             + x_min*(1 - t/(len(self._values)-1))
@@ -126,8 +143,8 @@ class Slider(Widget):
 
 
         # If the user is clicking:
-        if ck1 is not None and self._absolute_active_area.collidepoint(ck1.x, ck1.y):
-            local_x = ck1.x - self.absolute_left
+        local_x = ck1.x - self.absolute_left
+        if ck1 is not None and self.is_contact((local_x, ck1.y - self.absolute_top)):
 
             # If the user is clicking on the cursor, we want the cursor to follow the user click
             if self._cursor_position < local_x < self._cursor_position + self._cursor_width:

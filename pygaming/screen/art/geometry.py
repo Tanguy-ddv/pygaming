@@ -155,6 +155,7 @@ class TexturedPolygon(Art):
     def _load(self):
 
         surfaces = []
+        need_to_unload = False
 
         if not self.texture.is_loaded:
             need_to_unload = True

@@ -6,6 +6,7 @@ from typing import Optional
 from pygame import Cursor, Surface, Rect
 from ..element import Element, TOP_LEFT
 from ..art.art import Art
+from ..mask import Mask
 
 class Widget(Element, ABC):
     """
@@ -23,7 +24,7 @@ class Widget(Element, ABC):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[Rect] = None,
+        active_area: Optional[Mask] = None,
         layer: int = 0,
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,
@@ -39,12 +40,9 @@ class Widget(Element, ABC):
             hover_surface,
             hover_cursor,
             True,
-            True
+            True,
+            active_area
         )
-        if active_area is None:
-            active_area = self.surface.get().get_rect()
-        self._active_area = active_area
-        self._absolute_active_area = self._active_area.move(self.absolute_left, self.absolute_top)
         self._continue_animation = continue_animation
         if focused_background is None:
             self.focused_background = self.surface

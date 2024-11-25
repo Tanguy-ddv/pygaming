@@ -1,10 +1,11 @@
 """the element module contains the Element object, which is a base for every object displayed on the game window."""
-from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 import pygame
 from ..phase import GamePhase
 from .art.art import Art
+from ..error import PygamingException
+from .mask import Mask
 
 # Anchors
 
@@ -23,7 +24,7 @@ class Element(ABC):
 
     def __init__(
         self,
-        master : Union[GamePhase | Element], # Frame or phase, no direct typing of frame to avoid circular import
+        master : Union[GamePhase | 'Element'], # Frame or phase, no direct typing of frame to avoid circular import
         surface: Art,
         x: int,
         y: int,
@@ -32,7 +33,8 @@ class Element(ABC):
         hover_surface: Optional[Art] = None,
         hover_cursor: Optional[pygame.Cursor] = None,
         can_be_disabled: bool = True,
-        can_be_focused: bool = True
+        can_be_focused: bool = True,
+        active_area: Optional[Mask | pygame.Mask] = None
     ) -> None:
         """
         Create an Element.
@@ -59,6 +61,11 @@ class Element(ABC):
         self.disabled = False
 
         self.surface = surface
+        if active_area is None:
+            active_area = pygame.mask.from_surface(self.surface.surfaces[0], 127)
+        if active_area.get_size() != self.surface.size:
+            raise PygamingException("The active area must have the size than the art.")
+        self._active_area = active_area
 
         self.width, self.height = self.surface.width, self.surface.height
         self._x = x
@@ -73,6 +80,12 @@ class Element(ABC):
 
         self._last_surface: pygame.Surface = None
         self._surface_changed: bool = True
+    
+    def is_contact(self, mouse_pos: tuple[int, int]):
+        x, y = mouse_pos
+        x -= self.absolute_left
+        y -= self.absolute_top
+        return self._active_area.get_at((x,y))
 
     @property
     def game(self):
@@ -110,10 +123,14 @@ class Element(ABC):
     def start(self):
         """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
         self.surface.start()
+        if isinstance(self._active_area, Mask):
+            self._active_area.load()
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
         self.surface.unload()
+        if isinstance(self._active_area, Mask):
+            self._active_area.unload()
 
     @abstractmethod
     def update(self, loop_duration: int):
