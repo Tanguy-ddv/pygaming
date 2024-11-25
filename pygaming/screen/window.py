@@ -63,6 +63,10 @@ class Window(pygame.Rect):
             mask = [mask]
             mask_effects = [mask_effects]
         
+        else: # if mask is None
+            mask = []
+            mask_effects = []
+        
         for mask_eff in mask_effects:
 
             if DARKEN in mask_eff and LIGHTEN in mask_eff:
@@ -79,7 +83,7 @@ class Window(pygame.Rect):
         self._width = width
         self._height = height
         self.anchor = anchor
-        self.mask = mask
+        self.masks = mask
 
         super().__init__(self._x, self._y, self._width, self._height)
         self._fill_color = fill_color
@@ -100,12 +104,22 @@ class Window(pygame.Rect):
             surf.blit(surface, (0, 0))
         else:
             surf = surface.copy()
-        if self.mask:
+        if self.masks:
             surface = surf.subsurface(self)
-            for mask, effects in zip(self.mask, self._effects):
+            for mask, effects in zip(self.masks, self._effects):
                 mask.apply(surface, effects)
             return surface
         else:
             return surf.subsurface(self)
+    
+    def load(self):
+        """Load the masks of the window."""
+        for mask in self.masks:
+            mask.load()
+    
+    def unload(self):
+        """Unload the masks of the window."""
+        for mask in self.masks:
+            mask.unload()
 
 WindowLike = Union[Window, tuple[int, int, int, int], tuple[int, int, int, int, tuple[float, float]], pygame.Rect]

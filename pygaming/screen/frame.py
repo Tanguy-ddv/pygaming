@@ -52,7 +52,7 @@ class Frame(Element):
         elif len(window) in [4, 5]:
             self.window = Window(*window)
         else:
-            raise ValueError("window msut be either a Window, or a tuple (x,y, width, height) or a tuple (x,y, width, height, anchor)")
+            raise ValueError("window must be either a Window, or a tuple (x,y, width, height) or a tuple (x,y, width, height, anchor)")
 
         self.has_a_widget_focused = False
 
@@ -170,6 +170,7 @@ class Frame(Element):
         for child in self.children:
             child.start()
         self.focused_background.start()
+        self.window.load()
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
@@ -177,6 +178,7 @@ class Frame(Element):
         for child in self.children:
             child.end()
         self.focused_background.unload()
+        self.window.unload()
 
     def loop(self, loop_duration: int):
         """Update the frame every loop iteration."""
