@@ -34,7 +34,7 @@ class Mask(ABC):
         self._loaded = False
         self._width = width
         self._height = height
-        self.matrix = None
+        self.matrix: np.ndarray = None
     
     @property
     def width(self):
@@ -49,15 +49,22 @@ class Mask(ABC):
         raise NotImplementedError()
     
     def load(self):
+        """Load the mask."""
         self._load()
         self._loaded = True
 
     def unload(self):
+        """Unload the mask."""
         self.matrix = None
         self._loaded = False
     
     def is_loaded(self):
+        """Return True if the mask is loaded, False otherwise."""
         return self._loaded
+
+    def get_size(self) -> tuple[int, int]:
+        """Return the size of the mask"""
+        return (self.width, self.height)
     
     def apply(self, surface: Surface, effects: dict[str, float]):
         """Apply the mask to an image."""
@@ -95,6 +102,45 @@ class Mask(ABC):
     def __bool__(self):
         return True
 
+    def get_at(self, pos: tuple[int, int]):
+        """
+        Return the value of the matrix at this coordinate.
+        """
+        if not self.is_loaded():
+            self.load()
+        return self.matrix[pos]
+
+    def set_at(self, pos: tuple[int, int], value: float):
+        """
+        Set a new value for the matrix at this coordinate.
+        """
+        if not self.is_loaded():
+            self.load()
+        self.matrix[pos] = min(1, max(0, value))
+    
+    def not_null_columns(self):
+        """Return the list of indices of the columns that have at least one value different from 0."""
+        if not self.is_loaded():
+            self.load()
+        return np.where(self.matrix.any(axis=0))[0]
+
+    def not_null_rows(self):
+        """Return the list of indices of the rows that have at least one value different from 0."""
+        if not self.is_loaded():
+            self.load()
+        return np.where(self.matrix.any(axis=1))[0]
+
+    def is_empty(self):
+        """Return True if all the pixels in the mask are set to 0."""
+        if not self.is_loaded():
+            self.load()
+        return np.sum(self.matrix) == 0
+    
+    def is_full(self):
+        """Return True if all the pixels in the mask are set to 1."""
+        if not self.is_loaded():
+            self.load()
+        return np.sum(self.matrix) == self.height*self.width
 
 class MatrixMask(Mask):
     """A matrix mask is a mask based on a matrix."""

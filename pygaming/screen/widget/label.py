@@ -38,7 +38,7 @@ class Label(Element):
         """
         self.font = font
         self.text = str(localization_or_text)
-        super().__init__(master, background, x, y, anchor, layer, None, None, False, False)
+        super().__init__(master, background, x, y, anchor, layer, None, None, False, False, None)
         self.justify = justify
         self._bg_width, self._bg_height = self.surface.width, self.surface.height
         self._blinking_period = blinking_period

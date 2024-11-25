@@ -252,7 +252,7 @@ class GamePhase(BasePhase, ABC):
             x = ck1.x
             y = ck1.y
             for frame in self.frames:
-                if frame.absolute_rect.collidepoint(x,y):
+                if frame.is_contact((x,y)):
                     frame.update_focus(x, y)
                 else:
                     frame.remove_focus()
@@ -266,7 +266,7 @@ class GamePhase(BasePhase, ABC):
         x,y = self.mouse.get_position()
         cursor, surf = None, None
         for frame in self.frames:
-            if frame.absolute_rect.collidepoint(x,y):
+            if frame.is_contact((x,y)):
                 surf, cursor = frame.update_hover()
                 if surf is not None:
                     self.current_hover_surface: pygame.Surface = surf

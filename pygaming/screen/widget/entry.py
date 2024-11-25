@@ -7,6 +7,8 @@ from ..element import TOP_LEFT, CENTER
 from ..frame import Frame
 from ...color import Color
 from ..art.art import Art
+from ..mask import Mask
+
 
 class Entry(Widget):
     """The Entry widget is used to allow the user to add a textual input."""
@@ -29,7 +31,7 @@ class Entry(Widget):
         extra_characters: str = '',
         forbid_characters: str = '',
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Rect | None = None,
+        active_area: Optional[Mask] = None,
         layer: int = 0,
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,

@@ -66,7 +66,8 @@ class Frame(Element):
             None,
             None,
             can_be_disabled=False,
-            can_be_focused=True
+            can_be_focused=True,
+            active_area=None
         )
         self._continue_animation = continue_animation
 
