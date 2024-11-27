@@ -1,4 +1,4 @@
-from pygame import Surface, draw, gfxdraw
+from pygame import Surface, draw, gfxdraw, SRCALPHA, transform
 from typing import Sequence
 from ._transformation import Transformation
 from ....color import ColorLike
@@ -32,17 +32,17 @@ class DrawCircle(Transformation):
         for surf in surfaces:
             draw.circle(surf, self.color, self.center, self.radius, self.thickness, self.draw_top_right, self.draw_top_left, self.draw_bottom_left, self.draw_bottom_right)
         return surfaces, durations, introduction, index, width, height
-
+    
 class DrawRectangle(Transformation):
     """Draw a rectangle on the art."""
     def __init__(
         self,
         color: ColorLike,
-        left: int,
-        top: int,
+        center: tuple[int, int],
         width: int,
         height: int,
         thickness: int = 0,
+        angle: int = 0,
         border_radius: int = 0,
         border_top_left_radius: int = -1,
         border_top_right_radius: int = -1,
@@ -51,32 +51,60 @@ class DrawRectangle(Transformation):
     ) -> None:
         super().__init__()  
         self.color = color
-        self.left = left
-        self.top = top
         self.width = width
         self.height = height
+        self.center = center
         self.thickness = thickness
+        self.angle = angle
         self.border_radius = border_radius
         self.border_top_left_radius = border_top_left_radius
         self.border_top_right_radius = border_top_right_radius
         self.border_bottom_left_radius = border_bottom_left_radius
         self.border_bottom_right_radius = border_bottom_right_radius
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int, int, int]:
+        rectangle_bg = Surface((self.width, self.height), SRCALPHA)
+        draw.rect(
+            rectangle_bg,
+            self.color,
+            rectangle_bg.get_rect(),
+            self.thickness,
+            self.border_radius,
+            self.border_top_left_radius,
+            self.border_top_right_radius,
+            self.border_bottom_left_radius,
+            self.border_bottom_right_radius
+        )
+        rectangle = transform.rotate(rectangle_bg, self.angle)
+        rectangle_size = rectangle.get_size()
         for surf in surfaces:
-            draw.rect(
-                surf,
-                self.color,
-                (self.left, self.top, self.width, self.height),
-                self.thickness,
-                self.border_radius,
-                self.border_top_left_radius,
-                self.border_top_right_radius,
-                self.border_bottom_left_radius,
-                self.border_bottom_right_radius)
-        
+            surf.blit(rectangle, (self.center[0] - rectangle_size[0]//2, self.center[1] - rectangle_size[1]//2))
+
         return surfaces, durations, introduction, index, width, height
-    
+
+
+class DrawEllipse(Transformation):
+    """Draw an ellipse on the art."""
+
+    def __init__(self, color:ColorLike, x_radius: int, y_radius: int, center: tuple[int, int], thickness: int = 0, angle: int=0):
+        self.color = color
+        self.x_radius = x_radius
+        self.y_radius = y_radius
+        self.center = center
+        self.angle = angle
+        self.thickness = thickness
+
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+
+        ellipse_bg = Surface((self.x_radius*2, self.y_radius*2), SRCALPHA)
+        draw.ellipse(ellipse_bg, self.color, ellipse_bg.get_rect(), self.thickness)
+        ellipse = transform.rotate(ellipse_bg, self.angle)
+        ellipse_size = ellipse.get_size()
+        for surf in surfaces:
+            surf.blit(ellipse, (self.center[0] - ellipse_size[0]//2, self.center[1] - ellipse_size[1]//2))
+
+        return surfaces, durations, introduction, index, width, height
+
 class DrawPolygon(Transformation):
     """Draw a polygon on the art."""
 
