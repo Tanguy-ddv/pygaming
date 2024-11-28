@@ -9,7 +9,7 @@ class Concatenate(Transformation):
         super().__init__()
         self.others = others
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         need_to_unloads = []
         for art in self.others:
             if not art.is_loaded:
@@ -67,7 +67,7 @@ class Average(Transformation):
         super().__init__()
         self.others = others
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         need_to_unloads = []
         for art in self.others:
             if not art.is_loaded:
@@ -101,7 +101,7 @@ class Blit(Transformation):
         self.other = other
         self.pos = (x,y)
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         need_to_unload = False
         if not self.other.is_loaded:
             self.other.load()

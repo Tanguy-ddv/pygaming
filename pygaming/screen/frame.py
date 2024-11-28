@@ -7,6 +7,7 @@ from ..error import PygamingException
 from .element import Element
 from .art.art import Art
 from .window import Window, WindowLike
+from ..settings import Settings
 
 class Frame(Element):
     """
@@ -166,10 +167,10 @@ class Frame(Element):
     
     def start(self):
         """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
-        self.surface.start()
+        self.surface.start(self.game.settings)
         for child in self.children:
             child.start()
-        self.focused_background.start()
+        self.focused_background.start(self.game.settings)
         self.window.load()
 
     def end(self):

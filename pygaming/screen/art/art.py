@@ -5,6 +5,7 @@ from pygame import Surface
 from ...error import PygamingException
 from ..window import Window
 from ..anchors import TOP_LEFT
+from ...settings import Settings
 
 from .transformation import Transformation, Pipeline
 
@@ -28,10 +29,10 @@ class Art(ABC):
         self._force_load_on_start = force_load_on_start
         self._copies: list[Art] = []
     
-    def start(self):
+    def start(self, settings: Settings):
         """Call this method at the start of the phase."""
         if self._force_load_on_start and not self._loaded:
-            self.load()
+            self.load(settings)
     
     def _find_initial_dimension(self):
         if self._on_loading_transformation :
@@ -82,7 +83,7 @@ class Art(ABC):
         self.durations = ()
         self._loaded = False
 
-    def load(self):
+    def load(self, settings: Settings):
         """Load the art at the beginning of the phase"""
         self._time_since_last_change = 0
         self._index = 0
@@ -90,11 +91,11 @@ class Art(ABC):
         self._verify_sizes()
         self._loaded = True
         if self._on_loading_transformation is not None:
-            self.transform(self._on_loading_transformation)
+            self.transform(self._on_loading_transformation, settings)
 
         for copy in self._copies:
             if not copy.is_loaded:
-                copy.load()
+                copy.load(settings)
 
     def update(self, loop_duration: float) -> bool:
         """
@@ -130,7 +131,7 @@ class Art(ABC):
             self.load()
         return self.surfaces[index].copy()
 
-    def transform(self, transformation: Transformation):
+    def transform(self, transformation: Transformation, settings: Settings):
         """Apply a transformation"""
         if self._loaded:
             (   self.surfaces,
@@ -145,7 +146,8 @@ class Art(ABC):
                 self.introduction,
                 self._index,
                 self._width,
-                self._height
+                self._height,
+                settings.antialias
             )
         else:
             raise PygamingException("A transformation have be called on an unloaded Art, please use the art's constructor to transform the initial art.")
@@ -175,9 +177,9 @@ class _ArtFromCopy(Art):
         self._width = self._original.width
         self._find_initial_dimension()
 
-    def _load(self):
+    def _load(self, settings: Settings):
         if not self._original.is_loaded:
-            self._original.load()
+            self._original.load(settings)
         
         self.surfaces = tuple(surf.copy() for surf in self._original.surfaces)
         self.durations = self._original.durations

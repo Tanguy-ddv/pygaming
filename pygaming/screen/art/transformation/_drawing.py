@@ -28,7 +28,7 @@ class DrawCircle(Transformation):
         self.draw_bottom_right = draw_bottom_right
         self.center = center
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             draw.circle(surf, self.color, self.center, self.radius, self.thickness, self.draw_top_right, self.draw_top_left, self.draw_bottom_left, self.draw_bottom_right)
         return surfaces, durations, introduction, index, width, height
@@ -62,7 +62,7 @@ class DrawRectangle(Transformation):
         self.border_bottom_left_radius = border_bottom_left_radius
         self.border_bottom_right_radius = border_bottom_right_radius
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int, int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         rectangle_bg = Surface((self.width, self.height), SRCALPHA)
         draw.rect(
             rectangle_bg,
@@ -94,7 +94,7 @@ class DrawEllipse(Transformation):
         self.angle = angle
         self.thickness = thickness
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
 
         ellipse_bg = Surface((self.x_radius*2, self.y_radius*2), SRCALPHA)
         draw.ellipse(ellipse_bg, self.color, ellipse_bg.get_rect(), self.thickness)
@@ -119,7 +119,7 @@ class DrawPolygon(Transformation):
         self.points = points
         self.thickness = thickness
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             draw.polygon(surf, self.color, self.points, self.thickness)
         return surfaces, durations, introduction, index, width, height
@@ -134,16 +134,19 @@ class DrawLine(Transformation):
         self.thickness = thickness
         super().__init__()
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
-        if self.thickness == 1 and self.p1[0] == self.p2[0]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
+        if self.thickness == 1 and self.p1[0] == self.p2[0] and not antialias:
             for surf in surfaces:
                 gfxdraw.vline(surf, self.p1[0], self.p1[1], self.p2[1], self.color)
-        elif self.thickness == 1 and self.p1[1] == self.p2[0]:
+        elif self.thickness == 1 and self.p1[1] == self.p2[0] and not antialias:
             for surf in surfaces:
                 gfxdraw.hline(surf, self.p1[0], self.p2[0], self.p2[1], self.color)
-        elif self.thickness == 1:
+        elif self.thickness == 1 and not antialias:
             for surf in surfaces:
                 gfxdraw.line(surf, self.p1[0], self.p1[1], self.p2[0], self.p2[1], self.color)
+        elif self.thickness == 1 and antialias:
+            for surf in surfaces:
+                draw.aaline(surf, self.color, (self.p1[0], self.p1[1]), (self.p2[0], self.p2[1]))
         else:
             for surf in surfaces:
                 draw.line(surf, self.color, (self.p1[0], self.p1[1]), (self.p2[0], self.p2[1]), self.thickness)
@@ -159,7 +162,7 @@ class DrawLines(Transformation):
         self.closed = closed
         super().__init__()
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             draw.lines(surf, self.color, self.closed, self.points, self.thickness)
         return surfaces, durations, introduction, index, width, height
@@ -175,7 +178,7 @@ class DrawArc(Transformation):
         self.to_angle = to_angle
         super().__init__()
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             draw.arc(surf, self.color, self.rect, self.from_angle, self.to_angle, self.thickness)
         return surfaces, durations, introduction, index, width, height
@@ -189,7 +192,7 @@ class DrawBezier(Transformation):
         self.steps = steps
         super().__init__()
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             gfxdraw.bezier(surf, self.points, self.steps, self.color)
         return surfaces, durations, introduction, index, width, height
