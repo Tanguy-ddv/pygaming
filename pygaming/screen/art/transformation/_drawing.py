@@ -1,5 +1,6 @@
 from pygame import Surface, draw, gfxdraw, SRCALPHA, transform
 from typing import Sequence
+import math
 from ._transformation import Transformation
 from ....color import ColorLike
 
@@ -127,14 +128,16 @@ class DrawPolygon(Transformation):
 class DrawLine(Transformation):
     """Draw one line on the art."""
 
-    def __init__(self, color: ColorLike, p1: tuple[int, int], p2: tuple[int, int], thickness: int = 1) -> None:
+    def __init__(self, color: ColorLike, p1: tuple[int, int], p2: tuple[int, int], thickness: int = 1, allow_antialias: bool = True) -> None:
         self.color = color
         self.p1 = p1
         self.p2 = p2
         self.thickness = thickness
+        self.allow_antialias = allow_antialias
         super().__init__()
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
+        antialias = self.allow_antialias and antialias
         if self.thickness == 1 and self.p1[0] == self.p2[0] and not antialias:
             for surf in surfaces:
                 gfxdraw.vline(surf, self.p1[0], self.p1[1], self.p2[1], self.color)
@@ -147,24 +150,72 @@ class DrawLine(Transformation):
         elif self.thickness == 1 and antialias:
             for surf in surfaces:
                 draw.aaline(surf, self.color, (self.p1[0], self.p1[1]), (self.p2[0], self.p2[1]))
-        else:
+        elif not antialias:
             for surf in surfaces:
                 draw.line(surf, self.color, (self.p1[0], self.p1[1]), (self.p2[0], self.p2[1]), self.thickness)
+        else: # The thickness is not one and there is antialias.
+
+            d = (self.p2[0] - self.p1[0], self.p2[1] - self.p1[1])
+            dis = math.hypot(*d)
+            deltas = (-d[1]/dis*self.thickness/2, d[0]/dis*self.thickness/2)
+
+            p1_1 = (self.p1[0] - deltas[0], self.p1[1] - deltas[1])
+            p1_2 = (self.p1[0] + deltas[0], self.p1[1] + deltas[1])
+            p2_1 = (self.p2[0] - deltas[0], self.p2[1] - deltas[1])
+            p2_2 = (self.p2[0] + deltas[0], self.p2[1] + deltas[1])
+
+            for surf in surfaces:
+
+                gfxdraw.aapolygon(surf, (p1_1, p1_2, p2_2, p2_1), self.color)
+                gfxdraw.filled_polygon(surf, (p1_1, p1_2, p2_2, p2_1), self.color)
+
         return surfaces, durations, introduction, index, width, height
 
 class DrawLines(Transformation):
     """Draw lines on the art."""
 
-    def __init__(self, color: ColorLike, points: Sequence[tuple[int, int]], thickness: int = 1, closed: bool = False) -> None:
+    def __init__(self, color: ColorLike, points: Sequence[tuple[int, int]], thickness: int = 1, closed: bool = False, allow_antialias: bool = True) -> None:
         self.color = color
         self.points = points
         self.thickness = thickness
         self.closed = closed
+        self.allow_antialias = allow_antialias
         super().__init__()
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
-        for surf in surfaces:
-            draw.lines(surf, self.color, self.closed, self.points, self.thickness)
+        antialias = self.allow_antialias and antialias
+
+        if not antialias:
+            for surf in surfaces:
+                draw.lines(surf, self.color, self.closed, self.points, self.thickness)
+        elif self.thickness == 1:
+            for surf in surfaces:
+                draw.aalines(surf, self.color, self.closed, self.points)
+        else:
+            if self.closed:
+                points = list(*self.points, self.points[0])
+            else:
+                points = self.points
+            previous_p2_1 = None
+            previous_p2_2 = None
+            for p1, p2 in zip(points[:-1], points[1:]):
+
+                d = (p2[0] - p1[0], p2[1] - p1[1])
+                dis = math.hypot(*d)
+                deltas = (-d[1]/dis*self.thickness/2, d[0]/dis*self.thickness/2)
+
+                p1_1 = (p1[0] - deltas[0], p1[1] - deltas[1])
+                p1_2 = (p1[0] + deltas[0], p1[1] + deltas[1])
+                p2_1 = (p2[0] - deltas[0], p2[1] - deltas[1])
+                p2_2 = (p2[0] + deltas[0], p2[1] + deltas[1])
+
+                for surf in surfaces:
+                    gfxdraw.aapolygon(surf, (p1_1, p1_2, p2_2, p2_1), self.color)
+                    gfxdraw.filled_polygon(surf, (p1_1, p1_2, p2_2, p2_1), self.color)
+                    if previous_p2_1:
+                        gfxdraw.aapolygon(surf, (previous_p2_1, previous_p2_2, p2_2, p2_1), self.color)
+                        gfxdraw.filled_polygon(surf, (previous_p2_1, previous_p2_2, p2_2, p2_1), self.color)
+
         return surfaces, durations, introduction, index, width, height
 
 class DrawArc(Transformation):
