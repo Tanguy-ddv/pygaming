@@ -33,10 +33,24 @@ class DrawCircle(Transformation):
         self.allow_antialias = allow_antialias
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
+        if antialias and self.allow_antialias and not any((self.draw_bottom_left, self.draw_bottom_right, self.draw_top_left, self.draw_top_right)):
+            for surf in surfaces:
+                gfxdraw.circle(surf, *self.center, self.radius, self.color)
+        elif antialias and self.allow_antialias:
+            background = Surface((self.radius*2, self.radius*2), SRCALPHA)
+            gfxdraw.circle(surf, *self.center, self.radius, self.color)
+            if not self.draw_top_left:
+                background.fill((0, 0, 0, 0), (0, 0, self.radius, self.radius))
+            if not self.draw_bottom_left:
+                background.fill((0, 0, 0, 0), (0, self.radius, self.radius, self.radius))
+            if not self.draw_top_right:
+                background.fill((0, 0, 0, 0), (self.radius, 0, self.radius, self.radius))
+            if not self.draw_bottom_right:
+                background.fill((0, 0, 0, 0), (self.radius, self.radius, self.radius, self.radius))
+            for surf in surfaces:
+                surf.blit(background, (self.center[0] - self.radius, self.center[1] - self.radius))
         for surf in surfaces:
             draw.circle(surf, self.color, self.center, self.radius, self.thickness, self.draw_top_right, self.draw_top_left, self.draw_bottom_left, self.draw_bottom_right)
-            if antialias and self.allow_antialias:
-                gfxdraw.circle(surf, *self.center, self.radius, self.color)
         return surfaces, durations, introduction, index, width, height
     
 class DrawRectangle(Transformation):
@@ -80,16 +94,20 @@ class DrawRectangle(Transformation):
             or self.border_bottom_right_radius !=- 1
         ):
             radius = self.border_radius if self.border_top_left_radius == -1 else self.border_top_left_radius
-            gfxdraw.aacircle(rectangle_bg, radius, radius, radius, self.color)
+            if radius:
+                gfxdraw.aacircle(rectangle_bg, radius, radius, radius, self.color)
 
             radius = self.border_radius if self.border_top_right_radius == -1 else self.border_top_right_radius
-            gfxdraw.aacircle(rectangle_bg, self.width - radius, radius, radius, self.color)
+            if radius:
+                gfxdraw.aacircle(rectangle_bg, self.width - radius, radius, radius, self.color)
 
             radius = self.border_radius if self.border_bottom_left_radius == -1 else self.border_bottom_left_radius
-            gfxdraw.aacircle(rectangle_bg, radius, self.height - radius, radius, self.color)
+            if radius:
+                gfxdraw.aacircle(rectangle_bg, radius, self.height - radius, radius, self.color)
 
             radius = self.border_radius if self.border_bottom_right_radius == -1 else self.border_bottom_right_radius
-            gfxdraw.aacircle(rectangle_bg, self.width - radius, self.height - radius, radius, self.color)
+            if radius:
+                gfxdraw.aacircle(rectangle_bg, self.width - radius, self.height - radius, radius, self.color)
 
         draw.rect(
             rectangle_bg,
@@ -134,8 +152,8 @@ class DrawEllipse(Transformation):
         elif antialias and self.thickness == 1:
             gfxdraw.aaellipse(ellipse_bg, self.x_radius, self.y_radius, self.x_radius, self.y_radius, self.color)
         elif antialias and self.thickness == 0:
-            gfxdraw.ellipse(ellipse_bg, self.color, (0, 0, self.x_radius*2, self.y_radius*2), self.thickness)
             gfxdraw.aaellipse(ellipse_bg, self.x_radius, self.y_radius, self.x_radius, self.y_radius, self.color)
+            gfxdraw.ellipse(ellipse_bg, self.color, (0, 0, self.x_radius*2, self.y_radius*2), self.thickness)
         else:
             gfxdraw.ellipse(ellipse_bg, self.color, (0, 0, self.x_radius*2, self.y_radius*2), self.thickness)
 
@@ -153,16 +171,23 @@ class DrawPolygon(Transformation):
         self,
         color: ColorLike,
         points: Sequence[tuple[int, int]],
-        thickness: int = 0) -> None:
+        thickness: int = 0,
+        allow_antialias: bool = True
+    ) -> None:
         super().__init__()
 
         self.color = color
         self.points = points
         self.thickness = thickness
+        self.allow_antialias = allow_antialias
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
+        antialias = self.allow_antialias and antialias
         for surf in surfaces:
+            if self.thickness < 2 and antialias:
+                gfxdraw.aapolygon(surf, self.points, self.color)
             draw.polygon(surf, self.color, self.points, self.thickness)
+
         return surfaces, durations, introduction, index, width, height
 
 class DrawLine(Transformation):
@@ -261,7 +286,17 @@ class DrawLines(Transformation):
 class DrawArc(Transformation):
     """Draw an arc on the art."""
 
-    def __init__(self, color: ColorLike, ellipsis_center: tuple[int, int], horizontal_radius: int, vertical_radius: int, from_angle: float, to_angle: float, thickness: int = 1, allow_antialias: bool = True) -> None:
+    def __init__(
+        self,
+        color: ColorLike,
+        ellipsis_center: tuple[int, int],
+        horizontal_radius: int,
+        vertical_radius: int,
+        from_angle: float,
+        to_angle: float,
+        thickness: int = 1,
+        allow_antialias: bool = True
+    ) -> None:
         self.color = color
         self.thickness = thickness
         self.ellipsis_center = ellipsis_center
