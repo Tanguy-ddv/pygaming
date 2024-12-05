@@ -14,10 +14,11 @@ class DrawCircle(Transformation):
         radius: int,
         center: tuple[int, int],
         thickness: int = 0,
-        draw_top_right: bool = False,
-        draw_top_left: bool = False,
-        draw_bottom_left: bool = False,
-        draw_bottom_right: bool = False,
+        draw_top_right: bool = True,
+        draw_top_left: bool = True,
+        draw_bottom_left: bool = True,
+        draw_bottom_right: bool = True,
+        angle: float = 0.,
         allow_antialias: bool = True
     ) -> None:
         super().__init__()
@@ -31,26 +32,32 @@ class DrawCircle(Transformation):
         self.draw_bottom_right = draw_bottom_right
         self.center = center
         self.allow_antialias = allow_antialias
+        self.angle = angle
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
-        if antialias and self.allow_antialias and not any((self.draw_bottom_left, self.draw_bottom_right, self.draw_top_left, self.draw_top_right)):
-            for surf in surfaces:
-                gfxdraw.circle(surf, *self.center, self.radius, self.color)
-        elif antialias and self.allow_antialias:
-            background = Surface((self.radius*2, self.radius*2), SRCALPHA)
-            gfxdraw.circle(surf, *self.center, self.radius, self.color)
-            if not self.draw_top_left:
-                background.fill((0, 0, 0, 0), (0, 0, self.radius, self.radius))
-            if not self.draw_bottom_left:
-                background.fill((0, 0, 0, 0), (0, self.radius, self.radius, self.radius))
-            if not self.draw_top_right:
-                background.fill((0, 0, 0, 0), (self.radius, 0, self.radius, self.radius))
-            if not self.draw_bottom_right:
-                background.fill((0, 0, 0, 0), (self.radius, self.radius, self.radius, self.radius))
-            for surf in surfaces:
-                surf.blit(background, (self.center[0] - self.radius, self.center[1] - self.radius))
+        antialias = antialias and self.allow_antialias
+        background = Surface((self.radius*2, self.radius*2), SRCALPHA)
+        if antialias:
+            gfxdraw.aacircle(background, *self.center, self.radius, self.color)
+        if self.thickness != 1:
+            gfxdraw.filled_circle(surf, *self.center, self.radius, self.color)
+            if self.thickness > 1:
+                gfxdraw.filled_circle(surf, *self.center, self.radius - self.thickness, (0, 0, 0, 0))
+                gfxdraw.aacircle(surf, *self.center, self.radius - self.thickness, self.color)
+
+        if not self.draw_top_left:
+            background.fill((0, 0, 0, 0), (0, 0, self.radius, self.radius))
+        if not self.draw_bottom_left:
+            background.fill((0, 0, 0, 0), (0, self.radius, self.radius, self.radius))
+        if not self.draw_top_right:
+            background.fill((0, 0, 0, 0), (self.radius, 0, self.radius, self.radius))
+        if not self.draw_bottom_right:
+            background.fill((0, 0, 0, 0), (self.radius, self.radius, self.radius, self.radius))
+        if self.angle != 0.:
+            background = transform.rotate(background, self.angle)
         for surf in surfaces:
-            draw.circle(surf, self.color, self.center, self.radius, self.thickness, self.draw_top_right, self.draw_top_left, self.draw_bottom_left, self.draw_bottom_right)
+            surf.blit(background, (self.center[0] - self.radius, self.center[1] - self.radius))
+
         return surfaces, durations, introduction, index, width, height
     
 class DrawRectangle(Transformation):
