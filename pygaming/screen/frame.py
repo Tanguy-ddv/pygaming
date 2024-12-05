@@ -223,10 +223,10 @@ class Frame(Element):
         else:
             background = self.surface.get()
         for child in self.visible_children:
-            x = child.relative_left
-            y = child.relative_top
-            surface = child.get_surface()
-            background.blit(surface, (x,y))
+            child_rect = child.relative_rect
+            if child_rect.colliderect((0, 0, *self.window.size)):
+                surface = child.get_surface()
+                background.blit(surface, child_rect.topleft)
 
         return self.window.get_surface(background.subsurface(self.background_window))
 
