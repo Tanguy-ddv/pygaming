@@ -1,11 +1,13 @@
 """The art class is the base for all the surfaces and animated surfaces of the game."""
 from abc import ABC, abstractmethod
-from pygame import Surface
+from pygame import Surface, image, surfarray as sa
+from PIL import Image
 
 from ...error import PygamingException
 from ..window import Window
 from ..anchors import TOP_LEFT
 from ...settings import Settings
+from ...file import get_file
 
 from .transformation import Transformation, Pipeline
 
@@ -166,6 +168,15 @@ class Art(ABC):
         """Create a window without masked based on this art."""
         return Window(x, y, self.width, self.height, anchor)
 
+    def save(self, path: str, index: int = None, permanent: bool = False):
+        path = get_file('images', path, permanent)
+        if len(self.surfaces) == 1:
+            image.save(self.surfaces[0], path)
+        elif not (index is None):
+            image.save(self.surfaces[index], path)
+        else:
+            pil_images = [Image.fromarray(sa.array3d(surf)) for surf in self.surfaces]
+            pil_images[0].save(path, format='GIF', save_all=True, append_images = pil_images[1:], duration=self.durations)
 
 class _ArtFromCopy(Art):
 
