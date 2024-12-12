@@ -5,7 +5,7 @@ import threading
 import json
 import time
 from typing import Any
-from ._constants import DISCOVERY_PORT, CONTENT, HEADER, ID, NEW_ID, BROADCAST_IP, TIMESTAMP, EXIT
+from ._constants import DISCOVERY_PORT, PAYLOAD, HEADER, ID, NEW_ID, BROADCAST_IP, TIMESTAMP, EXIT
 from ..config import Config
 
 class Client:
@@ -20,7 +20,7 @@ class Client:
 
     def send(self, header: str, content: Any, ):
         """Send the content to the server, specifying the header."""
-        message = {ID : self.id, HEADER : header, CONTENT : content, TIMESTAMP : time.time()}
+        message = {ID : self.id, HEADER : header, PAYLOAD : content, TIMESTAMP : time.time()}
         json_data = json.dumps(message)
         self.client_socket.send(json_data.encode())
 
@@ -34,7 +34,7 @@ class Client:
             message = json.loads(data.decode())
             if HEADER not in message or message[HEADER] != BROADCAST_IP:
                 continue
-            server_ip = message[CONTENT]
+            server_ip = message[PAYLOAD]
             discovery_socket.close()
             return server_ip
 
@@ -50,7 +50,7 @@ class Client:
                 if data:
                     json_data = json.loads(data.decode())
                     if json_data[HEADER] == NEW_ID:
-                        self.id = json_data[CONTENT]
+                        self.id = json_data[PAYLOAD]
                     self._reception_buffer.append(json_data)
             except (ConnectionError, json.JSONDecodeError):
                 self.close()
