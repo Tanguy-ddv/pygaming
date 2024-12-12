@@ -6,18 +6,8 @@ from ..phase import GamePhase
 from .art.art import Art
 from ..error import PygamingException
 from .mask import Mask
-
-# Anchors
-
-TOP_RIGHT = 1, 0
-TOP_LEFT = 0, 0
-CENTER = 0.5, 0.5
-BOTTOM_LEFT = 0, 1
-BOTTOM_RIGHT = 1, 1
-TOP_CENTER = 0.5, 0
-BOTTOM_CENTER = 0.5, 1
-CENTER_LEFT = 0, 0.5
-CENTER_RIGHT = 1, 0.5
+from .anchors import TOP_LEFT
+from ..settings import Settings
 
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
@@ -122,7 +112,7 @@ class Element(ABC):
     
     def start(self):
         """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
-        self.surface.start()
+        self.surface.start(self.game.settings)
         if isinstance(self._active_area, Mask):
             self._active_area.load()
 

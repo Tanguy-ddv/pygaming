@@ -19,7 +19,7 @@ class SetAlpha(Transformation):
         self.alpha = alpha
         self.mask = mask
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         if self.mask is None:
             for surf in surfaces:
                 surf.set_alpha(self.alpha)
@@ -40,7 +40,7 @@ class GrayScale(Transformation):
     def __init__(self) -> None:
         super().__init__()
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         graysurfeaces = tuple(tf.grayscale(surf) for surf in surfaces)
         return graysurfeaces, durations, introduction, index, width, height
 
@@ -56,7 +56,7 @@ class RBGMap(Transformation):
         self.mask = mask
         self.mask_threshold = mask_threshold
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             if self.mask is None:
@@ -80,7 +80,7 @@ class RGBAMap(Transformation):
         self.mask = mask
         self.mask_threshold = mask_threshold
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
 
         for surf in surfaces:
 
@@ -113,7 +113,7 @@ class Saturate(Transformation):
         self.mask = mask
         self.mask_threshold = mask_threshold
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
@@ -136,7 +136,7 @@ class Desaturate(Transformation):
         self.mask = mask
         self.mask_threshold = mask_threshold
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
@@ -158,7 +158,7 @@ class Darken(Transformation):
         self.mask = mask
         self.mask_threshold = mask_threshold
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
@@ -180,7 +180,7 @@ class Lighten(Transformation):
         self.mask = mask
         self.mask_threshold = mask_threshold
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
@@ -201,7 +201,7 @@ class Invert(Transformation):
         self.mask = mask
         self.mask_threshold = mask_threshold
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             if self.mask is None:
@@ -222,7 +222,7 @@ class AdjustContrast(Transformation):
         self.mask = mask
         self.mask_threshold = mask_threshold
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             if self.mask is None:
@@ -244,7 +244,7 @@ class AdjustBrightness(Transformation):
         self.mask = mask
         self.mask_threshold = mask_threshold
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             if self.mask is None:
@@ -268,7 +268,7 @@ class Gamma(Transformation):
         self.mask = mask
         self.mask_threshold = mask_threshold  
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
             if self.mask is None:

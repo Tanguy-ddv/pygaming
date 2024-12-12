@@ -1,24 +1,11 @@
 """
-The file module contains the File class, which is an abstract base for all file objects,
-and the get_file function used in all File class to find the full path of the object
+The file module contains the get_file function used in all File class to find the full path of the object
 """
-from abc import ABC, abstractmethod
-from typing import Any, Literal
+from typing import Literal
 
 import sys
 import os
 import json
-
-class File(ABC):
-    """Represent any type of file that would be loaded for the game: image, sounds, etc."""
-
-    def __init__(self, path: str) -> None:
-        self.path = path
-        self.full_path = None
-
-    @abstractmethod
-    def get(self) -> Any:
-        """Get the object in the proper format to be used by the game."""
 
 def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fonts'], file: str, permanent: bool = False):
     """

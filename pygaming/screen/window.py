@@ -1,6 +1,6 @@
 import pygame
 from typing import Union, Sequence
-from .element import TOP_LEFT
+from .anchors import TOP_LEFT
 from .mask import Mask, ALPHA, DARKEN, LIGHTEN, DESATURATE, SATURATE
 from ..error import PygamingException
 from ..color import ColorLike, Color

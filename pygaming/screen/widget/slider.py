@@ -127,7 +127,7 @@ class Slider(Widget):
         """Return the value selected by the player."""
         return self._values[self._index]
 
-    def start_transition(self, new_index):
+    def _start_transition(self, new_index):
         """Start a transition."""
         if new_index != self._index:
             # In this case, we start a transition to it.
@@ -155,7 +155,7 @@ class Slider(Widget):
 
                 # We verify that we clicked on a new position
                 new_index = self._get_index_of_click(local_x)
-                self.start_transition(new_index)
+                self._start_transition(new_index)
 
             # In the case we are holding the cursor
             if self._holding_cursor: # We do not use else because we want to execute this after the 1st if.
@@ -185,9 +185,9 @@ class Slider(Widget):
         # Verify the use of the arrows
         if self.focused:
             if self.game.keyboard.actions_down['left'] and self._index > 0:
-                self.start_transition(self._index - 1)
+                self._start_transition(self._index - 1)
             if self.game.keyboard.actions_down['right'] and self._index < len(self._values) - 1:
-                self.start_transition(self._index + 1)
+                self._start_transition(self._index + 1)
 
 
     def _get_index_of_click(self, x):

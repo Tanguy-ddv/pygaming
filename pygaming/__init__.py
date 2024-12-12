@@ -14,35 +14,29 @@ from .server import Server
 from .settings import Settings
 from .color import Color
 
-from .screen.screen import Screen
 from .screen.frame import Frame
-from .screen.element import (
-    Element, TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT, BOTTOM_CENTER,
-    BOTTOM_RIGHT, CENTER_LEFT, CENTER_RIGHT, TOP_CENTER
-)
-from .screen.widget.label import Label
-from .screen.widget.widget import Widget
-from .screen.widget.slider import Slider
-from .screen.widget.button import Button, TextButton
+from .screen.element import Element
+
+from .screen import anchors
+
+from .screen import widget
+
 from .file import get_file
-from .screen.widget.entry import Entry
 from .screen.actor import Actor
-from .screen.art.art import Art
-from .screen.art import transformation
-from .screen.art.file import ImageFile, ImageFolder, GIFFile
-from .screen.art.geometry import ColoredRectangle, ColoredCircle, ColoredPolygon, TexturedPolygon
+from .screen import art
 
-from .inputs import Inputs, Controls, Click, Keyboard, Mouse
-from .connexion import Client, Server as Network, HEADER, ID, CONTENT, TIMESTAMP
 
-from .database import Database, Texts, Speeches, TypeWriter, SoundBox
+from .screen.window import Window, WindowLike
+from .screen import mask
+
+from .inputs import Controls, Click, Keyboard, Mouse
+from .connexion import Client, Server as Network, HEADER, ID, PAYLOAD, TIMESTAMP
+
+from .database import Database, TypeWriter, SoundBox
 from . import commands
-from .screen.art.geometry import ColoredRectangle, ColoredCircle, ColoredPolygon
 
-__all__ = ['Config', 'Font', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
-           'Server', 'Settings', 'Screen', 'Frame', 'Actor', 'TextButton', 'CENTER_LEFT', 'CENTER_RIGHT', 'TOP_CENTER', 'BOTTOM_CENTER',
-           'Element', 'AnimatedSurface', 'SurfaceLike', 'SurfacesLike', 'Inputs', 'Controls', 'Click', 'TexturedPolygon',
-           'get_file', 'Client', 'Keyboard', 'Mouse', 'ImageFile', 'ImageFolder', 'GIFFile', 'transformation',
-           'Network', 'HEADER', 'ID', 'CONTENT', 'TIMESTAMP', 'Database', 'Texts', 'Speeches', 'Button','Entry', 'Art',
-           'commands', 'ColoredRectangle', 'TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT',
-           'Label', 'Widget', 'Slider', 'ColoredCircle', 'ColoredPolygon', 'TypeWriter', 'SoundBox', 'Color']
+__all__ = ['Config', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
+           'Server', 'Settings', 'Frame', 'Actor', 
+           'Element', 'Controls', 'Click', 'widget', 'get_file', 'Client', 'Keyboard', 'Mouse', 'mask', 'art',
+           'Network', 'HEADER', 'ID', 'PAYLOAD', 'TIMESTAMP', 'Database', 'anchors',
+           'commands', 'Window', 'WindowLike', 'TypeWriter', 'SoundBox', 'Color']

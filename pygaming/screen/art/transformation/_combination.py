@@ -1,16 +1,15 @@
 """The binary transformation file contains transformation that include other arts."""
 from pygame import Surface, transform as tf
 from ._transformation import Transformation
-from ..art import Art
 
 class Concatenate(Transformation):
     """The concatenate transformation concatenante two arts into one bigger animation."""
 
-    def __init__(self, *others: Art) -> None:
+    def __init__(self, *others) -> None:
         super().__init__()
         self.others = others
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         need_to_unloads = []
         for art in self.others:
             if not art.is_loaded:
@@ -64,11 +63,11 @@ class Average(Transformation):
     Take the average of the images of the art.
     """
 
-    def __init__(self, *others: Art) -> None:
+    def __init__(self, *others) -> None:
         super().__init__()
         self.others = others
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         need_to_unloads = []
         for art in self.others:
             if not art.is_loaded:
@@ -97,12 +96,12 @@ class Blit(Transformation):
     Copy an art over another one.
     """
 
-    def __init__(self, other: Art, x: int, y: int) -> None:
+    def __init__(self, other, x: int, y: int) -> None:
         super().__init__()
         self.other = other
         self.pos = (x,y)
     
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int) -> tuple[tuple[Surface], tuple[int], int, int]:
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         need_to_unload = False
         if not self.other.is_loaded:
             self.other.load()

@@ -5,7 +5,7 @@ import threading
 import json
 import time
 from ..config import Config
-from ._constants import DISCOVERY_PORT,  CONTENT, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, TIMESTAMP
+from ._constants import DISCOVERY_PORT, PAYLOAD, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, TIMESTAMP
 
 class ClientSocketManager:
     """
@@ -71,7 +71,7 @@ class Server:
                             client_socket_m.socket = client_socket
                             print(f"Client {address} (id={id_}) is now reconnected")
 
-                welcome_message = {HEADER : NEW_ID, CONTENT : id_}
+                welcome_message = {HEADER : NEW_ID, PAYLOAD : id_}
                 json_message = json.dumps(welcome_message)
                 client_socket.send(json_message.encode())
                 threading.Thread(target=self._handle_client, args=(client_socket, id_)).start()
@@ -85,7 +85,7 @@ class Server:
             if self.get_nb_players() < self._nb_max_player:
                 broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-                message = json.dumps({HEADER : BROADCAST_IP, CONTENT : host_ip})
+                message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : host_ip})
                 broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
                 time.sleep(self.config.get("broadcast_frequency")/1000)  # Send broadcast every broadcast_frquency ms
 
@@ -120,7 +120,7 @@ class Server:
         """The data to one client."""
         for client_socket in self._client_socket_managers:
             if client_socket.id_ == client_id and client_socket.status == ONLINE:
-                json_data = json.dumps({HEADER : header, CONTENT : data, TIMESTAMP : time.time()})
+                json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : time.time()})
                 client_socket.socket.send(json_data.encode())
 
     def send_all(self, header, data):
@@ -128,7 +128,7 @@ class Server:
         for client_socket in self._client_socket_managers:
             if client_socket.status == ONLINE:
                 try:
-                    json_data = json.dumps({HEADER : header, CONTENT : data, TIMESTAMP : time.time()})
+                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : time.time()})
                     client_socket.socket.send(json_data.encode())
                 except ConnectionResetError:
                     client_socket.status = OFFLINE
