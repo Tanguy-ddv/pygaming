@@ -1,9 +1,13 @@
 """
-Pygaming is a python library used to create videogames in python, based on pygame.
-Pygaming provide an exhaustive template to create your own offline and online games
-by defining your own game phases and transitions between them. Pygaming also
-provides settings, loggers, inputs, files, music and sounds, network, and database management,
-as well as multi-language support, screen, widgets and frames.
+Pygaming is a python library used to big make 2D games.
+Built on pygame, it contains several features to help building big games easily.
+
+Pygaming adds the following features: 
+A working directory based on a template,
+phases, settings, controls, language, sounds,
+screens, frames and widgets,
+actors and dynamic sprites, masks
+
 """
 from .config import Config
 from .game import Game

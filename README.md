@@ -1,4 +1,4 @@
-Pygaming is a python library used to big make 2D games. Built on [pygame](https://www.pygame.org/news), it contains several features to help building bigger
+Pygaming is a python library used to big make 2D games. Built on [pygame](https://www.pygame.org/news), it contains several features to help building big games easily.
 
 You can download pygaming in your python projects with
 
@@ -53,6 +53,7 @@ An sqlite database is automatically created and is used to store the localizatio
 ## Logger
 
 The logger is used to easily logo data with the json format, used to store game history, make statistics for game developpement and so on.
+The logger can be used for debugging as well.
 
 ## Screen
 
@@ -81,7 +82,6 @@ Pygaming implements a resource management allowing it to load arts at the beginn
 ## Distribution
 
 Pygaming implements a command to build the game and an installer as executable files, allowing maximum portability.
-
 
 # How to use it?
 
@@ -117,9 +117,13 @@ All your phases must be subclass of the GamePhase class (or ServerPhase class fo
 - next() -> str. This method is called at every iteration of the game's main loop. It used to know what is happening. It either return pygaming.STAY if the phase is not over, pygaming.NO_NEXT if the user requested to quit the game, or the name of another frame to be started.
 - apply_transition(next_frame: str) -> dict[str, Any]. This method is called only when next() returns the name of another frame. In this case, this name is passed as argument of this method. This method should output a dict, whose keys are the name of the arguments of the .start() function of the next frame, and whose values are the values given for these arguments.
 
+## Create your game
+
+To create the game, you need to instantiate a object of the class pygaming.Game. Then, instantiate one object for each of your frame, using the game you just created as argument. Finally, call the run() method of your game. Do the same for your server, by instantiatiing a pygaming.Server object.
+
 ## Test it
 
-To test your game, you can freely execute your server and your game on the same device and verify that everything is working properly.
+To test your game, you can freely execute your server and your game on the same device and verify that everything is working properly. Change the debug flag of the game instance to be in debug mode.
 
 ## Distribute
 
