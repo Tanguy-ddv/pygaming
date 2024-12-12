@@ -48,7 +48,7 @@ Pygaming file managing system allows the developper to manage the files that are
 
 ## Database
 
-An sqlite database is automatically created and is used to store the localizations and sound categories for the game, but can also be used by the developper to store game data. 
+An sqlite database is automatically created and is used to store the localizations and sound categories for the game, but can also be used by the developper to store game data.
 
 ## Logger
 
@@ -105,6 +105,10 @@ You will notice some files already existing in these folders. You can modify the
 ## Make your own assets
 
 You can make your assets by drawing your own characters, recording your own musics and sounds, using your pictures and downwloading some fonts. Do not forget to make your own icon as well. It must be named 'icon.ico' (you can find online converters for the format) and place in the assets/ folder to replace the template one.
+
+## Define your database
+
+In the database file, add your tables and complete the localizations, speeches, sounds and tables files. The sound table is used to define the sounds that will be loaded in each phase, same for the fonts. The localizations and speeches are used to manage languages.
 
 ## Make your phases
 
