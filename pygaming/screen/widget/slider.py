@@ -1,12 +1,13 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
 from typing import Optional, Iterable, Callable, Any
-from pygame import Cursor, Surface, Rect, surfarray as sa
+import numpy as np
+from pygame import Cursor, Surface, surfarray as sa
 from ...error import PygamingException
-from .widget import Widget, TOP_LEFT
+from .widget import Widget
+from..anchors import TOP_LEFT
 from ..frame import Frame
 from ..art.art import Art
 from ..mask import Mask
-import numpy as np
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""

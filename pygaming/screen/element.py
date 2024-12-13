@@ -7,7 +7,6 @@ from .art.art import Art
 from ..error import PygamingException
 from .mask import Mask
 from .anchors import TOP_LEFT
-from ..settings import Settings
 
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
@@ -70,8 +69,9 @@ class Element(ABC):
 
         self._last_surface: pygame.Surface = None
         self._surface_changed: bool = True
-    
+
     def is_contact(self, mouse_pos: tuple[int, int]):
+        """Return True if the mouse is hovering the element."""
         x, y = mouse_pos
         x -= self.absolute_left
         y -= self.absolute_top
@@ -109,7 +109,7 @@ class Element(ABC):
         if has_changed:
             self.notify_change()
         self.update(loop_duration)
-    
+
     def start(self):
         """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
         self.surface.start(self.game.settings)

@@ -4,6 +4,7 @@ from typing import Sequence
 from pygame import Surface, SRCALPHA, draw, gfxdraw, mask as msk
 from ...color import ColorLike
 from .art import Art
+from ...settings import Settings
 from .transformation import Transformation
 
 class ColoredRectangle(Art):
@@ -37,10 +38,11 @@ class ColoredRectangle(Art):
         self.border_bottom_right_radius = border_bottom_right_radius
         self._find_initial_dimension()
 
-    def _load(self):
+    def _load(self, settings: Settings):
         surf = Surface((self._width, self._height), SRCALPHA)
         draw.rect(surf, self.color, (0, 0, self._width, self._height), self.thickness, self.border_radius,
-                  self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius)
+                  self.border_top_left_radius, self.border_top_right_radius, self.border_bottom_left_radius, self.border_bottom_right_radius
+        )
         self.surfaces = (surf,)
         self.durations = (0,)
 
@@ -70,12 +72,12 @@ class ColoredCircle(Art):
         self._height = 2*radius
         self._width = 2*radius
         self._find_initial_dimension()
-    
-    def _load(self):
+
+    def _load(self, settings: Settings):
         surf = Surface((self.radius*2, self.radius*2), SRCALPHA)
         draw.circle(surf, self.color, (self.radius, self.radius),
             self.radius, self.thickness, self.draw_top_right, self.draw_top_left, self.draw_bottom_left, self.draw_bottom_right)
-    
+
         self.surfaces = (surf,)
         self.durations = (0,)
 
@@ -89,8 +91,8 @@ class ColoredEllipse(Art):
         self.thickness = thickness
         super().__init__(transformation, force_load_on_start)
         self._find_initial_dimension()
-    
-    def _load(self):
+
+    def _load(self, settings: Settings):
         surf = Surface(self.rect[2:4], SRCALPHA)
         draw.ellipse(surf, self.color, self.rect, self.thickness)
         self.surfaces = (surf,)
@@ -110,7 +112,7 @@ class ColoredPolygon(Art):
         for p in points:
             if p[0] < 0 or p[1] < 0:
                 raise ValueError(f"All points coordinates of a polygon must have a positive value, got {p}")
-        
+
         self.points = points
         self.thickness = thickness
         self.color = color
@@ -119,9 +121,9 @@ class ColoredPolygon(Art):
         self._height = max(p[1] for p in self.points) + max(0, (thickness-1)//2)
         self._width = max(p[0] for p in self.points) + max(0, (thickness-1)//2)
         self._find_initial_dimension()
-    
-    def _load(self):
-        
+
+    def _load(self, settings: Settings):
+
         surf = Surface((self._width, self._height), SRCALPHA)
         draw.polygon(surf, self.color, self.points, self.thickness)
 
@@ -142,7 +144,7 @@ class TexturedPolygon(Art):
         for p in points:
             if p[0] < 0 or p[1] < 0:
                 raise ValueError(f"All points coordinates of a polygon must have a positive value, got {p}")
-        
+  
         self.points = points
         super().__init__(transformation, force_load_on_start)
 
@@ -152,8 +154,8 @@ class TexturedPolygon(Art):
 
         self.texture = texture
         self.texture_top_left = texture_top_left
-    
-    def _load(self):
+
+    def _load(self, settings: Settings):
 
         surfaces = []
         need_to_unload = False
@@ -161,7 +163,7 @@ class TexturedPolygon(Art):
         if not self.texture.is_loaded:
             need_to_unload = True
             self.texture.load()
-        
+
         for surf in self.texture.surfaces:
             background = Surface((self._width, self._height), SRCALPHA)
             gfxdraw.textured_polygon(background, self.points, surf, *self.texture_top_left)
@@ -203,9 +205,10 @@ class TexturedCircle(Art):
         self.texture = texture
 
         self._find_initial_dimension()
-    
-    def _load(self):
 
+    def _load(self, settings: Settings):
+
+        need_to_unload = False
         if not self.texture.is_loaded:
             need_to_unload = True
             self.texture.load()
@@ -216,7 +219,7 @@ class TexturedCircle(Art):
         mask = msk.from_surface(surf, 127)
         self.surfaces = (mask.to_surface(setsurface=surface) for surface in self.texture.surfaces)
         self.durations = self.texture.durations
-    
+
         if need_to_unload:
             self.texture.unload()
 
@@ -241,9 +244,10 @@ class TexturedEllipse(Art):
         self._height = texture.height
         self.texture = texture
         self._find_initial_dimension()
-    
-    def _load(self):
 
+    def _load(self, settings: Settings):
+
+        need_to_unload = False
         if not self.texture.is_loaded:
             need_to_unload = True
             self.texture.load()
@@ -284,8 +288,9 @@ class TexturedRoundedRectangle(Art):
 
         self._find_initial_dimension()
 
-    def _load(self):
-         
+    def _load(self, settings: Settings):
+
+        need_to_unload = False
         if not self.texture.is_loaded:
             need_to_unload = True
             self.texture.load()

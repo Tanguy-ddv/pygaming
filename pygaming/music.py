@@ -31,7 +31,7 @@ class Jukebox:
         """Pause the music currently playing."""
         pygame.mixer.music.pause()
         self._playing = False
-    
+
     def unpause(self):
         """Resume the music playing."""
         pygame.mixer.music.unpause()
@@ -59,7 +59,7 @@ class Jukebox:
         pygame.mixer.music.play(0)
         self._playing = True
         self._playlist_idx = 0
-    
+
     def read_playlist(self, playlist: Union[str,list[str]], random: bool = False):
         """
         Play a playlist.
@@ -86,7 +86,7 @@ class Jukebox:
         if random:
             shuffle(self._playlist)
         self._playing = True
-    
+
     def add_to_playlist(self, path: str):
         """Add a music to the playlist."""
         full_path = get_file('musics', path)

@@ -1,8 +1,9 @@
+"""The effect module contains transformation consisting on applying effects"""
 from typing import Callable
 from pygame import Surface, transform as tf, surfarray as sa
-from ._transformation import Transformation
 import numpy as np
 import cv2
+from ._transformation import Transformation
 from ...mask import Mask
 
 class SetAlpha(Transformation):
@@ -29,7 +30,7 @@ class SetAlpha(Transformation):
             for surf in surfaces:
                 alpha_array = sa.pixels_alpha(surf)
                 alpha_array[:] = (1 - self.mask.matrix)*255
-        
+
         return surfaces, durations, introduction, index, width, height
 
 class GrayScale(Transformation):
@@ -37,9 +38,6 @@ class GrayScale(Transformation):
     The gray scale transformation turn the art into a black and white art.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-    
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         graysurfeaces = tuple(tf.grayscale(surf) for surf in surfaces)
         return graysurfeaces, durations, introduction, index, width, height
@@ -55,7 +53,7 @@ class RBGMap(Transformation):
         self.function = function
         self.mask = mask
         self.mask_threshold = mask_threshold
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
@@ -112,7 +110,7 @@ class Saturate(Transformation):
         self.factor = factor
         self.mask = mask
         self.mask_threshold = mask_threshold
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
@@ -135,7 +133,7 @@ class Desaturate(Transformation):
         self.factor = factor
         self.mask = mask
         self.mask_threshold = mask_threshold
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
@@ -157,7 +155,7 @@ class Darken(Transformation):
         self.factor = factor
         self.mask = mask
         self.mask_threshold = mask_threshold
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
@@ -179,7 +177,7 @@ class Lighten(Transformation):
         self.factor = factor
         self.mask = mask
         self.mask_threshold = mask_threshold
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
@@ -200,7 +198,7 @@ class Invert(Transformation):
         super().__init__()
         self.mask = mask
         self.mask_threshold = mask_threshold
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
@@ -221,7 +219,7 @@ class AdjustContrast(Transformation):
         self.contrast = contrast
         self.mask = mask
         self.mask_threshold = mask_threshold
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
@@ -243,7 +241,7 @@ class AdjustBrightness(Transformation):
         self.brightness = int(brightness)
         self.mask = mask
         self.mask_threshold = mask_threshold
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         for surf in surfaces:
             rgb_array = sa.pixels3d(surf)
@@ -261,7 +259,7 @@ class Gamma(Transformation):
     For 0 < gamma < 1, the dark pixels will be brighter and the bright pixels will not change
     For gamma > 1, the light pixels will be darker and the dark pixel will not change
     """
-    
+
     def __init__(self, gamma: float, mask: Mask = None, mask_threshold: float = 0.99) -> None:
         super().__init__()
         self.gamma = gamma

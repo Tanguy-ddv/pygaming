@@ -1,9 +1,9 @@
-from pygame import Surface, draw, gfxdraw, SRCALPHA, transform, surfarray
 from typing import Sequence
 import math
+import numpy as np
+from pygame import Surface, draw, gfxdraw, SRCALPHA, transform, surfarray
 from ._transformation import Transformation
 from ....color import ColorLike
-import numpy as np
 
 class DrawCircle(Transformation):
     """Draw a circle on the art."""
@@ -40,10 +40,10 @@ class DrawCircle(Transformation):
         if antialias:
             gfxdraw.aacircle(background, *self.center, self.radius, self.color)
         if self.thickness != 1:
-            gfxdraw.filled_circle(surf, *self.center, self.radius, self.color)
+            gfxdraw.filled_circle(background, *self.center, self.radius, self.color)
             if self.thickness > 1:
-                gfxdraw.filled_circle(surf, *self.center, self.radius - self.thickness, (0, 0, 0, 0))
-                gfxdraw.aacircle(surf, *self.center, self.radius - self.thickness, self.color)
+                gfxdraw.filled_circle(background, *self.center, self.radius - self.thickness, (0, 0, 0, 0))
+                gfxdraw.aacircle(background, *self.center, self.radius - self.thickness, self.color)
 
         if not self.draw_top_left:
             background.fill((0, 0, 0, 0), (0, 0, self.radius, self.radius))
@@ -59,7 +59,7 @@ class DrawCircle(Transformation):
             surf.blit(background, (self.center[0] - self.radius, self.center[1] - self.radius))
 
         return surfaces, durations, introduction, index, width, height
-    
+
 class DrawRectangle(Transformation):
     """Draw a rectangle on the art."""
     def __init__(
@@ -90,7 +90,7 @@ class DrawRectangle(Transformation):
         self.border_bottom_left_radius = border_bottom_left_radius
         self.border_bottom_right_radius = border_bottom_right_radius
         self.allow_antialias = allow_antialias
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         rectangle_bg = Surface((self.width, self.height), SRCALPHA)
         if self.allow_antialias and antialias and (
@@ -127,7 +127,7 @@ class DrawRectangle(Transformation):
             self.border_bottom_left_radius,
             self.border_bottom_right_radius
         )
-            
+
         rectangle = transform.rotate(rectangle_bg, self.angle)
         rectangle_size = rectangle.get_size()
         for surf in surfaces:

@@ -2,13 +2,11 @@
 from abc import ABC, abstractmethod
 from pygame import Surface, image, surfarray as sa
 from PIL import Image
-
 from ...error import PygamingException
 from ..window import Window
 from ..anchors import TOP_LEFT
 from ...settings import Settings
 from ...file import get_file
-
 from .transformation import Transformation, Pipeline
 
 class Art(ABC):
@@ -30,16 +28,16 @@ class Art(ABC):
 
         self._force_load_on_start = force_load_on_start
         self._copies: list[Art] = []
-    
+
     def start(self, settings: Settings):
         """Call this method at the start of the phase."""
         if self._force_load_on_start and not self._loaded:
             self.load(settings)
-    
+
     def _find_initial_dimension(self):
         if self._on_loading_transformation :
             self._width, self._height = self._on_loading_transformation.get_new_dimension(self._width, self._height)
-    
+
     def _verify_sizes(self):
         """verify that all surfaces have the same sizes."""
         heights = [surf.get_height() for surf in self.surfaces]
@@ -51,32 +49,38 @@ class Art(ABC):
 
     @property
     def size(self):
+        """Return the size of the art."""
         return (self.width, self._height)
     
     @property
     def height(self):
+        """Return the height of the art."""
         return self._height
 
     @property
     def width(self):
+        """Return the width of the art."""
         return self._width
     
     @property
     def is_loaded(self):
+        """Return true if the art is loaded"""
         return self._loaded
 
     @property
-    def loop_duration(self):
+    def duration(self):
+        """Return the durations of the frames in the art."""
         if len(self.durations) > 1:
             return sum(self.durations)
         return 0
 
     @abstractmethod
-    def _load(self):
+    def _load(self, settings: Settings):
         raise NotImplementedError()
 
     @property
     def index(self):
+        """Return the current index of the frame displayed."""
         return self._index
 
     def unload(self):
@@ -89,7 +93,7 @@ class Art(ABC):
         """Load the art at the beginning of the phase"""
         self._time_since_last_change = 0
         self._index = 0
-        self._load()
+        self._load(settings)
         self._verify_sizes()
         self._loaded = True
         if self._on_loading_transformation is not None:
@@ -114,15 +118,14 @@ class Art(ABC):
                     self._index = self.introduction
                 return True
             return False
-        else:
-            return False
-            
+        return False
+
     def reset(self):
         """Reset the animation."""
         self._index = 0
         self._time_since_last_change = 0
-    
-    def get(self, match: 'Art' = None):
+
+    def get(self, settings: Settings, match: 'Art' = None):
         """
         Return the current Frame.
         
@@ -130,7 +133,7 @@ class Art(ABC):
         """
         index = self._index if match is None else match.index
         if not self._loaded:
-            self.load()
+            self.load(settings)
         return self.surfaces[index].copy()
 
     def transform(self, transformation: Transformation, settings: Settings):
@@ -169,10 +172,11 @@ class Art(ABC):
         return Window(x, y, self.width, self.height, anchor)
 
     def save(self, path: str, index: int = None, permanent: bool = False):
+        """Save the art as a gif or as an image."""
         path = get_file('images', path, permanent)
         if len(self.surfaces) == 1:
             image.save(self.surfaces[0], path)
-        elif not (index is None):
+        elif not index is None:
             image.save(self.surfaces[index], path)
         else:
             pil_images = [Image.fromarray(sa.array3d(surf)) for surf in self.surfaces]
@@ -191,7 +195,7 @@ class _ArtFromCopy(Art):
     def _load(self, settings: Settings):
         if not self._original.is_loaded:
             self._original.load(settings)
-        
+
         self.surfaces = tuple(surf.copy() for surf in self._original.surfaces)
         self.durations = self._original.durations
         self.introduction = self._original.introduction
@@ -207,4 +211,3 @@ class _ArtFromCopy(Art):
         else: # At the creation of the copy, it does not have any on loeading transformation.
             self._on_loading_transformation = Pipeline(*transformation)
         self._find_initial_dimension()
-    

@@ -7,7 +7,6 @@ from ..error import PygamingException
 from .element import Element
 from .art.art import Art
 from .window import Window, WindowLike
-from ..settings import Settings
 
 class Frame(Element):
     """
@@ -61,7 +60,7 @@ class Frame(Element):
             self,
             master,
             background,
-            *window.coordinate,
+            *window.topleft,
             window.anchor,
             layer,
             None,

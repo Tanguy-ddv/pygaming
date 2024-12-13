@@ -36,7 +36,7 @@ class Actor(Element):
     def main_surface(self):
         """Alias for the surface. Represent the main surface of the object."""
         return self.surface
-    
+
     def update_animation(self, loop_duration):
         """Update the animation of the main surface. Override this method if you have more surfaces."""
         self.main_surface.update(loop_duration)
@@ -55,8 +55,9 @@ class Actor(Element):
         """Reset the position of the actor in the frame."""
         self._x = new_x
         self._y = new_y
-        
+
     def rotate(self, angle):
+        """Rotate the actor."""
         w, h = self.main_surface.width, self.main_surface.height
         # rotate every frame
         for surface in self.surfaces:

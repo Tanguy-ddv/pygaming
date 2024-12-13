@@ -8,7 +8,7 @@ class Concatenate(Transformation):
     def __init__(self, *others) -> None:
         super().__init__()
         self.others = others
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         need_to_unloads = []
         for art in self.others:
@@ -36,23 +36,21 @@ def _combine_arts(*durations: tuple[int], introduction: int) -> tuple[list[tuple
     matrix_duration = [list(d) for d in durations]
 
     output_introduction = None
-    for i in range(len(matrix_duration)):
-        matrix_duration[i][-1] = matrix_duration[i][-1] + (mx - sum(matrix_duration[i]))
+    for durations in matrix_duration:
+        durations[-1] = durations[-1] + (mx - sum(durations))
 
     while tot_time < mx:
-        
+
         if indexes[0] == introduction and output_introduction is None:
             output_introduction = len(output)
-        
+
         mn = min(dur[0] for dur in matrix_duration)
         output.append((mn, tuple(indexes)))
 
-
-
-        for i in range(len(matrix_duration)):
-            matrix_duration[i][0] -= mn
-            if matrix_duration[i][0] == 0:
-                matrix_duration[i].pop(0)
+        for i, durations in enumerate(matrix_duration):
+            durations[0] -= mn
+            if durations[0] == 0:
+                durations.pop(0)
                 indexes[i] += 1
         tot_time += mn
 
@@ -66,7 +64,7 @@ class Average(Transformation):
     def __init__(self, *others) -> None:
         super().__init__()
         self.others = others
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         need_to_unloads = []
         for art in self.others:
@@ -75,7 +73,7 @@ class Average(Transformation):
                 art.load()
             else:
                 need_to_unloads.append(False)
-        
+
         combined_arts, introduction = _combine_arts(durations, *(other.durations for other in self.others), introduction=introduction)
         new_surfaces = []
         new_durations = []
@@ -90,7 +88,7 @@ class Average(Transformation):
                 other.unload()
 
         return new_surfaces, new_durations, introduction, index, width, height
-        
+
 class Blit(Transformation):
     """
     Copy an art over another one.
@@ -100,13 +98,13 @@ class Blit(Transformation):
         super().__init__()
         self.other = other
         self.pos = (x,y)
-    
+
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
         need_to_unload = False
         if not self.other.is_loaded:
             self.other.load()
             need_to_unload = True
-        
+
         combined_arts, introduction = _combine_arts(durations, self.other.durations, introduction=introduction)
         new_surfaces = []
         new_durations = []
@@ -115,7 +113,7 @@ class Blit(Transformation):
             back.blit(self.other.surfaces[idx2], self.pos)
             new_surfaces.append(back)
             new_durations.append(duration)
-        
+
         if need_to_unload:
             self.other.unload()
 

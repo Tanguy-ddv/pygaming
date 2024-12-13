@@ -1,10 +1,11 @@
 """The widget module contains the widget class, which is a base for all widgets."""
 
 from abc import ABC, abstractmethod
-from ..frame import Frame
 from typing import Optional
-from pygame import Cursor, Surface, Rect
-from ..element import Element, TOP_LEFT
+from pygame import Cursor, Surface
+from ..frame import Frame
+from ..element import Element
+from ..anchors import TOP_LEFT
 from ..art.art import Art
 from ..mask import Mask
 

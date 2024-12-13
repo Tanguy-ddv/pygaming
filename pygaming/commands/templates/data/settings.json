@@ -14,5 +14,5 @@
         }
     },
     "antialias": 1,
-    "senibility" : 1
+    "senibility" : 0.5
 }

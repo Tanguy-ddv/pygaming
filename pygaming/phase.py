@@ -1,13 +1,12 @@
 """A phase is one step of the game."""
 from abc import ABC, abstractmethod
-import pygame
 import gc
+import pygame
 from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
 from .server import Server
 from .database import SoundBox, TypeWriter
-
 
 
 class BasePhase(ABC):
@@ -170,6 +169,7 @@ class GamePhase(BasePhase, ABC):
         self.absolute_top = 0
         self.current_hover_surface = None
         self._surface_changed = True
+        self._last_surface = None
 
     def add_child(self, frame):
         """Add a new frame to the phase."""
@@ -185,12 +185,12 @@ class GamePhase(BasePhase, ABC):
             frame.start()
         # Start the phase
         self.start(**kwargs)
-    
+
     def finish(self):
         """This method is called at the end of the phase."""
         self.game.soundbox = None # Unload all the sounds
         self.game.typewriter = None # Unload all the fonts
-        for frame in self.frames: # Unload 
+        for frame in self.frames: # Unload
             frame.end()
         self.end()
         gc.collect()
@@ -199,7 +199,7 @@ class GamePhase(BasePhase, ABC):
     def game(self) -> Game:
         """Alias for the game."""
         return self.runnable
-    
+
     @property
     def typewriter(self):
         """Alias for self.game.typewriter"""
@@ -287,7 +287,7 @@ class GamePhase(BasePhase, ABC):
     def visible_frames(self):
         """Return all the visible frames sorted by increasing layer."""
         return sorted(filter(lambda f: f.visible, self.frames), key= lambda w: w.layer)
-    
+
     def make_surface(self) -> pygame.Surface:
         """Make the new surface to be returned to his parent."""
         bg = pygame.Surface(self.config.dimension, pygame.SRCALPHA)

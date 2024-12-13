@@ -5,7 +5,7 @@ import sqlite3 as sql
 import os
 from typing import Literal
 
-from ..file.file import get_file
+from ..file import get_file
 from ..config import Config
 
 SERVER = 'server'
@@ -122,7 +122,9 @@ class Database:
         ---
         - query: str, the query to execute. Needs to start with 'UPDATE', 'DELETE', 'ALTER TABLE', or similar.
         """
-        valid_keywords = ["UPDATE", "DELETE", "ALTER TABLE", "DROP", "CREATE", "REPLACE", "\nUPDATE", "\nDELETE", "\nALTER TABLE", "\nDROP", "\nCREATE", "\nREPLACE"]
+        valid_keywords = ["UPDATE", "DELETE", "ALTER TABLE", "DROP", "CREATE", "REPLACE",
+            "\nUPDATE", "\nDELETE", "\nALTER TABLE", "\nDROP", "\nCREATE", "\nREPLACE"
+        ]
 
         if not any(query.startswith(keyword) for keyword in valid_keywords):
             print("The query is wrong:\n", query, "\nShould start by one of:", ', '.join(valid_keywords))

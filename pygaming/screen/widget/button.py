@@ -3,7 +3,7 @@
 from typing import Optional, Callable, Any
 from pygame import Cursor, Rect, Surface
 from ..frame import Frame
-from ..element import TOP_LEFT, CENTER
+from ..anchors import TOP_LEFT, CENTER
 from .widget import Widget
 from ..art import Art
 from ...color import Color
@@ -116,6 +116,10 @@ class Button(Widget):
             self._is_clicked = False
 
 class TextButton(Button):
+    """
+    A Button is a basic widget used to get a player click.
+    A text is displayed on this button.
+    """
 
     def __init__(
         self,
@@ -158,7 +162,6 @@ class TextButton(Button):
         self.font_color = font_color
         self.text = localization_or_text
         self.justify = jusitfy
-        self._bg_width, self._bg_height = self.surface.width, self.surface.height
 
     def make_surface(self):
         bg = super().get_surface()

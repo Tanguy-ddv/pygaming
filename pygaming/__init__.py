@@ -7,7 +7,6 @@ A working directory based on a template,
 phases, settings, controls, language, sounds,
 screens, frames and widgets,
 actors and dynamic sprites, masks
-
 """
 from .config import Config
 from .game import Game
