@@ -5,6 +5,7 @@ from .anchors import TOP_LEFT
 from .mask import Mask, ALPHA, DARKEN, LIGHTEN, DESATURATE, SATURATE
 from ..error import PygamingException
 from ..color import ColorLike, Color
+from ..settings import Settings
 
 _EFFECT_LIST = [ALPHA, DARKEN, LIGHTEN, SATURATE, DESATURATE]
 
@@ -105,10 +106,10 @@ class Window(pygame.Rect):
 
         return surf.subsurface(self)
 
-    def load(self):
+    def load(self, settings: Settings):
         """Load the masks of the window."""
         for mask in self.masks:
-            mask.load()
+            mask.load(settings)
 
     def unload(self):
         """Unload the masks of the window."""

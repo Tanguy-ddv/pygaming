@@ -171,7 +171,7 @@ class Frame(Element):
         for child in self.children:
             child.start()
         self.focused_background.start(self.game.settings)
-        self.window.load()
+        self.window.load(self.game.settings)
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
