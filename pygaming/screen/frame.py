@@ -167,6 +167,7 @@ class Frame(Element):
     def start(self):
         """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
         self.surface.start(self.game.settings)
+        Element.start(self)
         for child in self.children:
             child.start()
         self.focused_background.start(self.game.settings)
@@ -218,9 +219,9 @@ class Frame(Element):
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
-            background = self.focused_background.get(match=self.surface)
+            background = self.focused_background.get(self.game.settings, match=self.surface)
         else:
-            background = self.surface.get()
+            background = self.surface.get(self.game.settings)
         for child in self.visible_children:
             child_rect = child.relative_rect
             if child_rect.colliderect((0, 0, *self.window.size)):

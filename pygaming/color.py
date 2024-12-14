@@ -35,7 +35,7 @@ class Color(_Cl):
                 else:
                     if color_string.startswith('#') and len(color_string) == 4:
                         # Add support for short html-format strings
-                        color_string = f"#{color_string[0]*2}{color_string[1]*2}{color_string[2]*2}"
+                        color_string = f"#{color_string[1]*2}{color_string[2]*2}{color_string[3]*2}"
                     super().__init__(color_string)
 
             else:
@@ -46,24 +46,28 @@ class Color(_Cl):
 
     def darken(self, percentage) -> 'Color':
         """Darken the color."""
+        percentage /= 100
         h, s, l, _a = self.hsla
         l = l * (1 - percentage)
         return _from_hsla(h, s, l, self.a/255)
 
     def lighten(self, percentage) -> 'Color':
         """Lighten the color."""
+        percentage /= 100
         h, s, l, _a = self.hsla
         l = 100 - (100 - l)* (1 - percentage)
         return _from_hsla(h, s, l, self.a/255)
 
     def desaturate(self, percentage) -> 'Color':
         """Desaturate the color."""
+        percentage /= 100
         h, s, l, _a = self.hsla
         s = s * (1 - percentage)
         return _from_hsla(h, s, l, self.a/255)
 
     def saturate(self, percentage) -> 'Color':
         """Saturate the color."""
+        percentage /= 100
         h, s, l, _a = self.hsla
         s = 100 - (100 - s)* (1 - percentage)
         return _from_hsla(h, s, l, self.a/255)

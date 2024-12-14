@@ -155,7 +155,7 @@ class DrawEllipse(Transformation):
         if antialias and self.thickness > 1:
             gfxdraw.aaellipse(ellipse_bg, self.x_radius, self.y_radius, self.x_radius, self.y_radius, self.color)
             gfxdraw.aaellipse(ellipse_bg, self.x_radius, self.y_radius, self.x_radius - self.thickness, self.y_radius - self.thickness, self.color)
-            gfxdraw.ellipse(ellipse_bg, self.color, (0, 0, self.x_radius*2, self.y_radius*2), self.thickness)
+            draw.ellipse(ellipse_bg, self.color, (0, 0, self.x_radius*2, self.y_radius*2), self.thickness)
         elif antialias and self.thickness == 1:
             gfxdraw.aaellipse(ellipse_bg, self.x_radius, self.y_radius, self.x_radius, self.y_radius, self.color)
         elif antialias and self.thickness == 0:

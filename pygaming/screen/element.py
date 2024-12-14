@@ -7,13 +7,14 @@ from .art.art import Art
 from ..error import PygamingException
 from .mask import Mask
 from .anchors import TOP_LEFT
+from ..inputs import Click
 
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
 
     def __init__(
         self,
-        master : Union[GamePhase | 'Element'], # Frame or phase, no direct typing of frame to avoid circular import
+        master: Union[GamePhase, 'Element'], # Frame or phase, no direct typing of frame to avoid circular import
         surface: Art,
         x: int,
         y: int,
@@ -50,9 +51,7 @@ class Element(ABC):
         self.disabled = False
 
         self.surface = surface
-        if active_area is None:
-            active_area = pygame.mask.from_surface(self.surface.surfaces[0], 127)
-        if active_area.get_size() != self.surface.size:
+        if not active_area is None and active_area.get_size() != self.surface.size:
             raise PygamingException("The active area must have the size than the art.")
         self._active_area = active_area
 
@@ -70,12 +69,19 @@ class Element(ABC):
         self._last_surface: pygame.Surface = None
         self._surface_changed: bool = True
 
-    def is_contact(self, mouse_pos: tuple[int, int]):
+    def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
         """Return True if the mouse is hovering the element."""
-        x, y = mouse_pos
+        if mouse_pos is None:
+            return False
+        elif isinstance(mouse_pos, Click):
+            x, y = mouse_pos.x, mouse_pos.y
+        else:
+            x, y = mouse_pos
         x -= self.absolute_left
         y -= self.absolute_top
-        return self._active_area.get_at((x,y))
+        if x < 0 or x >= self.width or y < 0 or y >= self.height:
+            return False
+        return bool(self._active_area.get_at((x,y)))
 
     @property
     def game(self):
@@ -111,10 +117,13 @@ class Element(ABC):
         self.update(loop_duration)
 
     def start(self):
-        """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
-        self.surface.start(self.game.settings)
+        """Execute this method at the beginning of the phase."""
         if isinstance(self._active_area, Mask):
-            self._active_area.load()
+            self._active_area.load(self.game.settings)
+        elif self._active_area is None:
+            self.surface.force_load_on_start()
+            self.surface.start(self.game.settings)
+            self._active_area = pygame.mask.from_surface(self.surface.surfaces[0], 127)
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""

@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import Optional
-from pygame import Cursor, Surface
+from pygame import Cursor, Surface, Mask as mk
 from ..frame import Frame
 from ..element import Element
 from ..anchors import TOP_LEFT
@@ -25,7 +25,7 @@ class Widget(Element, ABC):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[Mask] = None,
+        active_area: Optional[Mask | mk] = None,
         layer: int = 0,
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,
@@ -124,12 +124,14 @@ class Widget(Element, ABC):
 
     def start(self):
         """Execute this method at the beginning of the phase, load the arts that are set to force_load."""
+        Element.start(self)
         self.normal_background.start(self.game.settings)
         self.focused_background.start(self.game.settings)
         self.disabled_background.start(self.game.settings)
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
+        Element.end(self)
         self.normal_background.unload()
         self.focused_background.unload()
         self.disabled_background.unload()

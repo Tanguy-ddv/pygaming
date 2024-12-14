@@ -74,15 +74,15 @@ class Button(Widget):
         return self._is_clicked
 
     def _make_disabled_surface(self) -> Surface:
-        return self.disabled_background.get(self.surface if self._continue_animation else None)
+        return self.disabled_background.get(self.game.settings, self.surface if self._continue_animation else None)
 
     def _make_normal_surface(self) -> Surface:
-        return self.normal_background.get(self.surface if self._continue_animation else None)
+        return self.normal_background.get(self.game.settings, self.surface if self._continue_animation else None)
 
     def _make_focused_surface(self) -> Surface:
         if self._is_clicked:
-            return self.active_background.get(self.surface if self._continue_animation else None)
-        return self.focused_background.get()
+            return self.active_background.get(self.game.settings, self.surface if self._continue_animation else None)
+        return self.focused_background.get(self.game.settings, self.surface if self._continue_animation else None)
 
     def update(self, loop_duration: int):
         """Update the widget."""
@@ -95,9 +95,8 @@ class Button(Widget):
                 and self.game.keyboard.actions_down['return']
             )
             or ( # This means the user is clicking on the button
-                ck1 is not None
-                and self.is_contact((ck1.x - self.absolute_left, ck1.y - self.absolute_top))
-                and self.is_contact((ck1.start_x - self.absolute_left, ck1.start_y - self.absolute_top))
+                self.is_contact(ck1)
+                and self.is_contact((ck1.start_x, ck1.start_y))
             )
         ):
             # We verify if the user just clicked or if it is a long click.

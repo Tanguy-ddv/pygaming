@@ -90,6 +90,8 @@ class ColoredEllipse(Art):
         self.rect = (0, 0, horizontal_radius*2, vertical_radius*2)
         self.thickness = thickness
         super().__init__(transformation, force_load_on_start)
+        self._height = vertical_radius*2
+        self._width = horizontal_radius*2
         self._find_initial_dimension()
 
     def _load(self, settings: Settings):

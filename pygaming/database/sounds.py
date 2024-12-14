@@ -3,7 +3,7 @@
 from ..settings import Settings
 from pygame.mixer import Sound as _Sd
 from ..error import PygamingException
-from ..file.file import get_file
+from ..file import get_file
 from .database import Database
 from .speeches import Speeches
 

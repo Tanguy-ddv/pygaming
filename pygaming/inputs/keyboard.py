@@ -79,7 +79,7 @@ class Keyboard:
         """
         for key, upped in self.actions_down.items():
             if upped:
-                self.action_pressed[key] = False
+                self.actions_pressed[key] = False
         for key, upped in self.actions_up.items():
             if upped:
-                self.action_pressed[key] = True
+                self.actions_pressed[key] = True
