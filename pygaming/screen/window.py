@@ -27,7 +27,7 @@ class Window(pygame.Rect):
         height: int,
         anchor: tuple[float, float] = TOP_LEFT,
         mask: Mask | Sequence[Mask] = None,
-        mask_effects: dict[str, float] | Sequence[dict[str, float]] = {ALPHA : 1.},
+        mask_effects: dict[str, float] | Sequence[dict[str, float]] = {ALPHA : 100},
         fill_color: ColorLike = Color(0, 0, 0, 0)
     ):
         """
@@ -99,12 +99,11 @@ class Window(pygame.Rect):
         else:
             surf = surface.copy()
         if self.masks:
-            surface = surf.subsurface(self)
             for mask, effects in zip(self.masks, self._effects):
-                mask.apply(surface, effects)
-            return surface
+                mask.apply(surf, effects)
+            return surf
 
-        return surf.subsurface(self)
+        return surf
 
     def load(self, settings: Settings):
         """Load the masks of the window."""

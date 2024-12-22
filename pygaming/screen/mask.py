@@ -84,23 +84,23 @@ class Mask(ABC):
 
         if ALPHA in effects:
             surf_alpha = sa.array_alpha(surface)
-            surf_alpha[:] = np.astype(np.clip(surf_alpha * self.matrix * effects[ALPHA], 0, 255), surf_alpha.dtype)
+            surf_alpha[:] = np.astype(np.clip(surf_alpha * self.matrix * effects[ALPHA]/100, 0, 255), surf_alpha.dtype)
 
         if any(effect in _EFFECT_LIST for effect in effects):
             rgb_array = sa.pixels3d(surface)
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
 
             if DARKEN in effects:
-                hls_array[:,:, 1] = hls_array[:,:, 1] * (1 - self.matrix * effects[DARKEN])
+                hls_array[:,:, 1] = hls_array[:,:, 1] * (1 - self.matrix * effects[DARKEN]/100)
 
             elif LIGHTEN in effects:
-                hls_array[:,:, 1] = 255 - (255 - hls_array[:,:, 1]) * (1 - self.matrix * effects[LIGHTEN])
+                hls_array[:,:, 1] = 255 - (255 - hls_array[:,:, 1]) * (1 - self.matrix * effects[LIGHTEN]/100)
 
             if DESATURATE in effects:
-                hls_array[:,:, 2] = hls_array[:,:, 2] * (1 - self.matrix * effects[DESATURATE])
+                hls_array[:,:, 2] = hls_array[:,:, 2] * (1 - self.matrix * effects[DESATURATE]/100)
 
             elif SATURATE in effects:
-                hls_array[:,:, 2] = 255 - (255 - hls_array[:,:, 2]) * (1 - self.matrix * effects[SATURATE])
+                hls_array[:,:, 2] = 255 - (255 - hls_array[:,:, 2]) * (1 - self.matrix * effects[SATURATE]/100)
 
             rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:].astype(rgb_array.dtype)
 
