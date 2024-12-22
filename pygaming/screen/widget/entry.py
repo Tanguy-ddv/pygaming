@@ -141,7 +141,7 @@ class Entry(Widget):
 
     def _make_normal_surface(self) -> Surface:
         return self._make_surface(
-            self.normal_background.get(),
+            self.normal_background.get(self.game.settings),
             self._normal_font, self._normal_font_color, False
         )
 
