@@ -89,33 +89,34 @@ class Button(Widget):
 
     def update(self, loop_duration: int):
         """Update the button every loop iteration if it is visible."""
-        ck1 = self.game.mouse.get_click(1)
+        if not self.disabled:
+            ck1 = self.game.mouse.get_click(1)
 
-        if (
-            (   # This means the user is pressing 'return' while the button is focused
-                self.focused
-                and self.game.keyboard.actions_down['return']
-            )
-            or ( # This means the user is clicking on the button
-                self.is_contact(ck1)
-                and self.is_contact((ck1.start_x, ck1.start_y)))
-        ):
-            # We verify if the user just clicked or if it is a long click.
-            if not self._is_clicked:
-                self.notify_change()
-                if not self._on_click_command is None:
-                    self._on_click_command()
+            if (
+                (   # This means the user is pressing 'return' while the button is focused
+                    self.focused
+                    and self.game.keyboard.actions_down['return']
+                )
+                or ( # This means the user is clicking on the button
+                    self.is_contact(ck1)
+                    and self.is_contact((ck1.start_x, ck1.start_y)))
+            ):
+                # We verify if the user just clicked or if it is a long click.
+                if not self._is_clicked:
+                    self.notify_change()
+                    if not self._on_click_command is None:
+                        self._on_click_command()
+                else:
+                    self.notify_change()
+
+                self._is_clicked = True
+
             else:
-                self.notify_change()
-
-            self._is_clicked = True
-
-        else:
-            if self._is_clicked:
-                self.notify_change()
-                if not self._on_unclick_command is None:
-                    self._on_unclick_command()
-            self._is_clicked = False
+                if self._is_clicked:
+                    self.notify_change()
+                    if not self._on_unclick_command is None:
+                        self._on_unclick_command()
+                self._is_clicked = False
 
 class TextButton(Button):
     """

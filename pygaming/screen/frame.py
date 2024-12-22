@@ -105,7 +105,7 @@ class Frame(Element):
         one_is_clicked = False
 
         for (i,child) in enumerate(self._widget_children):
-            if child.is_contact(click):
+            if child.is_contact(click) and not child.disabled:
                 child.focus()
                 self._current_object_focus = i
                 one_is_clicked = True
@@ -141,7 +141,7 @@ class Frame(Element):
         """Change the focused object."""
         if self.focused and self.has_a_widget_focused:
 
-            widget_children = self._widget_children
+            widget_children = [wc for wc in self._widget_children if not wc.disabled]
             if len(widget_children) > 1:
 
                 for element in widget_children:

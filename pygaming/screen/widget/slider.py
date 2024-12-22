@@ -153,7 +153,7 @@ class Slider(Widget):
         ck1 = self.game.mouse.get_click(1)
 
         # If the user is clicking:
-        if self.is_contact(ck1):
+        if self.is_contact(ck1) and not self.disabled:
 
             local_x = ck1.x - self.absolute_left
             # If the user is clicking on the cursor, we want the cursor to follow the user click
@@ -193,7 +193,7 @@ class Slider(Widget):
                     self._cursor_position = self._positions[self._index]
 
         # Verify the use of the arrows
-        if self.focused:
+        if self.focused and not self.disabled:
             if self.game.keyboard.actions_down['left'] and self._index > 0:
                 self._start_transition(self._index - 1)
             if self.game.keyboard.actions_down['right'] and self._index < len(self._values) - 1:

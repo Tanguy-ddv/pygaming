@@ -160,7 +160,7 @@ class Entry(Widget):
     def update(self, loop_duration: int):
         """Update the entry with the inputs."""
         # Update the caret
-        if self.focused:
+        if self.focused and not self.disabled:
             self._caret_delta += loop_duration/self._caret_frequency
             if self._caret_delta > 1:
                 self.notify_change()
