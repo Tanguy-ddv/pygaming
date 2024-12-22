@@ -84,18 +84,18 @@ class Settings:
         self._data['current_language'] = language
         self.save()
 
-    def set_controls(self, controls: dict[str, str]):
+    def set_controls(self, controls: dict[str, str], phase: str):
         """Set the new keymap."""
-        for key in self.controls.values():
+        for key in self.controls[phase].values():
             if key not in controls.values():
                 raise PygamingException(f"the action {key} have not been mapped.")
         for key in controls.values():
-            if key not in self.controls.values():
+            if key not in self.controls[phase].values():
                 raise PygamingException(f"the action {key} does not exists.")
-        self._data['controls'] = controls
+        self._data['controls'][phase] = controls
         self.save()
 
-    def set_full_screen(self, fullscreen : bool):
+    def set_fullscreen(self, fullscreen : bool):
         """Set the full screen."""
         self._data['fullscreen'] = fullscreen
         self.save()
