@@ -104,8 +104,8 @@ class Widget(Element, ABC):
             has_changed = self.normal_background.update(loop_duration)
             if has_changed:
                 self.notify_change()
-
-        self.update(loop_duration)
+        if self.is_visible():
+            self.update(loop_duration)
 
     def switch_background(self):
         """Switch to the disabled, focused or normal background."""
