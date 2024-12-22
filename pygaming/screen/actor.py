@@ -50,11 +50,12 @@ class Actor(Element):
         """Translate the actor in the frame by a given value."""
         self._x += dx
         self._y += dy
+        self.notify_change()
 
     def rotate(self, angle):
         """Rotate the actor."""
         w, h = self.main_surface.width, self.main_surface.height
-        # rotate every frame
+        # rotate all frames
         for surface in self.surfaces:
             surface.transform(Rotate(angle))
         # determine the new anchor
@@ -66,3 +67,5 @@ class Actor(Element):
         new_rel_x = rel_x * math.cos(rad_angle) - rel_y * math.sin(rad_angle)
         new_rel_y = rel_x * math.sin(rad_angle) + rel_y * math.cos(rad_angle)
         self.anchor = (new_rel_x + new_w / 2)/new_w, (new_rel_y + new_h / 2)/new_h
+        # notify the master for a change
+        self.notify_change()

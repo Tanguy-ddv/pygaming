@@ -85,6 +85,8 @@ class Element(ABC):
             self._y = new_y
         if not new_x is None:
             self._x = new_x
+        
+        self.notify_change()
 
     def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
         """Return True if the mouse is hovering the element."""
