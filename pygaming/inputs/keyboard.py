@@ -23,10 +23,10 @@ class Keyboard:
     def load_controls(self, settings: Settings, config: Config, phase_name: str):
         """Load the new controls"""
         self.controls = Controls(settings, config, phase_name)
-        self._control_mapping = self.controls.get_reversed_mapping()
+        self.update_settings()
         self.udpate_actions_down()
         self.update_actions_up()
-        self.actions_pressed = self.actions_down
+        self.actions_pressed = self.actions_down.copy()
 
     def update_settings(self):
         """Update the controls."""
@@ -77,9 +77,9 @@ class Keyboard:
         Update the dict of str: bool specifying if the action is triggered or not.
         The action is triggered if the user is pressing the key.
         """
-        for key, upped in self.actions_down.items():
-            if upped:
-                self.actions_pressed[key] = False
+        for key, downed in self.actions_down.items():
+            if downed:
+                self.actions_pressed[key] = True
         for key, upped in self.actions_up.items():
             if upped:
-                self.actions_pressed[key] = True
+                self.actions_pressed[key] = False
