@@ -68,6 +68,23 @@ class Element(ABC):
 
         self._last_surface: pygame.Surface = None
         self._surface_changed: bool = True
+    
+    def move(self, new_x: int = None, new_y: int = None, new_anchor: tuple[float, float] = None):
+        """
+        Move the element in the master frame.
+        
+        Params:
+        ---
+        - new_x: int = None. If specified, change the current x of the element. Otherwise do not change it.
+        - new_y: int = None. If specified, change the current y of the element. Otherwise do not change it.
+        - new_anchore: tuple[float, float] = None. If specified, change the current anchor of the element. Otherwise do not change it.
+        """
+        if not new_anchor is None:
+            self.anchor = new_anchor
+        if not new_y is None:
+            self._y = new_y
+        if not new_x is None:
+            self._x = new_x
 
     def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
         """Return True if the mouse is hovering the element."""
@@ -151,10 +168,16 @@ class Element(ABC):
     def hide(self):
         """Hide the object."""
         self.visible = False
+        self.master.notify_change()
 
     def show(self):
         """Show the object."""
         self.visible = True
+        self.master.notify_change()
+    
+    def is_visible(self):
+        """Return wether the widget is visible or not."""
+        return self.visible and self.master.is_visible()
 
     def enable(self):
         """Enable the object if it can be disabled."""

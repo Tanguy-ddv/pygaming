@@ -7,6 +7,7 @@ from ..error import PygamingException
 from .element import Element
 from .art.art import Art
 from .window import Window, WindowLike
+from ..inputs import Click
 
 class Frame(Element):
     """
@@ -97,16 +98,14 @@ class Frame(Element):
                 surf, cursor = child.update_hover()
         return surf, cursor
 
-    def update_focus(self, click_x, click_y):
+    def update_focus(self, click: Click | None):
         """Update the focus of all the children in the frame."""
-        click_x -= self._x
-        click_y -= self._y
         self.focused = True
         self.switch_background()
         one_is_clicked = False
 
         for (i,child) in enumerate(self._widget_children):
-            if child.relative_rect.collidepoint(click_x, click_y):
+            if child.is_contact(click):
                 child.focus()
                 self._current_object_focus = i
                 one_is_clicked = True
@@ -115,11 +114,21 @@ class Frame(Element):
                 child.unfocus()
         
         for (i, child) in enumerate(self._frame_childern):
-            if child.relative_rect.collidepoint(click_x, click_y):
-                child.update_focus(click_x, click_y)
+            if child.is_contact(click):
+                child.update_focus(click)
         if not one_is_clicked:
             self._current_object_focus = None
             self.has_a_widget_focused = False
+    
+    def notify_change_all(self):
+        """Force the change notification to remake every surface."""
+        self.notify_change()
+
+        for child in self.children:
+            child.notify_change()
+        
+        for frame in self._all_frame_children:
+            frame.notify_change_all()
 
     def unfocus(self):
         """Unfocus the Frame by unfocusing itself and its children"""
@@ -213,8 +222,13 @@ class Frame(Element):
 
     @property
     def _frame_childern(self) -> list[Frame]:
-        """Return all children that are frames."""
+        """Return all children that are visible frames."""
         return list(filter(lambda elem: isinstance(elem, Frame), self.visible_children))
+
+    @property
+    def _all_frame_children(self) -> list[Frame]:
+        """Return all children that are frames, visible or not."""
+        return list(filter(lambda elem: isinstance(elem, Frame), self.children))
 
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the frame as a pygame.Surface"""

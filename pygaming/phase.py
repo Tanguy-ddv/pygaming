@@ -178,12 +178,13 @@ class GamePhase(BasePhase, ABC):
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
-        self.game.update_settings()
         self.game.soundbox = SoundBox(self.settings, self._name, self.database)
         self.game.typewriter = TypeWriter(self.database, self.settings, self._name)
+        self.game.update_settings()
         for frame in self.frames:
             frame.start()
         # Start the phase
+        self.notify_change_all()
         self.start(**kwargs)
 
     def finish(self):
@@ -237,6 +238,15 @@ class GamePhase(BasePhase, ABC):
             return self.game.client
         raise PygamingException("The game is not connected yet, there is no network to reach.")
 
+    def notify_change_all(self):
+        self.notify_change()
+        for frame in self.frames:
+            frame.notify_change_all()
+    
+    def is_visible(self):
+        """Return always True as the phase itself can't be hidden. Used for the recursive is_visible method of elements."""
+        return True
+
     def loop(self, loop_duration: int):
         """Update the phase."""
         self.__update_focus()
@@ -249,11 +259,9 @@ class GamePhase(BasePhase, ABC):
         """Update the focus of all the frames."""
         ck1 = self.mouse.get_click(1)
         if ck1:
-            x = ck1.x
-            y = ck1.y
             for frame in self.frames:
-                if frame.is_contact((x,y)):
-                    frame.update_focus(x, y)
+                if frame.is_contact(ck1):
+                    frame.update_focus(ck1)
                 else:
                     frame.remove_focus()
 
