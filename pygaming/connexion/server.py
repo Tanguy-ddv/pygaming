@@ -94,8 +94,11 @@ class Server:
             try:
                 data = client_socket.recv(self.config.max_communication_length)
                 if data:
-                    json_data = json.loads(data.decode())
-                    self._reception_buffer.append(json_data)
+                    try:
+                        json_data = json.loads(data.decode())
+                        self._reception_buffer.append(json_data)
+                    except json.decoder.JSONDecodeError:
+                        print(f"Unable to understand {data} as a data object.")
             except ConnectionError:
                 for client_sck in self._client_socket_managers:
                     if client_sck.id_ == id_:
