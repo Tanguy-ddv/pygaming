@@ -18,9 +18,9 @@ class Client:
         server_ip = self._discover_server()
         self._connect_to_server(server_ip)
 
-    def send(self, header: str, content: Any, ):
-        """Send the content to the server, specifying the header."""
-        message = {ID : self.id, HEADER : header, PAYLOAD : content, TIMESTAMP : time.time()}
+    def send(self, header: str, payload: Any):
+        """Send the payload to the server, specifying the header."""
+        message = {ID : self.id, HEADER : header, PAYLOAD : payload, TIMESTAMP : time.time()}
         json_data = json.dumps(message)
         self.client_socket.send(json_data.encode())
 
@@ -63,7 +63,7 @@ class Client:
 
     def clean_last(self):
         """Clean the reception."""
-        self._reception_buffer = {}
+        self._reception_buffer = []
 
     def is_server_killed(self):
         """Verify if the server sent EXIT because it is killed."""
