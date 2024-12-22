@@ -27,7 +27,8 @@ class Button(Widget):
         hover_surface: Optional[Surface] = None,
         hover_cursor: Optional[Cursor] = None,
         continue_animation: bool = False,
-        command: Optional[Callable[[],Any]] = None
+        on_click_command: Optional[Callable[[],Any]] = None,
+        on_unclick_command: Optional[Callable[[],Any]] = None
     ) -> None:
         """
         A Button is basic widget used to get a player click.
@@ -49,7 +50,8 @@ class Button(Widget):
         - hover_surface: Surface, The surface to show when the button is hovered.
         - hover_cursor: Cursor The cursor of the mouse to use when the widget is hovered
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
-        - command: a function to be called every time the button is clicked        
+        - on_click_command: a function to be called every time the button is clicked
+        - on_unclick_command: a function to be call every time the button is unclicked
         """
         super().__init__(
             master,
@@ -67,7 +69,8 @@ class Button(Widget):
         )
         self.active_background = active_background if active_background else normal_background
         self._is_clicked = False
-        self._command = command
+        self._on_click_command = on_click_command
+        self._on_unclick_command = on_unclick_command
 
     def get(self):
         """Return true if the button is clicked, false otherwise."""
@@ -85,8 +88,7 @@ class Button(Widget):
         return self.focused_background.get(self.game.settings, self.surface if self._continue_animation else None)
 
     def update(self, loop_duration: int):
-        """Update the widget."""
-
+        """Update the button every loop iteration if it is visible."""
         ck1 = self.game.mouse.get_click(1)
 
         if (
@@ -96,14 +98,13 @@ class Button(Widget):
             )
             or ( # This means the user is clicking on the button
                 self.is_contact(ck1)
-                and self.is_contact((ck1.start_x, ck1.start_y))
-            )
+                and self.is_contact((ck1.start_x, ck1.start_y)))
         ):
             # We verify if the user just clicked or if it is a long click.
             if not self._is_clicked:
                 self.notify_change()
-                if self._command is not None:
-                    self._command()
+                if not self._on_click_command is None:
+                    self._on_click_command()
             else:
                 self.notify_change()
 
@@ -112,6 +113,8 @@ class Button(Widget):
         else:
             if self._is_clicked:
                 self.notify_change()
+                if not self._on_unclick_command is None:
+                    self._on_unclick_command()
             self._is_clicked = False
 
 class TextButton(Button):
@@ -138,7 +141,8 @@ class TextButton(Button):
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,
         continue_animation: bool = False,
-        command: Callable[[], Any] | None = None,
+        on_click_command: Optional[Callable[[],Any]] = None,
+        on_unclick_command: Optional[Callable[[],Any]] = None,
         jusitfy = CENTER
     ) -> None:
         super().__init__(
@@ -155,7 +159,8 @@ class TextButton(Button):
             hover_surface,
             hover_cursor,
             continue_animation,
-            command
+            on_click_command,
+            on_unclick_command
         )
         self.font = font
         self.font_color = font_color
@@ -163,10 +168,16 @@ class TextButton(Button):
         self.justify = jusitfy
 
     def make_surface(self):
-        bg = super().get_surface()
+        bg = super().make_surface()
         rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None)
         text_width, text_height = rendered_text.get_size()
         just_x = self.justify[0]*(bg.get_width() - text_width)
         just_y = self.justify[1]*(bg.get_height() - text_height)
         bg.blit(rendered_text, (just_x, just_y))
         return bg
+    
+    def set_localization_or_text(self, localization_or_text: str):
+        """Set the button text to a new value."""
+        if self.text != localization_or_text:
+            self.text = str(localization_or_text)
+            self.notify_change()
