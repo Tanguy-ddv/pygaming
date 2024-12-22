@@ -14,13 +14,12 @@ class Client:
         self._config = config
         self._reception_buffer = []
         self.last_receptions = []
-        self.id = None
         server_ip = self._discover_server()
         self._connect_to_server(server_ip)
 
     def send(self, header: str, payload: Any):
         """Send the payload to the server, specifying the header."""
-        message = {ID : self.id, HEADER : header, PAYLOAD : payload, TIMESTAMP : time.time()}
+        message = {ID : self.id, HEADER : header, PAYLOAD : payload, TIMESTAMP : int(time.time()*1000)}
         json_data = json.dumps(message)
         self.client_socket.send(json_data.encode())
 
@@ -39,9 +38,18 @@ class Client:
             return server_ip
 
     def _connect_to_server(self, server_ip):
+        # create the socket
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket.connect((server_ip, self._config.server_port))
+        # start receiving data
         threading.Thread(target=self._receive).start()
+        # wait for the welcome message to come.
+        waiting = True
+        while waiting:
+            for reception in self._reception_buffer:
+                if reception[HEADER] == NEW_ID:
+                    self.id = reception[PAYLOAD]
+                    waiting = False
 
     def _receive(self):
         while True:
@@ -49,8 +57,6 @@ class Client:
                 data = self.client_socket.recv(self._config.max_communication_length)
                 if data:
                     json_data = json.loads(data.decode())
-                    if json_data[HEADER] == NEW_ID:
-                        self.id = json_data[PAYLOAD]
                     self._reception_buffer.append(json_data)
             except (ConnectionError, json.JSONDecodeError):
                 self.close()
