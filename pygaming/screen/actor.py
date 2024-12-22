@@ -51,11 +51,6 @@ class Actor(Element):
         self._x += dx
         self._y += dy
 
-    def move(self, new_x, new_y):
-        """Reset the position of the actor in the frame."""
-        self._x = new_x
-        self._y = new_y
-
     def rotate(self, angle):
         """Rotate the actor."""
         w, h = self.main_surface.width, self.main_surface.height
