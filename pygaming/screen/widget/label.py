@@ -64,7 +64,7 @@ class Label(Element):
 
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the Label."""
-        bg = self.surface.get()
+        bg = self.surface.get(self.game.settings)
         if self._show_text:
             rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None)
             text_width, text_height = rendered_text.get_size()
@@ -72,4 +72,11 @@ class Label(Element):
             just_y = self.justify[1]*(self.surface.height - text_height)
             bg.blit(rendered_text, (just_x, just_y))
         return bg
+    
+    def start(self):
+        """Nothing to do at start."""
+        pass
 
+    def end(self):
+        """Nothing to do at the end."""
+        pass

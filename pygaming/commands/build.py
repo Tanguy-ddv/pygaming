@@ -3,9 +3,9 @@ import os
 import json
 import shutil
 import platform
+import importlib.resources
 import PyInstaller.__main__
 from ..error import PygamingException
-import importlib.resources
 
 def build(name: str):
     """
@@ -26,7 +26,6 @@ def build(name: str):
 
     cwd = os.getcwd()
     config_path = os.path.join(cwd, 'data', 'config.json')
-    this_dir = os.path.dirname(__name__)
 
     with open(config_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
@@ -37,7 +36,6 @@ def build(name: str):
     print("The config file has been modified successfully")
 
     cwd= os.getcwd()
-    this_dir = os.path.dirname(__name__)
 
     game_options = [
         '--onefile',

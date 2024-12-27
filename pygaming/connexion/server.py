@@ -7,7 +7,7 @@ import time
 from ..config import Config
 from ._constants import DISCOVERY_PORT, PAYLOAD, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, TIMESTAMP
 
-class ClientSocketManager:
+class _ClientSocketManager:
     """
     This class is used to store the client socked object along with its id, address and port.
 
@@ -40,7 +40,7 @@ class Server:
 
         self._nb_max_player = nb_max_player
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._client_socket_managers: list[ClientSocketManager] = []
+        self._client_socket_managers: list[_ClientSocketManager] = []
         self._running = True
         self._reception_buffer = []
         self.last_receptions = []
@@ -61,7 +61,7 @@ class Server:
                         id_ = max(client_socket_m.id_ for client_socket_m in self._client_socket_managers) +1
                     else:
                         id_ = 1
-                    self._client_socket_managers.append(ClientSocketManager(client_socket, id_, address, port))
+                    self._client_socket_managers.append(_ClientSocketManager(client_socket, id_, address, port))
                     print(f"New client connected: {address} has the id {id_}")
                 else:
                     for client_socket_m in self._client_socket_managers:
@@ -94,8 +94,11 @@ class Server:
             try:
                 data = client_socket.recv(self.config.max_communication_length)
                 if data:
-                    json_data = json.loads(data.decode())
-                    self._reception_buffer.append(json_data)
+                    try:
+                        json_data = json.loads(data.decode())
+                        self._reception_buffer.append(json_data)
+                    except json.decoder.JSONDecodeError:
+                        print(f"Unable to understand {data} as a data object.")
             except ConnectionError:
                 for client_sck in self._client_socket_managers:
                     if client_sck.id_ == id_:

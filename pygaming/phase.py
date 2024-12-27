@@ -1,13 +1,12 @@
 """A phase is one step of the game."""
 from abc import ABC, abstractmethod
-import pygame
 import gc
+import pygame
 from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
 from .server import Server
 from .database import SoundBox, TypeWriter
-
 
 
 class BasePhase(ABC):
@@ -170,6 +169,7 @@ class GamePhase(BasePhase, ABC):
         self.absolute_top = 0
         self.current_hover_surface = None
         self._surface_changed = True
+        self._last_surface = None
 
     def add_child(self, frame):
         """Add a new frame to the phase."""
@@ -178,19 +178,20 @@ class GamePhase(BasePhase, ABC):
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
-        self.game.update_settings()
         self.game.soundbox = SoundBox(self.settings, self._name, self.database)
         self.game.typewriter = TypeWriter(self.database, self.settings, self._name)
+        self.game.update_settings()
         for frame in self.frames:
-            frame.start()
+            frame.begin()
         # Start the phase
+        self.notify_change_all()
         self.start(**kwargs)
-    
+
     def finish(self):
         """This method is called at the end of the phase."""
         self.game.soundbox = None # Unload all the sounds
         self.game.typewriter = None # Unload all the fonts
-        for frame in self.frames: # Unload 
+        for frame in self.frames: # Unload
             frame.end()
         self.end()
         gc.collect()
@@ -199,7 +200,7 @@ class GamePhase(BasePhase, ABC):
     def game(self) -> Game:
         """Alias for the game."""
         return self.runnable
-    
+
     @property
     def typewriter(self):
         """Alias for self.game.typewriter"""
@@ -237,6 +238,15 @@ class GamePhase(BasePhase, ABC):
             return self.game.client
         raise PygamingException("The game is not connected yet, there is no network to reach.")
 
+    def notify_change_all(self):
+        self.notify_change()
+        for frame in self.frames:
+            frame.notify_change_all()
+    
+    def is_visible(self):
+        """Return always True as the phase itself can't be hidden. Used for the recursive is_visible method of elements."""
+        return True
+
     def loop(self, loop_duration: int):
         """Update the phase."""
         self.__update_focus()
@@ -249,11 +259,9 @@ class GamePhase(BasePhase, ABC):
         """Update the focus of all the frames."""
         ck1 = self.mouse.get_click(1)
         if ck1:
-            x = ck1.x
-            y = ck1.y
             for frame in self.frames:
-                if frame.is_contact((x,y)):
-                    frame.update_focus(x, y)
+                if frame.is_contact(ck1):
+                    frame.update_focus(ck1)
                 else:
                     frame.remove_focus()
 
@@ -287,7 +295,7 @@ class GamePhase(BasePhase, ABC):
     def visible_frames(self):
         """Return all the visible frames sorted by increasing layer."""
         return sorted(filter(lambda f: f.visible, self.frames), key= lambda w: w.layer)
-    
+
     def make_surface(self) -> pygame.Surface:
         """Make the new surface to be returned to his parent."""
         bg = pygame.Surface(self.config.dimension, pygame.SRCALPHA)

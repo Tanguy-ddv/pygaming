@@ -7,7 +7,7 @@ from ..error import PygamingException
 from .element import Element
 from .art.art import Art
 from .window import Window, WindowLike
-from ..settings import Settings
+from ..inputs import Click
 
 class Frame(Element):
     """
@@ -61,7 +61,7 @@ class Frame(Element):
             self,
             master,
             background,
-            *window.coordinate,
+            *window.topleft,
             window.anchor,
             layer,
             None,
@@ -98,16 +98,14 @@ class Frame(Element):
                 surf, cursor = child.update_hover()
         return surf, cursor
 
-    def update_focus(self, click_x, click_y):
+    def update_focus(self, click: Click | None):
         """Update the focus of all the children in the frame."""
-        click_x -= self._x
-        click_y -= self._y
         self.focused = True
         self.switch_background()
         one_is_clicked = False
 
         for (i,child) in enumerate(self._widget_children):
-            if child.relative_rect.collidepoint(click_x, click_y):
+            if child.is_contact(click) and not child.disabled:
                 child.focus()
                 self._current_object_focus = i
                 one_is_clicked = True
@@ -116,11 +114,21 @@ class Frame(Element):
                 child.unfocus()
         
         for (i, child) in enumerate(self._frame_childern):
-            if child.relative_rect.collidepoint(click_x, click_y):
-                child.update_focus(click_x, click_y)
+            if child.is_contact(click):
+                child.update_focus(click)
         if not one_is_clicked:
             self._current_object_focus = None
             self.has_a_widget_focused = False
+    
+    def notify_change_all(self):
+        """Force the change notification to remake every surface."""
+        self.notify_change()
+
+        for child in self.children:
+            child.notify_change()
+        
+        for frame in self._all_frame_children:
+            frame.notify_change_all()
 
     def unfocus(self):
         """Unfocus the Frame by unfocusing itself and its children"""
@@ -133,7 +141,7 @@ class Frame(Element):
         """Change the focused object."""
         if self.focused and self.has_a_widget_focused:
 
-            widget_children = self._widget_children
+            widget_children = [wc for wc in self._widget_children if not wc.disabled]
             if len(widget_children) > 1:
 
                 for element in widget_children:
@@ -166,18 +174,17 @@ class Frame(Element):
         self.notify_change()
     
     def start(self):
-        """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
-        self.surface.start(self.game.settings)
+        """Execute this method at the beginning of the phase."""
         for child in self.children:
-            child.start()
+            child.begin()
         self.focused_background.start(self.game.settings)
-        self.window.load()
+        self.window.load(self.game.settings)
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
         self.surface.unload()
         for child in self.children:
-            child.end()
+            child.finish()
         self.focused_background.unload()
         self.window.unload()
 
@@ -213,15 +220,20 @@ class Frame(Element):
 
     @property
     def _frame_childern(self) -> list[Frame]:
-        """Return all children that are frames."""
+        """Return all children that are visible frames."""
         return list(filter(lambda elem: isinstance(elem, Frame), self.visible_children))
+
+    @property
+    def _all_frame_children(self) -> list[Frame]:
+        """Return all children that are frames, visible or not."""
+        return list(filter(lambda elem: isinstance(elem, Frame), self.children))
 
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
-            background = self.focused_background.get(match=self.surface)
+            background = self.focused_background.get(self.game.settings, match=self.surface)
         else:
-            background = self.surface.get()
+            background = self.surface.get(self.game.settings)
         for child in self.visible_children:
             child_rect = child.relative_rect
             if child_rect.colliderect((0, 0, *self.window.size)):

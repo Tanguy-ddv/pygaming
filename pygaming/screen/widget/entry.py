@@ -1,9 +1,9 @@
 """Then entry module contains the entry widget."""
 
 from typing import Optional
-from pygame import Cursor, Rect, Surface, draw
+from pygame import Cursor, Surface, draw
 from .widget import Widget
-from ..element import TOP_LEFT, CENTER
+from ..anchors import TOP_LEFT, CENTER
 from ..frame import Frame
 from ...color import Color
 from ..art.art import Art
@@ -112,7 +112,7 @@ class Entry(Widget):
 
         self._justify = justify
         self._caret_width = caret_width
-        
+
         self._caret_index = len(self._text)
         self._caret_frequency = caret_frequency
         self._show_caret = True
@@ -122,19 +122,35 @@ class Entry(Widget):
         """Set a new value for the entry."""
         self._text = str(new_text)
         self.notify_change()
+    
+    def start(self):
+        """Nothing to do at the start of the phase for this widget."""
+        pass
+
+    def end(self):
+        """Nothing to do at the end of the phase for this widget."""
 
     def get(self):
         """Return the textual value currently entered."""
         return self._text
 
     def _make_disabled_surface(self) -> Surface:
-        return self._make_surface(self.disabled_background.get(self.surface if self._continue_animation else None), self._disabled_font, self._disabled_font_color, False)
+        return self._make_surface(
+            self.disabled_background.get(self.surface if self._continue_animation else None),
+            self._disabled_font, self._disabled_font_color, False
+        )
 
     def _make_focused_surface(self) -> Surface:
-        return self._make_surface(self.focused_background.get(self.surface if self._continue_animation else None), self._focused_font, self._focused_font_color, self._show_caret)
+        return self._make_surface(
+            self.focused_background.get(self.surface if self._continue_animation else None),
+            self._focused_font, self._focused_font_color, self._show_caret
+        )
 
     def _make_normal_surface(self) -> Surface:
-        return self._make_surface(self.normal_background.get(), self._normal_font, self._normal_font_color, False)
+        return self._make_surface(
+            self.normal_background.get(self.game.settings),
+            self._normal_font, self._normal_font_color, False
+        )
 
     def _make_surface(self, background: Surface, font: str, color: Color, caret: bool):
         rendered_text = self.game.typewriter.render(font, self._text, color)
@@ -151,7 +167,7 @@ class Entry(Widget):
     def update(self, loop_duration: int):
         """Update the entry with the inputs."""
         # Update the caret
-        if self.focused:
+        if self.focused and not self.disabled:
             self._caret_delta += loop_duration/self._caret_frequency
             if self._caret_delta > 1:
                 self.notify_change()

@@ -3,7 +3,7 @@
 from typing import Optional, Callable, Any
 from pygame import Cursor, Rect, Surface
 from ..frame import Frame
-from ..element import TOP_LEFT, CENTER
+from ..anchors import TOP_LEFT, CENTER
 from .widget import Widget
 from ..art import Art
 from ...color import Color
@@ -27,7 +27,8 @@ class Button(Widget):
         hover_surface: Optional[Surface] = None,
         hover_cursor: Optional[Cursor] = None,
         continue_animation: bool = False,
-        command: Optional[Callable[[],Any]] = None
+        on_click_command: Optional[Callable[[],Any]] = None,
+        on_unclick_command: Optional[Callable[[],Any]] = None
     ) -> None:
         """
         A Button is basic widget used to get a player click.
@@ -49,7 +50,8 @@ class Button(Widget):
         - hover_surface: Surface, The surface to show when the button is hovered.
         - hover_cursor: Cursor The cursor of the mouse to use when the widget is hovered
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
-        - command: a function to be called every time the button is clicked        
+        - on_click_command: a function to be called every time the button is clicked
+        - on_unclick_command: a function to be call every time the button is unclicked
         """
         super().__init__(
             master,
@@ -67,55 +69,68 @@ class Button(Widget):
         )
         self.active_background = active_background if active_background else normal_background
         self._is_clicked = False
-        self._command = command
+        self._on_click_command = on_click_command
+        self._on_unclick_command = on_unclick_command
 
     def get(self):
         """Return true if the button is clicked, false otherwise."""
         return self._is_clicked
 
     def _make_disabled_surface(self) -> Surface:
-        return self.disabled_background.get(self.surface if self._continue_animation else None)
+        return self.disabled_background.get(self.game.settings, self.surface if self._continue_animation else None)
 
     def _make_normal_surface(self) -> Surface:
-        return self.normal_background.get(self.surface if self._continue_animation else None)
+        return self.normal_background.get(self.game.settings, self.surface if self._continue_animation else None)
 
     def _make_focused_surface(self) -> Surface:
         if self._is_clicked:
-            return self.active_background.get(self.surface if self._continue_animation else None)
-        return self.focused_background.get()
+            return self.active_background.get(self.game.settings, self.surface if self._continue_animation else None)
+        return self.focused_background.get(self.game.settings, self.surface if self._continue_animation else None)
+
+    def start(self):
+        """Nothing to do at the start of the phase for this widget."""
+        pass
+
+    def end(self):
+        """Nothing to do at the end of the phase for this widget."""
+        pass
 
     def update(self, loop_duration: int):
-        """Update the widget."""
+        """Update the button every loop iteration if it is visible."""
+        if not self.disabled:
+            ck1 = self.game.mouse.get_click(1)
 
-        ck1 = self.game.mouse.get_click(1)
+            if (
+                (   # This means the user is pressing 'return' while the button is focused
+                    self.focused
+                    and self.game.keyboard.actions_down['return']
+                )
+                or ( # This means the user is clicking on the button
+                    self.is_contact(ck1)
+                    and self.is_contact((ck1.start_x, ck1.start_y)))
+            ):
+                # We verify if the user just clicked or if it is a long click.
+                if not self._is_clicked:
+                    self.notify_change()
+                    if not self._on_click_command is None:
+                        self._on_click_command()
+                else:
+                    self.notify_change()
 
-        if (
-            (   # This means the user is pressing 'return' while the button is focused
-                self.focused
-                and self.game.keyboard.actions_down['return']
-            )
-            or ( # This means the user is clicking on the button
-                ck1 is not None
-                and self.is_contact((ck1.x - self.absolute_left, ck1.y - self.absolute_top))
-                and self.is_contact((ck1.start_x - self.absolute_left, ck1.start_y - self.absolute_top))
-            )
-        ):
-            # We verify if the user just clicked or if it is a long click.
-            if not self._is_clicked:
-                self.notify_change()
-                if self._command is not None:
-                    self._command()
+                self._is_clicked = True
+
             else:
-                self.notify_change()
-
-            self._is_clicked = True
-
-        else:
-            if self._is_clicked:
-                self.notify_change()
-            self._is_clicked = False
+                if self._is_clicked:
+                    self.notify_change()
+                    if not self._on_unclick_command is None:
+                        self._on_unclick_command()
+                self._is_clicked = False
 
 class TextButton(Button):
+    """
+    A Button is a basic widget used to get a player click.
+    A text is displayed on this button.
+    """
 
     def __init__(
         self,
@@ -135,7 +150,8 @@ class TextButton(Button):
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,
         continue_animation: bool = False,
-        command: Callable[[], Any] | None = None,
+        on_click_command: Optional[Callable[[],Any]] = None,
+        on_unclick_command: Optional[Callable[[],Any]] = None,
         jusitfy = CENTER
     ) -> None:
         super().__init__(
@@ -152,19 +168,25 @@ class TextButton(Button):
             hover_surface,
             hover_cursor,
             continue_animation,
-            command
+            on_click_command,
+            on_unclick_command
         )
         self.font = font
         self.font_color = font_color
         self.text = localization_or_text
         self.justify = jusitfy
-        self._bg_width, self._bg_height = self.surface.width, self.surface.height
 
     def make_surface(self):
-        bg = super().get_surface()
+        bg = super().make_surface()
         rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None)
         text_width, text_height = rendered_text.get_size()
         just_x = self.justify[0]*(bg.get_width() - text_width)
         just_y = self.justify[1]*(bg.get_height() - text_height)
         bg.blit(rendered_text, (just_x, just_y))
         return bg
+    
+    def set_localization_or_text(self, localization_or_text: str):
+        """Set the button text to a new value."""
+        if self.text != localization_or_text:
+            self.text = str(localization_or_text)
+            self.notify_change()

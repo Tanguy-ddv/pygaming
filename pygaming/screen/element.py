@@ -7,14 +7,14 @@ from .art.art import Art
 from ..error import PygamingException
 from .mask import Mask
 from .anchors import TOP_LEFT
-from ..settings import Settings
+from ..inputs import Click
 
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
 
     def __init__(
         self,
-        master : Union[GamePhase | 'Element'], # Frame or phase, no direct typing of frame to avoid circular import
+        master: Union[GamePhase, 'Element'], # Frame or phase, no direct typing of frame to avoid circular import
         surface: Art,
         x: int,
         y: int,
@@ -51,9 +51,7 @@ class Element(ABC):
         self.disabled = False
 
         self.surface = surface
-        if active_area is None:
-            active_area = pygame.mask.from_surface(self.surface.surfaces[0], 127)
-        if active_area.get_size() != self.surface.size:
+        if not active_area is None and active_area.get_size() != self.surface.size:
             raise PygamingException("The active area must have the size than the art.")
         self._active_area = active_area
 
@@ -71,11 +69,38 @@ class Element(ABC):
         self._last_surface: pygame.Surface = None
         self._surface_changed: bool = True
     
-    def is_contact(self, mouse_pos: tuple[int, int]):
-        x, y = mouse_pos
+    def move(self, new_x: int = None, new_y: int = None, new_anchor: tuple[float, float] = None):
+        """
+        Move the element in the master frame.
+        
+        Params:
+        ---
+        - new_x: int = None. If specified, change the current x of the element. Otherwise do not change it.
+        - new_y: int = None. If specified, change the current y of the element. Otherwise do not change it.
+        - new_anchore: tuple[float, float] = None. If specified, change the current anchor of the element. Otherwise do not change it.
+        """
+        if not new_anchor is None:
+            self.anchor = new_anchor
+        if not new_y is None:
+            self._y = new_y
+        if not new_x is None:
+            self._x = new_x
+        
+        self.notify_change()
+
+    def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
+        """Return True if the mouse is hovering the element."""
+        if mouse_pos is None:
+            return False
+        elif isinstance(mouse_pos, Click):
+            x, y = mouse_pos.x, mouse_pos.y
+        else:
+            x, y = mouse_pos
         x -= self.absolute_left
         y -= self.absolute_top
-        return self._active_area.get_at((x,y))
+        if x < 0 or x >= self.width or y < 0 or y >= self.height:
+            return False
+        return bool(self._active_area.get_at((x,y)))
 
     @property
     def game(self):
@@ -109,18 +134,34 @@ class Element(ABC):
         if has_changed:
             self.notify_change()
         self.update(loop_duration)
-    
-    def start(self):
-        """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
-        self.surface.start(self.game.settings)
-        if isinstance(self._active_area, Mask):
-            self._active_area.load()
 
-    def end(self):
-        """Execute this method at the end of the phase, unload all the arts."""
+    def begin(self):
+        """Execute this method at the beginning of the phase to load the active area and the surface before running class-specific start method."""
+        if isinstance(self._active_area, Mask):
+            self._active_area.load(self.game.settings)
+        elif self._active_area is None:
+            self.surface.set_load_on_start()
+            self.surface.start(self.game.settings)
+            self._active_area = pygame.mask.from_surface(self.surface.surfaces[0], 127)
+        self.notify_change()
+        self.start()
+
+    @abstractmethod
+    def start(self):
+        """Execute this method at the beginning of the phase."""
+        raise NotImplementedError()
+
+    def finish(self):
+        """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
         self.surface.unload()
         if isinstance(self._active_area, Mask):
             self._active_area.unload()
+        self.end()
+
+    @abstractmethod
+    def end(self):
+        """Execute this method at the end of the phase."""
+        raise NotImplementedError()
 
     @abstractmethod
     def update(self, loop_duration: int):
@@ -142,10 +183,16 @@ class Element(ABC):
     def hide(self):
         """Hide the object."""
         self.visible = False
+        self.master.notify_change()
 
     def show(self):
         """Show the object."""
         self.visible = True
+        self.master.notify_change()
+    
+    def is_visible(self):
+        """Return wether the widget is visible or not."""
+        return self.visible and self.master.is_visible()
 
     def enable(self):
         """Enable the object if it can be disabled."""

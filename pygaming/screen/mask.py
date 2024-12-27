@@ -9,13 +9,14 @@ The last one is combinations or transformation of other masks.
 """
 
 from abc import ABC, abstractmethod
-import numpy as np
 from typing import Callable
+import numpy as np
+from PIL import Image
+import cv2
 from pygame import Surface, surfarray as sa, SRCALPHA, draw, Rect
 from ..error import PygamingException
 from ..file import get_file
-from PIL import Image
-import cv2
+from ..settings import Settings
 
 # Mask effects
 ALPHA = 'alpha'
@@ -28,36 +29,40 @@ _EFFECT_LIST = [ALPHA, DARKEN, LIGHTEN, SATURATE, DESATURATE]
 
 class Mask(ABC):
     """Mask is an abstract class for all masks."""
-    
+
     def __init__(self, width: int, height: int) -> None:
         super().__init__()
         self._loaded = False
         self._width = width
         self._height = height
         self.matrix: np.ndarray = None
-    
+        self.settings = None
+
     @property
     def width(self):
+        """The width of the mask."""
         return self._width
-    
+
     @property
     def height(self):
+        """The height of the mask."""
         return self._height
 
     @abstractmethod
-    def _load(self):
+    def _load(self, settings: Settings):
         raise NotImplementedError()
-    
-    def load(self):
+
+    def load(self, settings: Settings):
         """Load the mask."""
-        self._load()
+        self.settings = settings
+        self._load(settings)
         self._loaded = True
 
     def unload(self):
         """Unload the mask."""
         self.matrix = None
         self._loaded = False
-    
+
     def is_loaded(self):
         """Return True if the mask is loaded, False otherwise."""
         return self._loaded
@@ -65,37 +70,37 @@ class Mask(ABC):
     def get_size(self) -> tuple[int, int]:
         """Return the size of the mask"""
         return (self.width, self.height)
-    
+
     def apply(self, surface: Surface, effects: dict[str, float]):
         """Apply the mask to an image."""
         if not self._loaded:
-            self.load()
-        
+            self.load(self.settings)
+
         if surface.get_size() != (self._width, self._height):
             raise PygamingException("The size of the mask do not match the size of the art.")
-    
-        if not len(effects):
+
+        if not effects:
             return
 
         if ALPHA in effects:
             surf_alpha = sa.array_alpha(surface)
-            surf_alpha[:] = np.astype(np.clip(surf_alpha * self.matrix * effects[ALPHA], 0, 255), surf_alpha.dtype)
+            surf_alpha[:] = np.astype(np.clip(surf_alpha * self.matrix * effects[ALPHA]/100, 0, 255), surf_alpha.dtype)
 
         if any(effect in _EFFECT_LIST for effect in effects):
             rgb_array = sa.pixels3d(surface)
             hls_array = cv2.cvtColor(rgb_array, cv2.COLOR_RGB2HLS)
 
             if DARKEN in effects:
-                hls_array[:,:, 1] = hls_array[:,:, 1] * (1 - self.matrix * effects[DARKEN]) 
+                hls_array[:,:, 1] = hls_array[:,:, 1] * (1 - self.matrix * effects[DARKEN]/100)
 
             elif LIGHTEN in effects:
-                hls_array[:,:, 1] = 255 - (255 - hls_array[:,:, 1]) * (1 - self.matrix * effects[LIGHTEN]) 
+                hls_array[:,:, 1] = 255 - (255 - hls_array[:,:, 1]) * (1 - self.matrix * effects[LIGHTEN]/100)
 
             if DESATURATE in effects:
-                hls_array[:,:, 2] = hls_array[:,:, 2] * (1 - self.matrix * effects[DESATURATE])
+                hls_array[:,:, 2] = hls_array[:,:, 2] * (1 - self.matrix * effects[DESATURATE]/100)
 
             elif SATURATE in effects:
-                hls_array[:,:, 2] = 255 - (255 - hls_array[:,:, 2]) * (1 - self.matrix * effects[SATURATE])
+                hls_array[:,:, 2] = 255 - (255 - hls_array[:,:, 2]) * (1 - self.matrix * effects[SATURATE]/100)
 
             rgb_array[:] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[:].astype(rgb_array.dtype)
 
@@ -107,52 +112,52 @@ class Mask(ABC):
         Return the value of the matrix at this coordinate.
         """
         if not self.is_loaded():
-            self.load()
-        return self.matrix[pos]
+            self.load(self.settings)
+        return not bool(self.matrix[int(pos[0]), int(pos[1])])
 
     def set_at(self, pos: tuple[int, int], value: float):
         """
         Set a new value for the matrix at this coordinate.
         """
         if not self.is_loaded():
-            self.load()
+            self.load(self.settings)
         self.matrix[pos] = min(1, max(0, value))
-    
+
     def not_null_columns(self):
         """Return the list of indices of the columns that have at least one value different from 0."""
         if not self.is_loaded():
-            self.load()
+            self.load(self.settings)
         return np.where(self.matrix.any(axis=0))[0]
 
     def not_null_rows(self):
         """Return the list of indices of the rows that have at least one value different from 0."""
         if not self.is_loaded():
-            self.load()
+            self.load(self.settings)
         return np.where(self.matrix.any(axis=1))[0]
 
     def is_empty(self):
         """Return True if all the pixels in the mask are set to 0."""
         if not self.is_loaded():
-            self.load()
+            self.load(self.settings)
         return np.sum(self.matrix) == 0
-    
+
     def is_full(self):
         """Return True if all the pixels in the mask are set to 1."""
         if not self.is_loaded():
-            self.load()
+            self.load(self.settings)
         return np.sum(self.matrix) == self.height*self.width
 
 class MatrixMask(Mask):
     """A matrix mask is a mask based on a matrix."""
-    
+
     def __init__(self, width: int, height: int, matrix: np.ndarray) -> None:
         super().__init__(width, height)
         self.matrix = np.clip(matrix, 0, 1)
 
     def unload(self):
         """Don't do anything as we want to keep the matrix."""
-    
-    def _load(self):
+
+    def _load(self, settings: Settings):
         """Don't do anything as the matrix is already loaded."""
 
 class Circle(Mask):
@@ -165,12 +170,12 @@ class Circle(Mask):
             center = width/2 - 0.5, height/2 - 0.5
         self.center = center
 
-    def _load(self):
+    def _load(self, settings: Settings):
         grid_x, grid_y = np.ogrid[:self._width, :self._height]
         distances = np.sqrt((grid_x - self.center[0]) ** 2 + (grid_y - self.center[1]) ** 2)
         self.matrix = (distances > self.radius).astype(int)
 
-class Ellipsis(Mask):
+class Ellipse(Mask):
     """An Ellipsis is a mask with two values: 0 in the ellipsis and 1 outside."""
 
     def __init__(self, width: int, height: int, x_radius: int, y_radius: int, center: tuple[int, int] = None):
@@ -180,12 +185,12 @@ class Ellipsis(Mask):
         if center is None:
             center = width/2 - 0.5, height/2 - 0.5
         self.center = center
-    
-    def _load(self):
+
+    def _load(self, settings: Settings):
         grid_y, grid_x = np.ogrid[:self._height, :self._width]
         distances = np.sqrt((grid_x - self.center[0]) ** 2 / self.x_radius**2 + (grid_y - self.center[1]) ** 2 / self.y_radius**2)
         self.matrix = (distances > 1).astype(int)
-    
+
 class Rectangle(Mask):
     """A Rectangle is a mask with two values: 0 inside the rectangle and 1 outside."""
 
@@ -205,7 +210,7 @@ class Rectangle(Mask):
         Example:
         ----
         >>> r = Rectangle(6, 4, 2, 1, 4, 5)
-        >>> r.load()
+        >>> r.load(settings)
         >>> print(r.matrix)
         >>> [[1 1 1 1 1 1]
              [1 1 0 0 0 1]
@@ -219,7 +224,7 @@ class Rectangle(Mask):
         self.right = right
         self.bottom = bottom
 
-    def _load(self):
+    def _load(self, settings: Settings):
         grid_y, grid_x = np.ogrid[:self._height, :self._width]
         self.matrix = 1 - ((self.left <= grid_x) & (grid_x <= self.right) & (self.top <= grid_y) & (grid_y <= self.bottom)).astype(int)
 
@@ -232,10 +237,10 @@ class Polygon(Mask):
 
     def __init__(self, width: int, height: int, points: list[tuple[int, int]]) -> None:
         super().__init__(width, height)
-        
+
         self.points = points
-    
-    def _load(self):
+
+    def _load(self, settings: Settings):
         surf = Surface((self._width, self._height), SRCALPHA)
         draw.polygon(surf, (0, 0, 0, 255), self.points)
         self.matrix = 1 - sa.array_alpha(surf)/255
@@ -250,8 +255,8 @@ class RoundedRectangle(Mask):
         self.right = right
         self.bottom = bottom
         self.radius = radius
-    
-    def _load(self):
+
+    def _load(self, settings: Settings):
         surf = Surface((self._width, self._height), SRCALPHA)
         draw.rect(surf, (0, 0, 0, 255), Rect(self.left, self.top, self.right - self.left, self.bottom - self.top), 0, self.radius)
         self.matrix = 1 - sa.array_alpha(surf)/255
@@ -282,7 +287,7 @@ class GradientCircle(Mask):
             center = width/2 - 0.5, height/2 - 0.5
         self.center = center
 
-    def _load(self):
+    def _load(self, settings: Settings):
         grid_x, grid_y = np.ogrid[:self._width, :self._height]
         distances = np.sqrt((grid_x - self.center[0]) ** 2 + (grid_y - self.center[1]) ** 2)
         self.matrix = np.clip((distances - self.inner_radius)/(self.outer_radius - self.inner_radius), 0, 1)
@@ -310,7 +315,7 @@ class GradientRectangle(Mask):
         outer_bottom: int = None,
         transition: Callable[[float], float] = lambda x:x,
     ):
-        
+
         super().__init__(width, height)
 
         if outer_left is None:
@@ -326,10 +331,10 @@ class GradientRectangle(Mask):
         if outer_bottom < inner_bottom or outer_top > inner_top or outer_left > inner_left or outer_right < inner_right:
             raise ValueError(
                 f"""The outer rectangle cannot be inside of the inner rectangle, got
-                inner = ({inner_left, inner_right, inner_top, inner_bottom}) and outer = ({outer_left, outer_right, outer_top, outer_bottom})"""
+                inner = ({inner_left, inner_right, inner_top, inner_bottom})
+                and outer = ({outer_left, outer_right, outer_top, outer_bottom})"""
             )
 
-        
         self.inner_left = inner_left
         self.inner_right = inner_right
         self.inner_bottom = inner_bottom
@@ -342,7 +347,7 @@ class GradientRectangle(Mask):
 
         self.transition = transition
 
-    def _load(self):
+    def _load(self, settings: Settings):
         y_indices, x_indices = np.meshgrid(np.arange(self.height), np.arange(self.width), indexing='ij')
 
         left_dist = np.clip((self.inner_left - x_indices) / (self.inner_left - self.outer_left + 1), 0, 1)
@@ -352,22 +357,21 @@ class GradientRectangle(Mask):
 
         self.matrix = self.transition(np.clip(np.sqrt(left_dist**2 + right_dist**2 + top_dist**2 + bottom_dist**2), 0, 1))
 
-
 class FromArtAlpha(Mask):
     """A mask from the alpha layer of an art."""
-    
+
     def __init__(self, art, index: int= 0) -> None:
 
         super().__init__(art.width, art.height)
         self.art = art
         self.index = index
-    
-    def _load(self):
+
+    def _load(self, settings: Settings):
         need_to_unload = False
         if not self.art.is_loaded:
             need_to_unload = True
-            self.art.load()
-        
+            self.art.load(settings)
+
         self.matrix = 1 - sa.array_alpha(self.art.surfaces[self.index])/255
 
         if need_to_unload:
@@ -377,22 +381,22 @@ class FromArtColor(Mask):
     """
     A mask from a mapping of the color layers.
     
-    Every pixel of the art is mapped to a value betwenn 0 and 1.
+    Every pixel of the art is mapped to a value between 0 and 1 with the provided function.
     Selects only one image of the art based on the index.
     """
 
-    def __init__(self, width: int, height: int, art, map: Callable[[int, int, int], float], index: int = 0) -> None:
+    def __init__(self, width: int, height: int, art, function: Callable[[int, int, int], float], index: int = 0) -> None:
         super().__init__(art.width, art.height)
         self.art = art
         self.index = index
-        self.map = map
+        self.map = function
 
-    def _load(self):
+    def _load(self, settings: Settings):
         need_to_unload = False
         if not self.art.is_loaded:
             need_to_unload = True
-            self.art.load()
-        
+            self.art.load(settings)
+
         self.matrix = np.apply_along_axis(self.map, 2, sa.array2d(self.art.surfaces[self.index]))
 
         if need_to_unload:
@@ -402,38 +406,19 @@ class FromImageColor(Mask):
     """
     A mask from an image.
     
-    Every pixel of the image is mapped to a value betwenn 0 and 1.
+    Every pixel of the art is mapped to a value between 0 and 1 with the provided function.
     """
 
-    def __init__(self, width: int, height: int, path: str, map: Callable[[int, int, int], float]) -> None:
+    def __init__(self, width: int, height: int, path: str, function: Callable[[int, int, int], float]) -> None:
         self.path = get_file('images', path)
         self.im = Image.open(self.path)
         width, height = self.im.size
         super().__init__(width, height)
-        self.map = map
-    
-    def _load(self):
+        self.map = function
+
+    def _load(self, settings: Settings):
         rgb_array = np.array(self.im.convert('RGB'))
         self.matrix = np.apply_along_axis(self.map, 2, rgb_array)
-
-class FromImageColor(Mask):
-    """
-    A mask from the alpha layer of an image.
-    """
-
-    def __init__(self, width: int, height: int, path: str) -> None:
-        self.path = get_file('images', path)
-        self.im = Image.open(self.path)
-        width, height = self.im.size
-        super().__init__(width, height)
-    
-    def _load(self):
-        try:
-            rgba_array = np.array(self.im.convert('RGBA'))
-        except:
-            raise PygamingException(f"The image {self.path} do not have any alpha layer and thus cannot create a mask.")
-
-        self.matrix = rgba_array[:, :, 3]
 
 class _MaskCombination(Mask, ABC):
     """MaskCombinations are abstract class for all mask combinations: sum, products and average"""
@@ -444,16 +429,16 @@ class _MaskCombination(Mask, ABC):
             raise PygamingException("All masks must have the same shape.")
         super().__init__(masks[0].width, masks[0].height)
         self.masks = masks
-    
+
     @abstractmethod
     def _combine(self, *matrices: np.ndarray) -> np.ndarray:
         raise NotImplementedError()
 
-    def _load(self):
+    def _load(self, settings: Settings):
         for mask in self.masks:
             if not mask.is_loaded():
-                mask.load()
-        
+                mask.load(settings)
+
         self._combine(*(mask.matrix for mask in self.masks))
 
 class SumOfMasks(_MaskCombination):
@@ -463,7 +448,7 @@ class SumOfMasks(_MaskCombination):
     """
 
     def _combine(self, *matrices):
-        return np.clip(np.sum(matrices))
+        return np.clip(np.sum(matrices), 0, 1)
 
 class ProductOfMasks(_MaskCombination):
     """
@@ -489,23 +474,23 @@ class AverageOfMasks(_MaskCombination):
         self.matrix = 0
         for matrix, weight in zip(matrices, self.weights):
             self.matrix += matrix*weight
-        
+
         self.matrix /= sum(self.weights)
-    
+
 class BlitMaskOnMask(_MaskCombination):
     """
     A blit mask on mask is a mask where the values of the background below (or above) a given threshold are replaced
     by the values on the foreground.
     """
 
-    def __init__(self, background: Mask, foreground: Mask, threshold: float = 0, reversed: bool = False):
+    def __init__(self, background: Mask, foreground: Mask, threshold: float = 0, reverse: bool = False):
         super().__init__(background, foreground)
         self.threshold = threshold
-        self.reversed = reversed
-
+        self.reverse = reverse
+    #pylint: disable=arguments-differ
     def _combine(self, background_matrix, foreground_matrix) -> np.ndarray:
         self.matrix = background_matrix
-        if self.reversed:
+        if self.reverse:
             positions_to_keep = background_matrix < self.threshold
         else:
             positions_to_keep = background_matrix > self.threshold
@@ -519,10 +504,10 @@ class InvertedMask(Mask):
     def __init__(self, mask: Mask):
         super().__init__(mask.width, mask.height)
         self._mask = mask
-    
-    def _load(self):
+
+    def _load(self, settings: Settings):
         if not self._mask.is_loaded():
-            self._mask.load()
+            self._mask.load(settings)
         self.matrix = 1 - self._mask.matrix
 
 class TransformedMask(Mask):
@@ -535,11 +520,11 @@ class TransformedMask(Mask):
         super().__init__(mask.width, mask.height)
         self._mask = mask
         self.transformation = transformation
-    
-    def _load(self):
+
+    def _load(self, settings: Settings):
         if not self._mask.is_loaded():
-            self._mask.load()
-        
+            self._mask.load(settings)
+
         self.matrix = np.clip(self.transformation(self._mask.matrix), 0, 1)
         if self.matrix.shape != self._mask.matrix.shape:
             raise PygamingException(f"Shape of the mask changed from {self._mask.matrix.shape} to {self.matrix.shape}")
@@ -548,20 +533,20 @@ class BinaryMask(Mask):
     """
     A binary mask is a mask where every values are 0 or 1. It is based on another mask.
     The matrix of this mask is that every component is 1 if the value on the parent mask
-    is above a thresold and 0 otherwise. (this is reversed if reversed is set to True).
+    is above a thresold and 0 otherwise. (this is reversed if reverse is set to True).
     """
 
-    def __init__(self, mask: Mask, threshold: float, reversed: bool = False):
+    def __init__(self, mask: Mask, threshold: float, reverse: bool = False):
         super().__init__(mask.width, mask.height)
         self.threshold = threshold
         self._mask = mask
-        self.reversed = reversed
-    
-    def _load(self):
+        self.reverse = reverse
+
+    def _load(self, settings: Settings):
         if not self._mask.is_loaded():
-            self._mask.load()
-        
-        if self.reversed:
+            self._mask.load(settings)
+
+        if self.reverse:
             positions_to_keep = self._mask.matrix < self.threshold
         else:
             positions_to_keep = self._mask.matrix > self.threshold

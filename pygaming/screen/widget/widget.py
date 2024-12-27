@@ -1,10 +1,11 @@
 """The widget module contains the widget class, which is a base for all widgets."""
 
 from abc import ABC, abstractmethod
-from ..frame import Frame
 from typing import Optional
-from pygame import Cursor, Surface, Rect
-from ..element import Element, TOP_LEFT
+from pygame import Cursor, Surface, Mask as mk
+from ..frame import Frame
+from ..element import Element
+from ..anchors import TOP_LEFT
 from ..art.art import Art
 from ..mask import Mask
 
@@ -24,7 +25,7 @@ class Widget(Element, ABC):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[Mask] = None,
+        active_area: Optional[Mask | mk] = None,
         layer: int = 0,
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,
@@ -103,8 +104,8 @@ class Widget(Element, ABC):
             has_changed = self.normal_background.update(loop_duration)
             if has_changed:
                 self.notify_change()
-
-        self.update(loop_duration)
+        if self.is_visible():
+            self.update(loop_duration)
 
     def switch_background(self):
         """Switch to the disabled, focused or normal background."""

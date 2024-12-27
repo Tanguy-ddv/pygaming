@@ -1,6 +1,6 @@
 """The game module contains the game class which is used to represent every game."""
 import pygame
-from .database import TypeWriter, Speeches, SoundBox, GAME 
+from .database import TypeWriter, SoundBox, GAME
 from .music import Jukebox
 from .connexion import Client
 from .inputs import Inputs, Mouse, Keyboard
@@ -42,7 +42,7 @@ class Game(BaseRunnable):
         """Update all the component of the game."""
         loop_duration = self.clock.tick(self.config.get("max_frame_rate"))
         self.logger.update(loop_duration)
-        self._inputs.update(loop_duration, self.current_phase)
+        self._inputs.update(loop_duration)
         self._screen.display_phase(self.phases[self.current_phase])
         self._screen.update()
         self.jukebox.update()
@@ -63,7 +63,7 @@ class Game(BaseRunnable):
             self.client.close()
             self.client = None
             self.online = False
-    
+
     def update_settings(self):
         """Update the language."""
         self.typewriter.update_settings()

@@ -23,17 +23,17 @@ class Keyboard:
     def load_controls(self, settings: Settings, config: Config, phase_name: str):
         """Load the new controls"""
         self.controls = Controls(settings, config, phase_name)
-        self._control_mapping = self.controls.get_reversed_mapping()
+        self.update_settings()
         self.udpate_actions_down()
         self.update_actions_up()
-        self.action_pressed = self.actions_down
-    
+        self.actions_pressed = self.actions_down.copy()
+
     def update_settings(self):
         """Update the controls."""
         self.controls.update_settings()
         self._control_mapping = self.controls.get_reversed_mapping()
 
-    def update(self, event_list: list[pygame.event.Event], phase_name: str):
+    def update(self, event_list: list[pygame.event.Event]):
         """Update the keyboard with the event list."""
         self.event_list = event_list
         self.update_actions_up()
@@ -57,7 +57,10 @@ class Keyboard:
         ]
 
     def udpate_actions_down(self):
-        """Return a dict of str: bool specifying if the action is triggered or not. The action is triggered if the user just pressed the key."""
+        """
+        Return a dict of str: bool specifying if the action is triggered or not.
+        The action is triggered if the user just pressed the key.
+        """
         types = [event.key for event in self.event_list if event.type == pygame.KEYDOWN]
         self.actions_down = {
             action : any(int(key) in types for key in keys)
@@ -68,12 +71,15 @@ class Keyboard:
         self.actions_up = {
             action : any(int(key) in types for key in keys)
             for action, keys in self._control_mapping.items()}
-    
+
     def update_actions_pressed(self):
-        """Update the dict of str: bool specifying if the action is triggered or not. The action is triggered if the user is pressing the key."""
-        for key, upped in self.actions_down.items():
-            if upped:
-                self.action_pressed[key] = False
+        """
+        Update the dict of str: bool specifying if the action is triggered or not.
+        The action is triggered if the user is pressing the key.
+        """
+        for key, downed in self.actions_down.items():
+            if downed:
+                self.actions_pressed[key] = True
         for key, upped in self.actions_up.items():
             if upped:
-                self.action_pressed[key] = True
+                self.actions_pressed[key] = False

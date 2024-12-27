@@ -1,12 +1,13 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
 from typing import Optional, Iterable, Callable, Any
-from pygame import Cursor, Surface, Rect, surfarray as sa
+import numpy as np
+from pygame import Cursor, Surface, surfarray as sa
 from ...error import PygamingException
-from .widget import Widget, TOP_LEFT
+from .widget import Widget
+from..anchors import TOP_LEFT
 from ..frame import Frame
 from ..art.art import Art
 from ..mask import Mask
-import numpy as np
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -82,14 +83,36 @@ class Slider(Widget):
 
         # initial value and index
         self._values= list(values)
-        if initial_value is None:
-            self._index = 0
-        elif initial_value in self._values:
-            self._index = self._values.index(initial_value)
-        else:
-            raise PygamingException(f"{initial_value} is not a valid initial value as it is not in the values list.")
+        self._initial_value = initial_value
+        self._index = 0
 
+        self._positions = []
+
+        self._cursor_width = self.normal_cursor.width
+        self._holding_cursor = False
+
+        # Transition-related attributes
+        self._transition_func = transition_function
+        self._transition_duration = transition_duration
+        self._current_transition = None
+        self._current_transition_delta = 0
+        self._cursor_position = None
+
+    def get(self):
+        """Return the value selected by the player."""
+        return self._values[self._index]
+
+    def start(self):
         # the positions of the cursor for each value
+        self.normal_background.set_load_on_start()
+        super().start()
+        if self._initial_value is None:
+            self._index = 0
+        elif self._initial_value in self._values:
+            self._index = self._values.index(self._initial_value)
+        else:
+            raise PygamingException(f"{self._initial_value} is not a valid initial value as it is not in the values list {self._values}.")
+
         if isinstance(self._active_area, Mask):
             # For pygaming masks
             if self._active_area.is_empty():
@@ -100,10 +123,10 @@ class Slider(Widget):
             # For pygame masks
             temp_surf = self._active_area.to_surface(setcolor=(0, 0, 0, 1), unsetcolor=(0, 0, 0, 0))
             matrix = sa.array_alpha(temp_surf)
-            not_null_columns = np.where(matrix.any(axis=0))[0]
-            if not_null_columns:
-                x_min = not_null_columns[0]
-                x_max = not_null_columns[-1]
+            not_null_columns = np.where(matrix.any(axis=1))[0]
+            if len(not_null_columns):
+                x_min = not_null_columns[0] + self.normal_cursor.width//2
+                x_max = not_null_columns[-1] - self.normal_cursor.width//2
             else:
                 raise PygamingException("The active area cannot be empty.")
 
@@ -113,19 +136,11 @@ class Slider(Widget):
             for t in range(len(self._values))
         ]
 
-        self._cursor_width = self.normal_cursor.width
-        self._holding_cursor = False
-
-        # Transition-related attributes
-        self._transition_func = transition_function
-        self._transition_duration = transition_duration
-        self._current_transition = None
-        self._current_transition_delta = 0
         self._cursor_position = self._positions[self._index]
-
-    def get(self):
-        """Return the value selected by the player."""
-        return self._values[self._index]
+    
+    def end(self):
+        """Nothing to do at the end of the phase for this widget."""
+        pass
 
     def _start_transition(self, new_index):
         """Start a transition."""
@@ -141,11 +156,10 @@ class Slider(Widget):
         # Get a click
         ck1 = self.game.mouse.get_click(1)
 
-
         # If the user is clicking:
-        local_x = ck1.x - self.absolute_left
-        if ck1 is not None and self.is_contact((local_x, ck1.y - self.absolute_top)):
+        if self.is_contact(ck1) and not self.disabled:
 
+            local_x = ck1.x - self.absolute_left
             # If the user is clicking on the cursor, we want the cursor to follow the user click
             if self._cursor_position < local_x < self._cursor_position + self._cursor_width:
                 self._holding_cursor = True
@@ -183,7 +197,7 @@ class Slider(Widget):
                     self._cursor_position = self._positions[self._index]
 
         # Verify the use of the arrows
-        if self.focused:
+        if self.focused and not self.disabled:
             if self.game.keyboard.actions_down['left'] and self._index > 0:
                 self._start_transition(self._index - 1)
             if self.game.keyboard.actions_down['right'] and self._index < len(self._values) - 1:
@@ -211,8 +225,8 @@ class Slider(Widget):
 
     def _make_surface(self, background: Art, cursor: Art) -> Surface:
         """Make the surface with the cursor and the background."""
-        bg = background.get(self.surface if self._continue_animation else None)
+        bg = background.get(self.game.settings, self.surface if self._continue_animation else None)
         x = self._cursor_position - self.normal_cursor.width//2
         y = (background.height - cursor.height)//2
-        bg.blit(cursor.get(), (x,y))
+        bg.blit(cursor.get(self.game.settings), (x,y))
         return bg

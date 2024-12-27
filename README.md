@@ -1,6 +1,4 @@
-# Pygaming
-
-Pygaming is a python library used to make video games more easily. Built on [pygame](https://www.pygame.org/news), it provides several components to ease the programmer's life.
+Pygaming is a python library used to big make 2D games. Built on [pygame](https://www.pygame.org/news), it contains several features to help building big games easily.
 
 You can download pygaming in your python projects with
 
@@ -8,57 +6,88 @@ You can download pygaming in your python projects with
 pip install pygaming
 ```
 
-## Features
+# Features
 
-### Phases and Transitions
+## Template
 
-Each game consists of several phases. During each phase, the game will update differently, use inputs in a different way and display different things. These phases are linked together via transitions, implemented in the `apply_transition` method of every phase.
+Pygaming implements a template to be used for every game. This is mainly done because pygaming uses default names for files that the developper will have to modify without renaming it.
 
-### Game and Server
+## Phases
 
-The Game is the class that represent the game itself. It is used to link every aspect of the game together and update them.
-The Game could be offline, or online. It this case, a Server is needed aswell.
-The Server is the class that is used to communicate with the several instances of the game, by receiving and sending data.
+Each game consists of several phases: menus, lobbies, stages, etc. Each phase has a unique way to be updated at every loop iteration, they will display different elements, play different sounds and musics, and handle the input in different ways. The core architecure of a game based on pygaming is based on the implementation of customized phases. The phases are linked by transitions, and are identified by unique names.
 
-### Network
+## Games
 
-The library implements easy-to-use clients and servers (both accessible in every game and server phase through `self.network`) to allow the players to communicate with the server in a star-shaped network.
+An highlevel class named "Game" is provided by the library to be the main instance of the project. It is a very simple object that have to be created, and that is an argument for all phases. The .run() method of the game is to be called once all phases are instanciated and will run the main loop of the game.
 
-### Mouse, Keyboard and Controls
+## Online
 
-The players inputs are managed throw the mouse and keyboard classes (accessible in every game phase through `self.keyboard` and `self.mouse`). Use the mouse to know when the player is clicking and with which button. You can also access the mouse position, velocity and the wheel speed. By using the keyboard, you can access to the user keyboard inputs. These inputs are mapped to actions via the control class, taking its values in the settings (for game actions) and config (for widget related actions).
+The library implements easy-to-use asynchronous clients and servers classes to allow multiple players to play together. Similarly to the game and phases, a server can be instanciated with multiple ServerPhase. The .update() method of these phases are to be used to communicate with the players and run the game logic.
 
-### Sound and Music
+## Settings
 
-The SoundBox class (accessible in every game phase through `self.soundbox`) can be easily used to play sounds and manage the volume of the sounds based on categories.
-The Jukebox class (accessible in every game phase through `self.jukebox`) can be easily used to play musics buy defining playlists or by playing a music that will loop.
+Pygaming offers a way to easily manage game settings such as language, controls, fullscreen, volumes, and settings specific to the game itself (difficulties, rules, ...). The settings are automatically saved between two games.
+Pgaming also offers config params that are not to be changed by the player, such as default values for language and cursor, screen size, fps, ...
 
-### Files
+## Mouse, Keyboard and Controls
 
-The File system is manage throw the _assets_ and the _data_ folders. They are automatically explored when using a DataFile, ImageFile, FontFile (and so on) object. DataFile must be subclassed to get objects particular objects stored in the _data_ folder.
+The players can interact with the game through his keyboard and mouse. The keyboard inputs are mapped into controls, defined through the settings. The mouse inputs are very easy to use as well.
 
-### Database and Language
+## Language
 
-The Database class (accessible in every game and server phase through `self.database`) is used to manage easily the database, query it and insert new lines while playing. The game can automatically manage the language by the use of texts and speeches `self.texts` and `self.speeches` in every game phase.
+Pygaming offers a support for multiple languages by using localizations. When a speech is to be told or a text to be displayed, pygaming will automatically fetch the translated sound or text based on its localization, using the current language setting.
 
-### Logger
+## Sound and Music
 
-The logger is used to easily logo data with the json format, used to store game historic, make statistics for game developpement and so on.
+The sounds and speeches of the game can be easily played via the soundbox. Volumes for these sounds are also managed through categories, whose corresponding volumes are settings allowing the players to chose their prefered balance.
+Pygaming also includes a jukebox to play music and make them automatically loop, or to play playlists.
 
-### Screen
+## Files
 
-The Screen is used to manage what is displayed during the game. It is composed of Frames, widgets and other graphical elements specific to each game phase.
-The focus on widgets and the behavior of the game when hovering some object is also automatically managed.
+Pygaming file managing system allows the developper to manage the files that are to be permanently saved (like config or some assets) and files that can have modifications. These files are automatically retrieved using one specific function. Pygaminf also easily allow the developper to use a unique icon for the game.
+
+## Database
+
+An sqlite database is automatically created and is used to store the localizations and sound categories for the game, but can also be used by the developper to store game data.
+
+## Logger
+
+The logger is used to easily logo data with the json format, used to store game history, make statistics for game developpement and so on.
+The logger can be used for debugging as well.
+
+## Screen
+
+Pygaming manages automatically the screen to update all the elements.
+
+### Frames
+
+The main elements of the screen are frames. They are related to game phases. They represent a portion of the screen or of the parent frame. A frame can contain multiple widgets
 
 ### Widget
 
-Several basic widgets are also implemented: labels, sliders, buttons, entries.
+Pygaming implements several widgets that can be used to allow interaction between the player and the game. Four widgets have been implemented: labels, sliders, buttons and entries. More are to come.
 
-## How to use it?
+### Window and masks
 
-### Initialize the working directory
+Windows are classes that represent the position of the frame in its parent. They can have masks. Masks are matrices with the same shape as the windows. The are used to apply effect on the frame, by apply a function on the pixels, based on the mask value.
 
-The first step to create your own game is to initialize your working directory. First, be sure have python properly set. You can install pygaming with
+### Arts
+
+Arts are improvement of pygame surfaces. They allow the use of animation in the game. As animations can be openned from .gif files, arts can also be non-animated images openned from image files, or created as geometries. Arts can be transformed by using all transformations classes, including drawing, rotation and other shape transformation, as well as image processing algorithm (on which masks can be used).
+
+## Resource management
+
+Pygaming implements a resource management allowing it to load arts at the beginning of a phase (instead of at its instantiation) and unload them at the end. Masks, translations and sounds also benefits from this system. The computation of the current image of the game is also optimized.
+
+## Distribution
+
+Pygaming implements a command to build the game and an installer as executable files, allowing maximum portability.
+
+# How to use it?
+
+## Initialize the working directory
+
+The first step to create your own game is to initialize your working directory. First, be sure to have python properly set. You can install pygaming with
 
 ```bash
 pip install pygaming
@@ -70,30 +99,37 @@ Then, use the command
 pygaming init
 ```
 
-to initialize your working directory. It will automatically create a src/ folder, that will contain all your work, as well as an assets/ folder that will contain your assets (images, sounds, musics and fonts) and a data/ folder that will contains the game data, settings, database etc.
+to initialize your working directory. It will automatically create a src/ folder, that will contain all your code, as well as an assets/ folder that will contain your assets (images, sounds, musics and fonts) and a data/ folder that will contains the game data, settings, database etc.
 You will notice some files already existing in these folders. You can modify them, but not rename them.
 
-### Make you own assets
+## Make your own assets
 
-You can make your assets by drawing your own characters, recording your own musics and sounds, using your pictures and downwloading some fonts. Do not forget to make your own icon as well. It must be named 'icon.ico' (you can find online converters for the format) and place in the assets/ folder.
+You can make your assets by drawing your own characters, recording your own musics and sounds, using your pictures and downwloading some fonts. Do not forget to make your own icon as well. It must be named 'icon.ico' (you can find online converters for the format) and place in the assets/ folder to replace the template one.
 
-### Make your phases
+## Define your database
 
-Now, it is time yo make your own phases and transitions. The files on you src/ folder are great template to start.
-All your phases must be subclass of the GamePhase class (or ServerPhase class for server phases) and have a distinct name. They all need to have at least these for methods:
+In the database file, add your tables and complete the localizations, speeches, sounds and tables files. The sound table is used to define the sounds that will be loaded in each phase, same for the fonts. The localizations and speeches are used to manage languages.
 
-- `start`. This method is called when the phase is starting, it might include several arguments to initialize the phase.
-- `update`. This method is called every loop iteration, and constitute the logic of the phase.
-- `next`. This method is called every loop iteration and is used to know if the phase is finished. It must return '' if it is not, the name of the new phase if a new phase is to be started, or pygaming.NO_NEXT if the game is finished and the execution should be stopped.
-- `end`. This method is called at the end of the phase, and should be used to release memory by deleting assets and save games.
-  Then, your phases must be linked by using the Transitions objects, that are subclasses of GameTransition (ServerTransition for transitions between server phases). They must have the `apply` method, which take the phase as an argument and return a dict of the argument for the start method of the new phase.
-  Transitions can be used to restart a phase.
+## Make your phases
 
-### Test it
+Now, it is time you make your own phases. The files on your src/ folder are great template to start.
+All your phases must be subclass of the GamePhase class (or ServerPhase class for server phases) and have a distinct name. They all need to have at least these four methods:
 
-To test your game, you can freely execute your server and your game on the same device and verify that everything is working properly.
+- start(your_args: ...) -> None. This method is called at the beginning of the phase, and is used to initialize it, based on the arguments of the method.
+- end() -> None. This method is called at the end of the phase, and is mostly used to unload assets and perform savings.
+- update(loop_duration: int) -> None. This method is called at every iteration of the game's main loop. It is used to update the phase. The whole game logic is store here.
+- next() -> str. This method is called at every iteration of the game's main loop. It used to know what is happening. It either return pygaming.STAY if the phase is not over, pygaming.NO_NEXT if the user requested to quit the game, or the name of another frame to be started.
+- apply_transition(next_frame: str) -> dict[str, Any]. This method is called only when next() returns the name of another frame. In this case, this name is passed as argument of this method. This method should output a dict, whose keys are the name of the arguments of the .start() function of the next frame, and whose values are the values given for these arguments.
 
-### Distribute
+## Create your game
+
+To create the game, you need to instantiate a object of the class pygaming.Game. Then, instantiate one object for each of your frame, using the game you just created as argument. Finally, call the run() method of your game. Do the same for your server, by instantiatiing a pygaming.Server object.
+
+## Test it
+
+To test your game, you can freely execute your server and your game on the same device and verify that everything is working properly. Change the debug flag of the game instance to be in debug mode.
+
+## Distribute
 
 Once your game is working, you can build it using the command
 
@@ -105,10 +141,10 @@ This command will create an executable file (accordingly to your system) that yo
 
 Be carefull, some antivirus might detect your game as a virus, get in your antivirus settings to allow it.
 
-## Contributions
+# Contributions
 
-Feel free to contribute to this project by adding new features or helping optimizing existing features.
+Feel free to contribute to this project by adding new features or helping optimizing existing ones.
 
-## License
+# License
 
 This software is distributed under a GNU GENERAL PUBLIC LICENSE

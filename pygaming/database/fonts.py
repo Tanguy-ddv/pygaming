@@ -48,8 +48,8 @@ class TypeWriter:
         self._db = database
         fonts = database.get_fonts(phase_name)
         self._fonts: dict[str, Font] = {
-            font_name : Font(get_file('fonts', path, True), size, bold, italic, underline, strikethrough)
-            for (font_name, (path, size, bold, italic, underline, strikethrough)) 
+            font_name : Font(get_file('fonts', path, True) if path != "default" else None, size, bold, italic, underline, strikethrough)
+            for (font_name, (path, size, italic, bold, underline, strikethrough)) 
             in fonts.items()
         }
 

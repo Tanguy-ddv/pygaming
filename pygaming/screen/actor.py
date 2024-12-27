@@ -6,7 +6,14 @@ from .art.art import Art
 from .art.transformation._transformation import Rotate
 
 class Actor(Element):
-    """An actor is an object that is made to move and possibly rotate in a frame."""
+    """
+    An actor is an object that is made to move and possibly rotate in a frame.
+    
+    Methods to define:
+    - start()
+    - end()
+    - update()
+    """
 
     def __init__(
         self,
@@ -36,7 +43,7 @@ class Actor(Element):
     def main_surface(self):
         """Alias for the surface. Represent the main surface of the object."""
         return self.surface
-    
+
     def update_animation(self, loop_duration):
         """Update the animation of the main surface. Override this method if you have more surfaces."""
         self.main_surface.update(loop_duration)
@@ -50,15 +57,12 @@ class Actor(Element):
         """Translate the actor in the frame by a given value."""
         self._x += dx
         self._y += dy
+        self.notify_change()
 
-    def move(self, new_x, new_y):
-        """Reset the position of the actor in the frame."""
-        self._x = new_x
-        self._y = new_y
-        
     def rotate(self, angle):
+        """Rotate the actor."""
         w, h = self.main_surface.width, self.main_surface.height
-        # rotate every frame
+        # rotate all frames
         for surface in self.surfaces:
             surface.transform(Rotate(angle))
         # determine the new anchor
@@ -70,3 +74,5 @@ class Actor(Element):
         new_rel_x = rel_x * math.cos(rad_angle) - rel_y * math.sin(rad_angle)
         new_rel_y = rel_x * math.sin(rad_angle) + rel_y * math.cos(rad_angle)
         self.anchor = (new_rel_x + new_w / 2)/new_w, (new_rel_y + new_h / 2)/new_h
+        # notify the master for a change
+        self.notify_change()
