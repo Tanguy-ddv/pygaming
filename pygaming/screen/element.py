@@ -143,6 +143,7 @@ class Element(ABC):
             self.surface.set_load_on_start()
             self.surface.start(self.game.settings)
             self._active_area = pygame.mask.from_surface(self.surface.surfaces[0], 127)
+        self.notify_change()
         self.start()
 
     @abstractmethod

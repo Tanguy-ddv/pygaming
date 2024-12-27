@@ -182,7 +182,7 @@ class GamePhase(BasePhase, ABC):
         self.game.typewriter = TypeWriter(self.database, self.settings, self._name)
         self.game.update_settings()
         for frame in self.frames:
-            frame.start()
+            frame.begin()
         # Start the phase
         self.notify_change_all()
         self.start(**kwargs)

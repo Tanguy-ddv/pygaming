@@ -356,8 +356,10 @@ class Pawn(pgg.Actor):
         return  self.main_surface.get(self.game.settings, None)
 
     def start(self):
-        super().start()
-        self.notify_change()
+        pass
+
+    def end(self):
+        pass
 
 class Player:
 
@@ -451,7 +453,7 @@ class PlaygroundGamePhase(pgg.GamePhase):
             self.frame,
             pause_bg.to_window(WINDOW_WIDTH//2, WINDOW_HEIGHT//2, pgg.anchors.CENTER),
             pause_bg,
-            layer=1
+            layer=2 # set to 2 to be displayed on top of the pawns, whose layers are 1.
         )
 
         BUTTONS_DIMENSION = (180, 50)
