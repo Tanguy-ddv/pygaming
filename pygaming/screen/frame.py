@@ -174,11 +174,9 @@ class Frame(Element):
         self.notify_change()
     
     def start(self):
-        """Execute this method at the beginning of the phase, load the background if it is set to force_load_at_start."""
-        self.surface.start(self.game.settings)
-        Element.start(self)
+        """Execute this method at the beginning of the phase."""
         for child in self.children:
-            child.start()
+            child.begin()
         self.focused_background.start(self.game.settings)
         self.window.load(self.game.settings)
 
@@ -186,7 +184,7 @@ class Frame(Element):
         """Execute this method at the end of the phase, unload all the arts."""
         self.surface.unload()
         for child in self.children:
-            child.end()
+            child.finish()
         self.focused_background.unload()
         self.window.unload()
 

@@ -135,20 +135,32 @@ class Element(ABC):
             self.notify_change()
         self.update(loop_duration)
 
-    def start(self):
-        """Execute this method at the beginning of the phase."""
+    def begin(self):
+        """Execute this method at the beginning of the phase to load the active area and the surface before running class-specific start method."""
         if isinstance(self._active_area, Mask):
             self._active_area.load(self.game.settings)
         elif self._active_area is None:
-            self.surface.force_load_on_start()
+            self.surface.set_load_on_start()
             self.surface.start(self.game.settings)
             self._active_area = pygame.mask.from_surface(self.surface.surfaces[0], 127)
+        self.start()
 
-    def end(self):
-        """Execute this method at the end of the phase, unload all the arts."""
+    @abstractmethod
+    def start(self):
+        """Execute this method at the beginning of the phase."""
+        raise NotImplementedError()
+
+    def finish(self):
+        """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
         self.surface.unload()
         if isinstance(self._active_area, Mask):
             self._active_area.unload()
+        self.end()
+
+    @abstractmethod
+    def end(self):
+        """Execute this method at the end of the phase."""
+        raise NotImplementedError()
 
     @abstractmethod
     def update(self, loop_duration: int):

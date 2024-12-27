@@ -124,14 +124,12 @@ class Widget(Element, ABC):
 
     def start(self):
         """Execute this method at the beginning of the phase, load the arts that are set to force_load."""
-        Element.start(self)
         self.normal_background.start(self.game.settings)
         self.focused_background.start(self.game.settings)
         self.disabled_background.start(self.game.settings)
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
-        Element.end(self)
         self.normal_background.unload()
         self.focused_background.unload()
         self.disabled_background.unload()

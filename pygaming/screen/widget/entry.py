@@ -122,6 +122,13 @@ class Entry(Widget):
         """Set a new value for the entry."""
         self._text = str(new_text)
         self.notify_change()
+    
+    def start(self):
+        """Nothing to do at the start of the phase for this widget."""
+        pass
+
+    def end(self):
+        """Nothing to do at the end of the phase for this widget."""
 
     def get(self):
         """Return the textual value currently entered."""

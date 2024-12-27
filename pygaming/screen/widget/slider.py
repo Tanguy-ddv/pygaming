@@ -104,7 +104,7 @@ class Slider(Widget):
 
     def start(self):
         # the positions of the cursor for each value
-        self.normal_background.force_load_on_start()
+        self.normal_background.set_load_on_start()
         super().start()
         if self._initial_value is None:
             self._index = 0
@@ -137,6 +137,10 @@ class Slider(Widget):
         ]
 
         self._cursor_position = self._positions[self._index]
+    
+    def end(self):
+        """Nothing to do at the end of the phase for this widget."""
+        pass
 
     def _start_transition(self, new_index):
         """Start a transition."""

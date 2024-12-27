@@ -87,6 +87,14 @@ class Button(Widget):
             return self.active_background.get(self.game.settings, self.surface if self._continue_animation else None)
         return self.focused_background.get(self.game.settings, self.surface if self._continue_animation else None)
 
+    def start(self):
+        """Nothing to do at the start of the phase for this widget."""
+        pass
+
+    def end(self):
+        """Nothing to do at the end of the phase for this widget."""
+        pass
+
     def update(self, loop_duration: int):
         """Update the button every loop iteration if it is visible."""
         if not self.disabled:

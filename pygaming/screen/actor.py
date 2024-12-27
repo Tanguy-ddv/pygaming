@@ -6,7 +6,14 @@ from .art.art import Art
 from .art.transformation._transformation import Rotate
 
 class Actor(Element):
-    """An actor is an object that is made to move and possibly rotate in a frame."""
+    """
+    An actor is an object that is made to move and possibly rotate in a frame.
+    
+    Methods to define:
+    - start()
+    - end()
+    - update()
+    """
 
     def __init__(
         self,

@@ -29,7 +29,7 @@ class Art(ABC):
         self._force_load_on_start = force_load_on_start
         self._copies: list[Art] = []
     
-    def force_load_on_start(self):
+    def set_load_on_start(self):
         self._force_load_on_start = True
 
     def start(self, settings: Settings):
