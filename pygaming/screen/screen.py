@@ -15,7 +15,7 @@ class Screen:
         self._settings = settings
 
         pygame.display.set_caption(config.game_name)
-        pygame.display.set_icon(pygame.image.load(get_file('', 'icon.ico', True)))
+        pygame.display.set_icon(pygame.image.load(get_file('', 'icon.ico')))
 
     def display_phase(self, phase):
         """Blit the Frame on the screen."""

@@ -34,12 +34,12 @@ class Database:
         if runnable_type == SERVER:
             self._db_path = get_file('data','db-server.sqlite')
             self._table_path = get_file('data','sql-server/tables.sql')
-            self._ig_queries_path = get_file('data', 'sql-server/ig_queries.sql', permanent=False)
+            self._ig_queries_path = get_file('data', 'sql-server/ig_queries.sql')
             self._sql_folder = get_file('data', 'sql-server')
         if runnable_type == GAME:
             self._db_path = get_file('data', 'db-game.sqlite')
             self._table_path = get_file('data','sql-game/tables.sql')
-            self._ig_queries_path = get_file('data', 'sql-game/ig_queries.sql', permanent=False)
+            self._ig_queries_path = get_file('data', 'sql-game/ig_queries.sql')
             self._sql_folder = get_file('data', 'sql-game')
 
         # Remove the previous sqlite file if existing.

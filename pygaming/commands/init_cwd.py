@@ -45,10 +45,11 @@ def init_cwd():
             json.dump(settings, f)
 
         with open(os.path.join(cwd, 'data/config.json'), 'r', encoding='utf-8') as f:
-            settings = json.load(f)
-            settings['default_language'] = language
+            config = json.load(f)
+            config['default_language'] = language
+            config['path'] = cwd
         with open(os.path.join(cwd, 'data/config.json'), 'w', encoding='utf-8') as f:
-            json.dump(settings, f)
+            json.dump(config, f)
 
 
         with open(os.path.join(this_dir, 'commands/init_texts/data_success.txt'), 'r', encoding='utf-8') as f:
