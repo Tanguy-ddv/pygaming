@@ -2,7 +2,7 @@
 from pygame.font import Font as _Ft
 from pygame import Surface, SRCALPHA
 from ..color import Color
-from .texts import Texts
+from .texts import Texts, TextFormatter
 from .database import Database
 from ..settings import Settings
 from ..file import get_file
@@ -70,7 +70,7 @@ class TypeWriter:
         else:
             return self._default_font
 
-    def render(self, font: str, text_or_loc: str, color: Color, background_color: Color = None) -> Surface:
+    def render(self, font: str, text_or_loc: str | TextFormatter, color: Color, background_color: Color = None) -> Surface:
         """
         Draw text or localization on a new Surface.
         
@@ -102,8 +102,7 @@ class TypeWriter:
 
         return thefont.render(thetext, self._settings.antialias, color, background_color)
 
-
-    def size(self, font: str, text_or_loc: str) -> tuple[int, int]:
+    def size(self, font: str, text_or_loc: str | TextFormatter) -> tuple[int, int]:
         """
         Returns the dimensions needed to render the text. This can be used to help determine the positioning needed for text before it is rendered.
         It can also be used for word wrapping and other layout effects.
@@ -118,15 +117,16 @@ class TypeWriter:
         - text_or_loc: str, the text to be rendered. If it is recognized as a loc, the text in the current language is displayed, else.
         Otherwise, the test itself is used.
         """
-        if "\n" in text_or_loc:
-            lines = [line.strip() for line in text_or_loc.split('\n')]
+        text = self._texts.get(text_or_loc)
+        if "\n" in text:
+            lines = [line.strip() for line in text.split('\n')]
             thefont = self._get_font(font)
             line_size = thefont.get_linesize()
             bg_width = max(thefont.size(line)[0] for line in lines)
             bg_height = len(lines)*line_size
             return bg_width, bg_height
         
-        return self._get_font(font).size(self._texts.get(text_or_loc))
+        return self._get_font(font).size(text)
 
     def get_ascent(self, font: str):
         """Return the height in pixels for the font ascent.
