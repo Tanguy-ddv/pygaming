@@ -4,14 +4,15 @@ setup(
     name='pygaming',
     author="Tanguy Dugas du Villard",
     author_mail="tanguy.dugas01@gmail.com",
-    version='0.6.0',
+    version='0.7.0',
     description="Pygaming is a python library based on pygame used to create game more easily by providing several tools.",
     packages=find_packages(),
     install_requires=[
         'pyinstaller',
         'pygame',
         'numpy',
-        'pillow'
+        'pillow',
+        'opencv-python'
     ],
     entry_points={
         'console_scripts': [

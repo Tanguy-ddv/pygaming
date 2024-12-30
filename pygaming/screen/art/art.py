@@ -178,9 +178,9 @@ class Art(ABC):
         """Create a window without masked based on this art."""
         return Window(x, y, self.width, self.height, anchor)
 
-    def save(self, path: str, index: int = None, permanent: bool = False):
+    def save(self, path: str, index: int = None):
         """Save the art as a gif or as an image."""
-        path = get_file('images', path, permanent)
+        path = get_file('images', path)
         if len(self.surfaces) == 1:
             image.save(self.surfaces[0], path)
         elif not index is None:

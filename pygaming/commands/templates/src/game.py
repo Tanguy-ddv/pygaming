@@ -578,8 +578,7 @@ class PlaygroundGamePhase(pgg.GamePhase):
         self.settings_frame.show()
         self.pause_frame.hide()
 
-if __name__ == '__main__':
-    g = pgg.Game(LOBBY, debug=False) # Instantiate the game
-    LobbyGamePhase(g) # Instantiate each phase
-    PlaygroundGamePhase(g)
-    g.run() # Run the game
+g = pgg.Game(LOBBY, debug=False) # Instantiate the game
+LobbyGamePhase(g) # Instantiate each phases
+PlaygroundGamePhase(g)
+g.run() # Run the game

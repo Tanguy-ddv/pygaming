@@ -9,7 +9,7 @@ class Config:
     """
 
     def __init__(self) -> None:
-        path = get_file('data', 'config.json', True)
+        path = get_file('data', 'config.json')
         file = open(path, 'r', encoding='utf-8')
         self._data = json.load(file)
         file.close()

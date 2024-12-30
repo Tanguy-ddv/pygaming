@@ -62,7 +62,6 @@ def install():
         modified_path_to_install + '/data'
     )
 
-    os.remove(modified_path_to_install + '/data/config.json')
     print('The data folder has been copied.')
     # Copy the asset folder
     shutil.copytree(
@@ -85,22 +84,22 @@ def install():
             os.path.join(modified_path_to_install, 'server'),
         )
         shutil.copyfile(
-            os.path.join(modified_path_to_install, 'server', 'server.exe'),
+            os.path.join(modified_path_to_install, 'server', 'server_launcher.exe'),
             os.path.join(modified_path_to_install, f'{name}-server.exe'),
         )
         shutil.rmtree(os.path.join(modified_path_to_install, 'server'))
-        print('The server.exe has been copied.')
+        print('The server has been copied.')
 
     shutil.copytree(
         os.path.join(base_path, 'game'),
         os.path.join(modified_path_to_install, 'game'),
     )
     shutil.copyfile(
-        os.path.join(modified_path_to_install, 'game', 'game.exe'),
+        os.path.join(modified_path_to_install, 'game', 'game_launcher.exe'),
         os.path.join(modified_path_to_install, f'{name}.exe'),
     )
     shutil.rmtree(os.path.join(modified_path_to_install, 'game'))
-    print('The game.exe has been copied.')
+    print('The game has been copied.')
 
 if __name__ == '__main__':
     install()

@@ -2,9 +2,11 @@
 import os
 import json
 import shutil
+import sys
 import platform
 import importlib.resources
 import PyInstaller.__main__
+from importlib.metadata import distributions
 from ..error import PygamingException
 
 def build(name: str):
@@ -14,9 +16,9 @@ def build(name: str):
     then call pyinstaller to build the server and the game .exe files.
     This function must be called by using the command line `pygaming build [name-of-the-game]`.
 
-    params:
+    Params:
     ---
-    name: str, the name of the game.
+    - name: str, the name of the game.
     """
     # Create the sep for the add-data of pyinstaller
     if platform.system() == 'Windows':
@@ -25,6 +27,7 @@ def build(name: str):
         sep = ':'
 
     cwd = os.getcwd()
+
     config_path = os.path.join(cwd, 'data', 'config.json')
 
     with open(config_path, 'r', encoding='utf-8') as f:
@@ -39,33 +42,34 @@ def build(name: str):
 
     game_options = [
         '--onefile',
-        f"--icon={os.path.join(cwd, 'assets', 'icon.ico')}",
-        f"--add-data={os.path.join(cwd, 'data')}{sep}data",
-        f"--add-data={os.path.join(cwd, 'assets')}{sep}assets",
+        f"--icon={os.path.join(cwd, 'assets', 'icon.ico')}", # The icon of the game
+        f"--paths={sys.prefix}" # the path to the environment from which we take the libraries
+    ] + [
+        f"--hiddenimport={dist.metadata["Name"]}" for dist in distributions() # the list of libraries included in the pip environment
     ]
 
     installer_options = [
         '--onefile',
-        #'--noconsole',
         f"--icon={os.path.join(cwd, 'assets', 'icon.ico')}",
         f"--add-data={os.path.join(cwd, 'data')}{sep}data",
         f"--add-data={os.path.join(cwd, 'assets')}{sep}assets",
         f"--add-data={os.path.join(cwd, 'src')}{sep}src",
     ]
+
     # Build the game file
     if os.path.exists(os.path.join(cwd, "src", "game.py")):
-        command = [os.path.join(cwd, "src", "game.py")] + game_options + ['--windowed']
+        command = [os.path.join(importlib.resources.files('pygaming'), 'commands/game_launcher.py')] + game_options + ['--windowed']
         PyInstaller.__main__.run(command)
-        installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'game.exe')}{sep}game")
+        installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'game_launcher.exe')}{sep}game")
         print("The game has been built successfully")
     else:
         raise PygamingException("You need a game.py file as main file of the game")
 
     # Build the server file
     if os.path.exists(os.path.join(cwd, "src", "server.py")):
-        command = [os.path.join(cwd, "src", "server.py")] + game_options
+        command = [os.path.join(importlib.resources.files('pygaming'), 'commands/server_launcher.py')] + game_options
         PyInstaller.__main__.run(command)
-        installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'server.exe')}{sep}server")
+        installer_options.append(f"--add-data={os.path.join(cwd, 'dist', 'server_launcher.exe')}{sep}server")
         print("The server has been built successfully")
 
     # Create the installer
@@ -82,9 +86,9 @@ def build(name: str):
         print("The file has been deleted by your antivirus, find it back and tell your antivirus it is ok")
 
     # Remove the .spec files
-    if os.path.isfile(os.path.join(cwd, "game.spec")):
-        os.remove(os.path.join(cwd, "game.spec"))
-    if os.path.isfile(os.path.join(cwd, "server.spec")):
-        os.remove(os.path.join(cwd, "server.spec"))
+    if os.path.isfile(os.path.join(cwd, "game_launcher.spec")):
+        os.remove(os.path.join(cwd, "game_launcher.spec"))
+    if os.path.isfile(os.path.join(cwd, "server_launcher.spec")):
+        os.remove(os.path.join(cwd, "server_launcher.spec"))
     if os.path.isfile(os.path.join(cwd, "install.spec")):
         os.remove(os.path.join(cwd, "install.spec"))

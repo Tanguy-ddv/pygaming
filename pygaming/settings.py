@@ -14,7 +14,7 @@ class Settings:
     """
 
     def __init__(self) -> None:
-        self._path = get_file('data', 'settings.json', False)
+        self._path = get_file('data', 'settings.json')
         file = open(self._path, 'r', encoding='utf-8')
         self._data = json.load(file)
         file.close()

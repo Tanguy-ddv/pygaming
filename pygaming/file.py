@@ -3,11 +3,21 @@ The file module contains the get_file function used in all File class to find th
 """
 from typing import Literal
 
-import sys
 import os
 import json
+from functools import lru_cache
 
-def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fonts'], file: str, permanent: bool = False):
+@lru_cache(maxsize=1)
+def _get_base_path():
+
+    config_path = os.path.join(os.path.abspath("."), 'data', 'config.json')
+    config_file = open(config_path,'r', encoding='utf-8')
+    base_path = json.load(config_file)['path']
+    config_file.close()
+
+    return base_path
+
+def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fonts'], file: str):
     """
     Return the full path of the file.
     
@@ -15,22 +25,11 @@ def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fo
     ----
     - folder: the folder of the file
     - file: the name of the file.
-    - permanent: if False, get the file from the temporary folder of the app. If True, from the place where the file dynamic files are saved
-    
-    Non-Permanent files are the ones that might be modified during the game and that should be saved.
-    Exemple of non-permanent files: saves, ig_queries, logs.
     """
-    if folder != 'data':
-        folder = 'assets/' + folder
-    if hasattr(sys, '_MEIPASS'):
-        #pylint: disable=protected-access
-        base_path = sys._MEIPASS
-        if not permanent:
-            config_path = os.path.join(base_path, 'data', 'config.json')
-            config_file = open(config_path,'r', encoding='utf-8')
-            base_path = json.load(config_file)['path']
-            config_file.close()
-    else:
-        base_path = os.path.abspath(".")
 
-    return os.path.join(base_path, folder, file).replace('\\', '/')
+    base_path = _get_base_path()
+
+    if folder != 'data':
+        return os.path.join(base_path, 'assets', folder, file).replace('\\', '/')
+    else:
+        return os.path.join(base_path, folder, file).replace('\\', '/')
