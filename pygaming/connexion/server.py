@@ -123,18 +123,27 @@ class Server:
         """The data to one client."""
         for client_socket in self._client_socket_managers:
             if client_socket.id_ == client_id and client_socket.status == ONLINE:
-                json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : time.time()})
-                client_socket.socket.send(json_data.encode())
+                try:
+                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)})
+                    client_socket.socket.send(json_data.encode())
+                except ConnectionResetError:
+                    client_socket.status = OFFLINE
+                except Exception:
+                    pass
+                finally:
+                    break
 
     def send_all(self, header, data):
         """Send data to all the clients."""
         for client_socket in self._client_socket_managers:
             if client_socket.status == ONLINE:
                 try:
-                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : time.time()})
+                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)})
                     client_socket.socket.send(json_data.encode())
                 except ConnectionResetError:
                     client_socket.status = OFFLINE
+                except Exception:
+                    pass
 
     def stop(self):
         """Stop the server when the process is finished."""
