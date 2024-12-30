@@ -85,7 +85,8 @@ class TypeWriter:
         the surface return has a solid background with this color, otherwise the background is transparent
         """
         thefont = self._get_font(font)
-        if "\n" in text_or_loc:
+        thetext = self._texts.get(text_or_loc)
+        if "\n" in thetext:
             lines = [line.strip() for line in text_or_loc.split('\n')]
             line_size = thefont.get_linesize()
             bg_width = max(thefont.size(line)[0] for line in lines)
@@ -99,7 +100,7 @@ class TypeWriter:
                 line_y += line_size
             return background
 
-        return thefont.render(self._texts.get(text_or_loc), self._settings.antialias, color, background_color)
+        return thefont.render(thetext, self._settings.antialias, color, background_color)
 
 
     def size(self, font: str, text_or_loc: str) -> tuple[int, int]:

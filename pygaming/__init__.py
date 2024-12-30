@@ -35,11 +35,11 @@ from .screen import mask
 from .inputs import Controls, Click, Keyboard, Mouse
 from .connexion import Client, Server as Network, HEADER, ID, PAYLOAD, TIMESTAMP
 
-from .database import Database, TypeWriter, SoundBox
+from .database import Database, TypeWriter, SoundBox, TextFormatter
 from . import commands
 
 __all__ = ['Config', 'Game', 'LEAVE', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
-           'Server', 'Settings', 'Frame', 'Actor', 
+           'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter',
            'Element', 'Controls', 'Click', 'widget', 'get_file', 'Client', 'Keyboard', 'Mouse', 'mask', 'art',
            'Network', 'HEADER', 'ID', 'PAYLOAD', 'TIMESTAMP', 'Database', 'anchors',
            'commands', 'Window', 'WindowLike', 'TypeWriter', 'SoundBox', 'Color']
