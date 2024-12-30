@@ -2,8 +2,6 @@ import pygaming as pgg
 import numpy.random as rd
 import math
 
-serv = pgg.Server(15, 'game')
-
 class Player:
 
     def __init__(self, id_: int, color: pgg.Color, name: str):
@@ -96,5 +94,7 @@ class ServerPhase(pgg.ServerPhase):
     def end(self):
         pass
 
+
+serv = pgg.Server(15, 'game')
 ServerPhase(serv)
 serv.run()
