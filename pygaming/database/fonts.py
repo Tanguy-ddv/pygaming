@@ -102,9 +102,34 @@ class TypeWriter:
 
         return thefont.render(thetext, self._settings.antialias, color, background_color)
 
+    def get_max_size(self, font: str, loc: str):
+        """
+        Return the dimension of the largest rendered text obtained from the localization in any language.
+
+        Params:
+        ----
+        - font: str, the name of the font. If the name is not find (which means it is not present on the fonts.sql file for this phase),
+        use the default system font with a size of 20
+        - loc: str, the localisation to obtain the longest word with. If this localisation does not exist, return the size
+        of the localisation rendered as a text.
+        """
+
+        values = self._texts.get_values(loc)
+        if not values:
+            return self.size(font, loc)            
+        max_w = 0
+        max_h = 0
+        for value in values:
+            w, h = self.size(font, value)
+            if w > max_w:
+                max_w = w
+            if h > max_h:
+                max_h = h
+            return max_w, max_h
+
     def size(self, font: str, text_or_loc: str | TextFormatter) -> tuple[int, int]:
         """
-        Returns the dimensions needed to render the text. This can be used to help determine the positioning needed for text before it is rendered.
+        Return the dimensions needed to render the text. This can be used to help determine the positioning needed for text before it is rendered.
         It can also be used for word wrapping and other layout effects.
 
         Be aware that most fonts use kerning which adjusts the widths for specific letter pairs.

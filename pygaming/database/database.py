@@ -193,6 +193,15 @@ class Database:
             )"""
         )
 
+    def get_texts(self, loc: str):
+        """Return the texts that can be obtain for the same localization given any language."""
+        return self.execute_select_query(
+            f"""SELECT text_value 
+            FROM localizations
+            WHERE position = '{loc}'
+            """
+        )[0]
+
     def get_speeches(self, language: str, phase_name: str):
         """
         Return all the specches of the phase of the given language.

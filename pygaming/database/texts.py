@@ -50,3 +50,7 @@ class Texts:
         if text_or_loc in self._text_dict:
             return self._text_dict[text_or_loc]
         return text_or_loc
+    
+    def get_values(self, loc: str):
+        """Return the longest text that can be obtain for the same localization given any language."""
+        return self._db.get_texts(self, loc)
