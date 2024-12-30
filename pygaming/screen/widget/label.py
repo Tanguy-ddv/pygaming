@@ -4,6 +4,7 @@ from ..element import Element
 from ..anchors import TOP_LEFT, CENTER
 from ...color import Color
 from ..art.art import Art
+from ...database import TextFormatter
 
 
 class Label(Element):
@@ -15,7 +16,7 @@ class Label(Element):
         background: Art,
         font: str,
         font_color: Color,
-        localization_or_text: str,
+        localization_or_text: str | TextFormatter,
         x: int,
         y: int,
         anchor = TOP_LEFT,

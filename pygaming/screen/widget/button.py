@@ -8,6 +8,7 @@ from .widget import Widget
 from ..art import Art
 from ...color import Color
 from ..mask import Mask
+from ...database import TextFormatter
 
 class Button(Widget):
     """A Button is a basic widget used to get a player click."""
@@ -140,7 +141,7 @@ class TextButton(Button):
         normal_background: Art,
         font : str,
         font_color: Color,
-        localization_or_text: str,
+        localization_or_text: str | TextFormatter,
         active_background: Optional[Art] = None,
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
