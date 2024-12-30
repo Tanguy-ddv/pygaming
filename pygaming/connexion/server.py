@@ -88,7 +88,7 @@ class Server:
                 broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
                 message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : self._host_ip})
                 broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
-                time.sleep(self.config.get("broadcast_frequency")/1000)  # Send broadcast every broadcast_frquency ms
+                time.sleep(self.config.get("broadcast_period")/1000)  # Send broadcast every broadcast_frquency ms
     
     def start_broadcast(self):
         """Manually start the broadcast of the server ip."""

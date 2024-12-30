@@ -15,7 +15,9 @@ class Client:
         self._reception_buffer = []
         self.last_receptions = []
         server_ip = self._discover_server()
-        self._connect_to_server(server_ip)
+        self.is_connected = bool(server_ip)
+        if self.is_connected:
+            self._connect_to_server(server_ip)
 
     def send(self, header: str, payload: Any):
         """Send the payload to the server, specifying the header."""
@@ -28,14 +30,19 @@ class Client:
         discovery_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         discovery_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         discovery_socket.bind(('', DISCOVERY_PORT))
+        discovery_socket.settimeout(self._config.timeout/1000)
         while True:
-            data, _addr = discovery_socket.recvfrom(self._config.max_communication_length)
-            message = json.loads(data.decode())
-            if HEADER not in message or message[HEADER] != BROADCAST_IP:
-                continue
-            server_ip = message[PAYLOAD]
-            discovery_socket.close()
-            return server_ip
+            try:
+                data = discovery_socket.recv(self._config.max_communication_length)
+                message = json.loads(data.decode())
+                if HEADER not in message or message[HEADER] != BROADCAST_IP:
+                    continue
+                server_ip = message[PAYLOAD]
+                discovery_socket.close()
+                return server_ip
+            except socket.timeout:
+                discovery_socket.close()
+                return None
 
     def _connect_to_server(self, server_ip):
         # create the socket

@@ -29,6 +29,13 @@ class Config:
         return (800, 600)
 
     @property
+    def timeout(self):
+        key="timeout"
+        if key in self._data:
+            return self._data[key]
+        return self.get("broadcast_period")/100
+
+    @property
     def default_language(self):
         """Return the default language."""
         key = "default_language"

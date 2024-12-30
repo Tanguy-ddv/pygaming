@@ -7,7 +7,8 @@
     "server_port" : 50505,
     "max_communication_length" : 2048,
     "flush_frequency" : 5000,
-    "broadcast_frequency" : 200,
+    "broadcast_period" : 200,
+    "timeout" : 1000,
     "widget_keys" : {
         "K_TAB": "tab",
         "K_RETURN": "return",
