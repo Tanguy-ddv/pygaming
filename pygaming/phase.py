@@ -2,12 +2,12 @@
 from abc import ABC, abstractmethod
 import gc
 import pygame
+from .base import STAY
 from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
 from .server import Server
 from .database import SoundBox, TypeWriter
-
 
 class BasePhase(ABC):
     """
@@ -68,22 +68,20 @@ class BasePhase(ABC):
         """This method is called at every loop iteration."""
         raise NotImplementedError()
 
-    @abstractmethod
     def next(self):
         """
         If the phase is over, return the name of the next phase, if the phase is not, return an empty string.
         If it is the end of the game, return 'NO_NEXT'
         """
-        raise NotImplementedError()
+        return STAY
 
-    @abstractmethod
     def apply_transition(self, next_phase: str):
         """
         This method is called if the method next returns a new phase. Its argument is the name of the next phase.
         For each new phase possible, it should return a dict, whose keys are the name of the argument of the
         start method of the next phase, and the values are the values given to these arguments.
         """
-        raise NotImplementedError()
+        return {}
 
     @abstractmethod
     def update(self, loop_duration: int):
@@ -98,10 +96,9 @@ class BasePhase(ABC):
         self.end()
         gc.collect()
 
-    @abstractmethod
     def end(self):
         """Action to do when the phase is ended."""
-        raise NotImplementedError()
+        return
 
 class ServerPhase(BasePhase, ABC):
     """

@@ -9,7 +9,7 @@ from .database import Database
 from .config import Config
 from .error import PygamingException
 
-NO_NEXT = 'no_next'
+LEAVE = 'leave'
 STAY = 'stay'
 
 
@@ -49,7 +49,7 @@ class BaseRunnable(ABC):
         # Ask what is next
         next_phase = self.phases[self.current_phase].next()
         # Verify if the phase is over
-        if next_phase not in [NO_NEXT, STAY]:
+        if next_phase not in [LEAVE, STAY]:
             # get the value for the arguments for the start of the next phase
             new_data = self.phases[self.current_phase].apply_transition(next_phase)
             # End the current phase
@@ -60,7 +60,7 @@ class BaseRunnable(ABC):
             self.phases[self.current_phase].begin(**new_data)
 
         # if NO_NEXT was return, end the game.
-        return next_phase == NO_NEXT
+        return next_phase == LEAVE
 
     def stop(self):
         """Stop the algorithm properly."""

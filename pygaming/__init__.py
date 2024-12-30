@@ -10,7 +10,7 @@ actors and dynamic sprites, masks
 """
 from .config import Config
 from .game import Game
-from .base import NO_NEXT, STAY
+from .base import LEAVE, STAY
 from .logger import Logger
 from .phase import ServerPhase, GamePhase
 from .server import Server
@@ -38,7 +38,7 @@ from .connexion import Client, Server as Network, HEADER, ID, PAYLOAD, TIMESTAMP
 from .database import Database, TypeWriter, SoundBox
 from . import commands
 
-__all__ = ['Config', 'Game', 'NO_NEXT', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
+__all__ = ['Config', 'Game', 'LEAVE', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
            'Server', 'Settings', 'Frame', 'Actor', 
            'Element', 'Controls', 'Click', 'widget', 'get_file', 'Client', 'Keyboard', 'Mouse', 'mask', 'art',
            'Network', 'HEADER', 'ID', 'PAYLOAD', 'TIMESTAMP', 'Database', 'anchors',
