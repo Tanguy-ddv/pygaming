@@ -35,7 +35,7 @@ class Server:
     """
     def __init__(self, config: Config, nb_max_player: int = 8):
 
-        host_ip = socket.gethostbyname(socket.gethostname())
+        self._host_ip = socket.gethostbyname(socket.gethostname())
         self.config = config
 
         self._nb_max_player = nb_max_player
@@ -44,12 +44,12 @@ class Server:
         self._running = True
         self._reception_buffer = []
         self.last_receptions = []
-        print(f"Server launched: {host_ip}, {self.config.server_port}")
-        self._server_socket.bind((host_ip, self.config.server_port))
+        print(f"Server launched: {self._host_ip}, {self.config.server_port}")
+        self._server_socket.bind((self._host_ip, self.config.server_port))
         self._server_socket.listen(nb_max_player*2)
         threading.Thread(target=self._accept_clients).start()
-
-        threading.Thread(target=self._broadcast_address, kwargs={'host_ip' : host_ip}).start()
+        self._broadcasting = False
+        self.start_broadcast()
 
     def _accept_clients(self):
         """Accept a new client."""
@@ -79,15 +79,25 @@ class Server:
                 print("Server disconnected.")
                 self.stop()
 
-    def _broadcast_address(self, host_ip: int):
+    def _broadcast_address(self):
         """Send in the socket.SOCK_DGRAM socket the host_ip and the host port every 5 seconds."""
-        while self._running:
+        self._broadcasting = True
+        while self._running and self._broadcasting:
             if self.get_nb_players() < self._nb_max_player:
                 broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-                message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : host_ip})
+                message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : self._host_ip})
                 broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
                 time.sleep(self.config.get("broadcast_frequency")/1000)  # Send broadcast every broadcast_frquency ms
+    
+    def start_broadcast(self):
+        """Manually start the broadcast of the server ip."""
+        if not self._broadcasting:
+            threading.Thread(target=self._broadcast_address).start()
+    
+    def stop_broadcast(self):
+        """Manually stop the broadcast of the server ip."""
+        self._broadcasting = False
 
     def _handle_client(self, client_socket: socket.socket, id_: int):
         while self._running:
