@@ -29,6 +29,11 @@ def init_cwd():
             text = ''.join(f.readlines())
         print("\033[33m" + text + "\033[0m")
 
+        os.mkdir(os.path.join(cwd, 'assets', 'musics'))
+        os.mkdir(os.path.join(cwd, 'assets', 'fonts'))
+        os.mkdir(os.path.join(cwd, 'assets', 'sounds'))
+        os.mkdir(os.path.join(cwd, 'assets', 'images'))
+
     if not os.path.exists(os.path.join(cwd, 'data')):
 
         language = locale.getlocale()[0]
