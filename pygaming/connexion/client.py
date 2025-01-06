@@ -11,7 +11,7 @@ from ..logger import Logger
 
 class Client:
     """The Client instance is used to communicate with the server. It sends data via the .send()"""
-    def __init__(self, config: Config, logger: Logger):
+    def __init__(self, config: Config, logger: Logger, initial_header: str = None, initial_payload: str = None):
         self._logger = logger
         self._config = config
         self._reception_buffer = []
@@ -19,8 +19,10 @@ class Client:
         self._running = True
         server_ip = self._discover_server()
         self.is_connected = bool(server_ip)
+        self.__initial_data = (initial_header, initial_payload)
         if self.is_connected:
             self.is_connected = self._connect_to_server(server_ip)
+        
 
     def send(self, header: str, payload: Any):
         """Send the payload to the server, specifying the header."""
@@ -61,6 +63,8 @@ class Client:
                     if reception[HEADER] == NEW_ID:
                         self.id = reception[PAYLOAD]
                         self.client_socket.settimeout(None)
+                        if self.__initial_data[0] and self.__initial_data[1]:
+                            self.send(*self.__initial_data)
                         return True
             except socket.timeout:
                 self.client_socket.close()
