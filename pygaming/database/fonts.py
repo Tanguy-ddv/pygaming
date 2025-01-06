@@ -1,6 +1,6 @@
 """The Font module contain the font class."""
 from pygame.font import Font as _Ft
-from pygame import Surface, SRCALPHA
+from pygame import Surface, SRCALPHA, Rect
 from ..color import Color
 from .texts import Texts, TextFormatter
 from .database import Database
@@ -94,7 +94,7 @@ class TypeWriter:
             bg_width = max(thefont.size(line)[0] for line in lines)
             bg_height = len(lines)*line_size
             background = Surface((bg_width, bg_height), SRCALPHA)
-            background.fill(Color(0, 0, 0, 0) if background_color is None else background_color)
+            background.fill((0, 0, 0, 0) if background_color is None else background_color)
             line_y = 0
             for line in lines:
                 render = thefont.render(line, self._settings.antialias, color, background_color)
@@ -103,6 +103,68 @@ class TypeWriter:
             return background
 
         return thefont.render(thetext, self._settings.antialias, color, background_color)
+
+    def render_paragraphs(self, font: str, text_or_loc: str | TextFormatter, color: Color, rect: Rect, background_color: Color = None) -> Surface:
+        """
+        Draw a text or a localization as multiple justified paragraphs.
+        
+        Params:
+        ----
+        - font: str, the name of the font. If the name is not find (which means it is not present on the fonts.sql file for this phase),
+        use the default system font with a size of 20
+        - text_or_loc: str, the text to be rendered. If it is recognized as a loc, the text in the current language is displayed, else.
+        Otherwise, the test itself is used.
+        - color: Color, the color to display the font in
+        - background_color: Color = None, the color of the background. If a color is given,
+        the surface returned has a solid background with this color, otherwise the background is transparent
+        """
+        thefont = self._get_font(font)
+        thetext = self._texts.get(text_or_loc)
+
+        if thefont.size(thetext)[0] <= rect.size[0] and not '\n' in thetext:
+            return thefont.render(thetext, True, color, background_color)
+
+        background = Surface(rect.size, SRCALPHA)
+        if background_color:
+            background.fill((0, 0, 0, 0) if background_color is None else background_color)
+        line_size = thefont.get_linesize()
+        line_y = 0
+        # Render the paragraphs one by one
+        for text in thetext.split('\n'):
+            words = text.split()
+            first_line = True
+            while words and line_y <= rect.size[1]:
+                thisline = []
+                # Find the words that will fit in the line
+                while words and thefont.size(('    ' if first_line else '') + ' '.join(thisline + [words[0]]))[0] <= rect.size[0]:
+                    thisline.append(words.pop(0))
+                if first_line:
+                    thisline.insert(0, '   ')
+
+                if words:
+                    # Spread the extra pixels among all spaces
+                    extra_pixels = rect.size[0] - thefont.size(' '.join(thisline))[0]
+                    spaces = [extra_pixels//(len(thisline) - 1) for _ in range(len(thisline) - 1)]
+                    if len(thisline) > 1:
+                        for i in range(extra_pixels%(len(thisline) - 1)):
+                            spaces[i] += 1
+                    # Render the line
+                    spaces.append(0)
+                    word_x = 0
+                    for word, space in zip(thisline, spaces):
+                        rendered_word = thefont.render(word + ' ', True, color, background_color)
+                        background.blit(rendered_word, (word_x, line_y))
+                        word_x += thefont.size(word + ' ')[0] + space
+
+                else:
+                    # Render the last line
+                    rendered_word = thefont.render(' '.join(thisline), True, color, background_color)
+                    background.blit(rendered_word, (0, line_y))
+
+                line_y += line_size
+                first_line = False
+
+        return background
 
     def get_max_size(self, font: str, loc: str):
         """
