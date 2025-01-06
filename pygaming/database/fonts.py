@@ -6,6 +6,7 @@ from .texts import Texts, TextFormatter
 from .database import Database
 from ..settings import Settings
 from ..file import get_file
+from ..screen.anchors import TOP_LEFT
 
 class Font(_Ft):
     """The Font class is used to display texts."""
@@ -70,7 +71,7 @@ class TypeWriter:
         else:
             return self._default_font
 
-    def render(self, font: str, text_or_loc: str | TextFormatter, color: Color, background_color: Color = None) -> Surface:
+    def render(self, font: str, text_or_loc: str | TextFormatter, color: Color, background_color: Color = None, justify: tuple[float, float] = TOP_LEFT) -> Surface:
         """
         Draw text or localization on a new Surface.
         
@@ -82,7 +83,8 @@ class TypeWriter:
         Otherwise, the test itself is used.
         - color: Color, the color to display the font in
         - background_color: Color = None, the color of the background. If a color is given,
-        the surface return has a solid background with this color, otherwise the background is transparent
+        the surface returned has a solid background with this color, otherwise the background is transparent
+        - justify: tuple[float, float] Only for multiline renders, justifies justify the text according to its first component.
         """
         thefont = self._get_font(font)
         thetext = self._texts.get(text_or_loc)
@@ -96,7 +98,7 @@ class TypeWriter:
             line_y = 0
             for line in lines:
                 render = thefont.render(line, self._settings.antialias, color, background_color)
-                background.blit(render, (0, line_y))
+                background.blit(render, ((bg_width - render.get_width())*justify[0], line_y))
                 line_y += line_size
             return background
 

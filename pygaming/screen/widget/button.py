@@ -179,7 +179,7 @@ class TextButton(Button):
 
     def make_surface(self):
         bg = super().make_surface()
-        rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None)
+        rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None, self.justify)
         text_width, text_height = rendered_text.get_size()
         just_x = self.justify[0]*(bg.get_width() - text_width)
         just_y = self.justify[1]*(bg.get_height() - text_height)

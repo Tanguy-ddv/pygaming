@@ -70,7 +70,7 @@ class Label(Element):
         """Return the surface of the Label."""
         bg = self.surface.get(self.game.settings)
         if self._show_text:
-            rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None)
+            rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None, self.justify)
             text_width, text_height = rendered_text.get_size()
             just_x = self.justify[0]*(self.surface.width - text_width)
             just_y = self.justify[1]*(self.surface.height - text_height)
