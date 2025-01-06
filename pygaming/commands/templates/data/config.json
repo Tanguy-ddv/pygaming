@@ -8,7 +8,7 @@
     "max_communication_length" : 2048,
     "flush_frequency" : 5000,
     "broadcast_period" : 200,
-    "network_sep": "\t",
+    "network_sep": "\u001F",
     "timeout" : 1000,
     "widget_keys" : {
         "K_TAB": "tab",
