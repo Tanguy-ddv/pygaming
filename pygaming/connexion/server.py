@@ -36,7 +36,7 @@ class Server:
     def __init__(self, config: Config, nb_max_player: int = 8):
 
         self._host_ip = socket.gethostbyname(socket.gethostname())
-        self.config = config
+        self._config = config
 
         self._nb_max_player = nb_max_player
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -44,8 +44,8 @@ class Server:
         self._running = True
         self._reception_buffer = []
         self.last_receptions = []
-        print(f"Server launched: {self._host_ip}, {self.config.server_port}")
-        self._server_socket.bind((self._host_ip, self.config.server_port))
+        print(f"Server launched: {self._host_ip}, {self._config.server_port}")
+        self._server_socket.bind((self._host_ip, self._config.server_port))
         self._server_socket.listen(nb_max_player*2)
         threading.Thread(target=self._accept_clients).start()
         self._broadcasting = False
@@ -72,7 +72,7 @@ class Server:
                             print(f"Client {address} (id={id_}) is now reconnected")
 
                 welcome_message = {HEADER : NEW_ID, PAYLOAD : id_}
-                json_message = json.dumps(welcome_message)
+                json_message = json.dumps(welcome_message) + self._config.get("network_sep")
                 client_socket.send(json_message.encode())
                 threading.Thread(target=self._handle_client, args=(client_socket, id_)).start()
             except OSError:
@@ -88,7 +88,7 @@ class Server:
                 broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
                 message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : self._host_ip})
                 broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
-                time.sleep(self.config.get("broadcast_period")/1000)  # Send broadcast every broadcast_frquency ms
+                time.sleep(self._config.get("broadcast_period")/1000)  # Send broadcast every broadcast_frquency ms
     
     def start_broadcast(self):
         """Manually start the broadcast of the server ip."""
@@ -102,12 +102,12 @@ class Server:
     def _handle_client(self, client_socket: socket.socket, id_: int):
         while self._running:
             try:
-                data = client_socket.recv(self.config.max_communication_length)
+                data = client_socket.recv(self._config.max_communication_length)
                 if data:
                     try:
-                        json_data = json.loads(data.decode())
-                        self._reception_buffer.append(json_data)
-                    except json.decoder.JSONDecodeError:
+                        json_data = [json.loads(jdata) for jdata in data.decode().split(self._config.get("network_sep")) if jdata]
+                        self._reception_buffer.extend(json_data)
+                    except json.JSONDecodeError:
                         print(f"Unable to understand {data} as a data object.")
             except ConnectionError:
                 for client_sck in self._client_socket_managers:
@@ -134,7 +134,7 @@ class Server:
         for client_socket in self._client_socket_managers:
             if client_socket.id_ == client_id and client_socket.status == ONLINE:
                 try:
-                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)})
+                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)}) + self._config.get("network_sep")
                     client_socket.socket.send(json_data.encode())
                 except ConnectionResetError:
                     client_socket.status = OFFLINE
@@ -148,7 +148,7 @@ class Server:
         for client_socket in self._client_socket_managers:
             if client_socket.status == ONLINE:
                 try:
-                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)})
+                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)}) + self._config.get("network_sep")
                     client_socket.socket.send(json_data.encode())
                 except ConnectionResetError:
                     client_socket.status = OFFLINE

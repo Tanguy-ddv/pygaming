@@ -54,7 +54,7 @@ class Game(BaseRunnable):
     def connect(self) -> bool:
         """Connect the game to the server."""
         if not self.online:
-            self.client = Client(self.config)
+            self.client = Client(self.config, self)
             self.online = True
 
     def disconnect(self) -> bool:
@@ -69,3 +69,8 @@ class Game(BaseRunnable):
         self.typewriter.update_settings()
         self.soundbox.update_settings()
         self.keyboard.update_settings()
+
+    def stop(self):
+        """Stop the algorithm properly"""
+        if self.online:
+            self.client.close()
