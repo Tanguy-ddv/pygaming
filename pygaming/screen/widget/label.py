@@ -30,7 +30,7 @@ class Label(Element):
         - master: Frame. The Frame in which the Label is placed.
         - background: A SurfaceLike object beiing the background of the text.
         - font: Font, the font to be used to display the text.
-        - text: The text to be displayed, can be modify with set_text(new_text).
+        - localization_or_text: The text, localization or TextFormatter to be displayed, can be modify with set_localization_or_text(new_text).
         - x: The first coordinate of the anchor in the Frame.
         - y: The first coordinate of the anchor in the Frame.
         - anchor: The anchor of the coordinate.
@@ -50,8 +50,11 @@ class Label(Element):
 
     def set_localization_or_text(self, localization_or_text: str):
         """Set the label text to a new value."""
-        if self.text != localization_or_text:
-            self.text = str(localization_or_text)
+        if not isinstance(localization_or_text, (str, TextFormatter)):
+            self.master.game.logger.write({"LabelError" : str(localization_or_text)}, True)
+            localization_or_text = str(localization_or_text)
+        elif self.text != localization_or_text:
+            self.text = localization_or_text
             self.notify_change()
 
     def update(self, loop_duration: int):

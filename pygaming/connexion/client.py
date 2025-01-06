@@ -77,9 +77,9 @@ class Client:
                                 json_data = json.loads(jdata)
                             except json.JSONDecodeError:
                                 # if a non json object is read from buffer, we log it case of debugging.
-                                self._logger.write(json.dump({"UNREADABLE DATA" : jdata, TIMESTAMP : int(time.time()*1000)}), True)
+                                self._logger.write(json.dump({"NetworkReadingError" : jdata}), True)
                             else:
-                                self._reception_buffer.extend(json_data)
+                                self._reception_buffer.append(json_data)
             except ConnectionError:
                 self.close()
                 break
