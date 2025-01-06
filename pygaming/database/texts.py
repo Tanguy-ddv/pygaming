@@ -27,7 +27,7 @@ class Texts:
         self._db = database
         self._settings = settings
         self._last_language = settings.language
-        texts_list = self._db.get_texts(self._last_language, phase_name)
+        texts_list = self._db.get_language_texts(self._last_language, phase_name)
         self._text_dict = {pos : txt for pos, txt in texts_list[0]}
 
     def get_positions(self):
@@ -38,12 +38,12 @@ class Texts:
         """Return a piece of text."""
         if self._settings.language != self._last_language:
             self._last_language = self._settings.language
-            texts_list = self._db.get_texts(self._last_language)
+            texts_list = self._db.get_language_texts(self._last_language)
             self._text_dict = {pos : txt for pos, txt in texts_list[0]}
 
         if isinstance(text_or_loc, TextFormatter):
             output = []
-            for text_loc in text_or_loc:
+            for text_loc in text_or_loc.texts_or_locs:
                 output.append(self.get(text_loc))
             return text_or_loc.sep.join(output)
 
@@ -52,5 +52,5 @@ class Texts:
         return text_or_loc
     
     def get_values(self, loc: str):
-        """Return the longest text that can be obtain for the same localization given any language."""
-        return self._db.get_texts(self, loc)
+        """Return the longest text that can be obtained for the same localization given any language."""
+        return self._db.get_loc_texts(self, loc)

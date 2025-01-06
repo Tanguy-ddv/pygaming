@@ -168,7 +168,7 @@ class Database:
         result, description = self.execute_select_query(query)
         return {key : value for key,value in zip(description, result[0]) if (return_id or key != f"{table}_id")}
 
-    def get_texts(self, language: str, phase_name:str):
+    def get_language_texts(self, language: str, phase_name:str):
         """Return all the texts of the game.
         If the text is not avaiable in the chosen language, get the text in the default language.
         """
@@ -193,7 +193,7 @@ class Database:
             )"""
         )
 
-    def get_texts(self, loc: str):
+    def get_loc_texts(self, loc: str):
         """Return the texts that can be obtain for the same localization given any language."""
         return self.execute_select_query(
             f"""SELECT text_value 
