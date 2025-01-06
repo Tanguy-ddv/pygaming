@@ -29,10 +29,10 @@ def init_cwd():
             text = ''.join(f.readlines())
         print("\033[33m" + text + "\033[0m")
 
-        os.mkdir(os.path.join(cwd, 'assets', 'musics'))
-        os.mkdir(os.path.join(cwd, 'assets', 'fonts'))
-        os.mkdir(os.path.join(cwd, 'assets', 'sounds'))
-        os.mkdir(os.path.join(cwd, 'assets', 'images'))
+        os.makedirs(os.path.join(cwd, 'assets', 'musics'), exist_ok=True)
+        os.makedirs(os.path.join(cwd, 'assets', 'fonts'), exist_ok=True)
+        os.makedirs(os.path.join(cwd, 'assets', 'sounds'), exist_ok=True)
+        os.makedirs(os.path.join(cwd, 'assets', 'images'), exist_ok=True)
 
     if not os.path.exists(os.path.join(cwd, 'data')):
 
