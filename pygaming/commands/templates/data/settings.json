@@ -18,6 +18,6 @@
             "not classic": 0.8
         }
     },
-    "antialias": 1,
+    "antialias": true,
     "senibility": 0.5
 }
