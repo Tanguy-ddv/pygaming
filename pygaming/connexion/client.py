@@ -5,7 +5,7 @@ import threading
 import json
 import time
 from typing import Any
-from ._constants import DISCOVERY_PORT, PAYLOAD, HEADER, ID, NEW_ID, BROADCAST_IP, TIMESTAMP, EXIT
+from ._constants import DISCOVERY_PORT, PAYLOAD, HEADER, ID, NEW_ID, BROADCAST_IP, TIMESTAMP, EXIT, IP
 from ..config import Config
 from ..logger import Logger
 
@@ -40,9 +40,9 @@ class Client:
             try:
                 data = discovery_socket.recv(self._config.max_communication_length)
                 message = json.loads(data.decode())
-                if HEADER not in message or message[HEADER] != BROADCAST_IP:
+                if HEADER not in message or message[HEADER] != BROADCAST_IP or message[PAYLOAD][ID] != self._config.get('game_id'):
                     continue
-                server_ip = message[PAYLOAD]
+                server_ip = message[PAYLOAD][IP]
                 discovery_socket.close()
                 return server_ip
             except socket.timeout:

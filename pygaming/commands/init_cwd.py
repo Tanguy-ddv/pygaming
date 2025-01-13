@@ -10,6 +10,7 @@ import shutil
 import json
 import locale
 import importlib.resources
+import uuid
 
 def init_cwd():
     """Create some files and folder in the current working directory."""
@@ -53,6 +54,8 @@ def init_cwd():
             config = json.load(f)
             config['default_language'] = language
             config['path'] = cwd
+            config['game_id'] = str(uuid.uuid4()).replace('-','')
+        
         with open(os.path.join(cwd, 'data/config.json'), 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=4)
 

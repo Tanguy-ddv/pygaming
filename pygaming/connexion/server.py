@@ -5,7 +5,7 @@ import threading
 import json
 import time
 from ..config import Config
-from ._constants import DISCOVERY_PORT, PAYLOAD, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, TIMESTAMP
+from ._constants import DISCOVERY_PORT, TIMESTAMP, PAYLOAD, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, IP, ID
 
 class _ClientSocketManager:
     """
@@ -86,7 +86,7 @@ class Server:
             if self.get_nb_players() < self._nb_max_player:
                 broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-                message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : self._host_ip})
+                message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : {IP : self._host_ip, ID : self._config.get('game_id')}})
                 broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
                 time.sleep(self._config.get("broadcast_period")/1000)  # Send broadcast every broadcast_frquency ms
     
