@@ -8,7 +8,7 @@ from ...database import TextFormatter
 
 
 class Label(Element):
-    """A Label is an element used to display text."""
+    """A Label is an element used to display text as a unjustified lines."""
 
     def __init__(
         self,
@@ -65,12 +65,15 @@ class Label(Element):
                 self._show_text = not self._show_text
                 self._time_since_last_blink = 0
                 self.notify_change()
+    
+    def _render_text(self):
+        return self.game.typewriter.render(self.font, self.text, self.font_color, None, self.justify)
 
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the Label."""
         bg = self.surface.get(self.game.settings)
         if self._show_text:
-            rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None, self.justify)
+            rendered_text = self._render_text()
             text_width, text_height = rendered_text.get_size()
             just_x = self.justify[0]*(self.surface.width - text_width)
             just_y = self.justify[1]*(self.surface.height - text_height)
@@ -84,3 +87,26 @@ class Label(Element):
     def end(self):
         """Nothing to do at the end."""
         pass
+
+class Paragraphs(Label):
+    """A Paragraph is used to display a piece of a text as a justified paragraph."""
+
+    def __init__(self, master, background, font, font_color, localization_or_text, x, y, anchor=TOP_LEFT, layer = 0, justify=CENTER, blinking_period = None):
+        """
+        Create the label
+        Params:
+        - master: Frame. The Frame in which the Label is placed.
+        - background: A SurfaceLike object beiing the background of the text.
+        - font: Font, the font to be used to display the text.
+        - localization_or_text: The text, localization or TextFormatter to be displayed, can be modify with set_localization_or_text(new_text).
+        - x: The first coordinate of the anchor in the Frame.
+        - y: The first coordinate of the anchor in the Frame.
+        - anchor: The anchor of the coordinate.
+        - layer: int, the layer of the element in the frame.
+        - justify: the position of the text in the label, should be an anchor (i.e a tuple[x, y] with 0 <= x, y <= 1, )
+        - blinking_period: int [ms]. If an integer is specified, the text will blink with the given period.
+        """
+        super().__init__(master, background, font, font_color, localization_or_text, x, y, anchor, layer, justify, blinking_period)
+    
+    def _render_text(self):
+        return self.game.typewriter.render_paragraphs(self.font, self.text, self.font_color, pygame.Rect(0, 0, *self.surface.size), None)
