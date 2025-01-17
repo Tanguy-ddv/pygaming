@@ -11,71 +11,47 @@ class Config:
     def __init__(self) -> None:
         path = get_file('data', 'config.json')
         file = open(path, 'r', encoding='utf-8')
-        self._data = json.load(file)
+        self._data: dict = json.load(file)
         file.close()
 
-    def get(self, key: str):
+    def get(self, key: str, default=None):
         """Get the value of the config attribute"""
-        if key in self._data:
-            return self._data[key]
-        return None
+        return self._data.get(key, default)
 
     @property
     def dimension(self):
         """Return the dimension of the window in px x px."""
-        key = "screen"
-        if key in self._data:
-            return self._data[key]
-        return (800, 600)
+        return self.get("screen", (800, 600))
 
     @property
     def timeout(self):
-        key="timeout"
-        if key in self._data:
-            return self._data[key]
-        return self.get("broadcast_period")/100
+        return self.get("timeout", self.get("broadcast_period", 500)/100)
 
     @property
     def default_language(self):
         """Return the default language."""
-        key = "default_language"
-        if key in self._data:
-            return self._data[key]
-        return "en_US"
+        return self.get("default_language", "en_US")
 
     @property
     def default_cursor(self):
         """Return the default cursor."""
-        key = "default_cursor"
-        if key in self._data:
-            return self._data[key]
-        return "SYSTEM_CURSOR_ARROW"
+        return self.get("default_cursor", "SYSTEM_CURSOR_ARROW")
 
     @property
     def game_name(self):
         """Return the name of the game."""
-        key = "name"
-        if key in self._data:
-            return self._data[key]
-        return "MyGame"
+        return self.get("name", "My Game")
 
     @property
     def server_port(self):
         """Return the server port of the game."""
-        key = "server_port"
-        if key in self._data:
-            return self._data[key]
-        return 50505
+        return self.get("server_port", 50505)
 
     @property
     def max_communication_length(self):
         """Return the maximum length of a communication of the game."""
-        key = "max_communication_length"
-        if key in self._data:
-            return self._data[key]
-        return 2048
+        return self.get("max_communication_length", 2048)
 
     def get_widget_key(self, action):
         """Return the key that would trigger the widget action."""
-        dict_key = "widget_keys"
-        return self._data[dict_key][action]
+        return self._data["widget_keys"].get(action, False)
