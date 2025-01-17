@@ -13,7 +13,7 @@ class Font(_Ft):
 
     def __init__(
         self,
-        path: str | None,
+        name: str | None,
         size: int,
         bold: bool = False,
         italic: bool = False,
@@ -33,8 +33,8 @@ class Font(_Ft):
         - underline: bool, flag for the font to be diplayed underlined or not
         - strikethrough: bool, flag for the font to be diplayed with a strikethrough or not
         """
-        super().__init__(path, size)
-        self.name = path
+        super().__init__(name, size)
+        self.name = name
         self.bold = bold
         self.italic = italic
         self.underline = underline
@@ -57,8 +57,7 @@ class TypeWriter:
         self._phase_name = phase_name
         self._texts = Texts(database, settings, phase_name)
 
-        self._default_font = _Ft(None, 15)
-        self._default_font.get_descent()
+        self._default_font = Font(None, 15)
     
     def update_settings(self):
         """Update the texts based on the new language."""
@@ -66,10 +65,7 @@ class TypeWriter:
     
     def _get_font(self, font: str) -> Font:
         """Get the font from the dict or return the default font"""
-        if font in self._fonts:
-            return self._fonts[font]
-        else:
-            return self._default_font
+        return self._fonts.get(font, self._default_font)
 
     def render(self, font: str, text_or_loc: str | TextFormatter, color: Color, background_color: Color = None, justify: tuple[float, float] = TOP_LEFT) -> Surface:
         """

@@ -284,4 +284,4 @@ class Database:
                 WHERE ( phase_name = '{phase_name}' OR phase_name = 'all' )
             """
         )[0]
-        return {font_name : (font_path, size, italic, bold, underline, strikethrough ) for font_name, font_path, size, italic, bold, underline, strikethrough in fonts}
+        return {font_name : (font_path, size, italic, bold, underline, strikethrough) for font_name, font_path, size, italic, bold, underline, strikethrough in fonts}

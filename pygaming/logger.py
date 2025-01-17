@@ -48,6 +48,7 @@ class Logger:
         self.time_since_last_flush += loop_duration
         if self.time_since_last_flush > self.config.get("flush_frequency"):
             self._file.flush()
+            self.time_since_last_flush = 0
 
     def new_log(self):
         """Start a new log."""

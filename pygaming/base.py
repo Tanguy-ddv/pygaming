@@ -51,7 +51,7 @@ class BaseRunnable(ABC):
         # Ask what is next
         next_phase = self.phases[self.current_phase].next()
         # Verify if the phase is over
-        if next_phase not in [LEAVE, STAY]:
+        if next_phase not in (LEAVE, STAY):
             # get the value for the arguments for the start of the next phase
             new_data = self.phases[self.current_phase].apply_transition(next_phase)
             # End the current phase
