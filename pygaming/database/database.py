@@ -31,16 +31,11 @@ class Database:
         - debug: when passed to true, the delation of the database is not done at the destruction of the instance.
         """
         self._debug = debug
-        if runnable_type == SERVER:
-            self._db_path = get_file('data','db-server.sqlite')
-            self._table_path = get_file('data','sql-server/tables.sql')
-            self._ig_queries_path = get_file('data', 'sql-server/ig_queries.sql')
-            self._sql_folder = get_file('data', 'sql-server')
-        if runnable_type == GAME:
-            self._db_path = get_file('data', 'db-game.sqlite')
-            self._table_path = get_file('data','sql-game/tables.sql')
-            self._ig_queries_path = get_file('data', 'sql-game/ig_queries.sql')
-            self._sql_folder = get_file('data', 'sql-game')
+        self._db_path = get_file('data',f'db-{runnable_type}.sqlite')
+        self._table_path = get_file('data',f'sql-{runnable_type}/tables.sql')
+        self._ig_queries_path = get_file('data', f'sql-{runnable_type}/ig_queries.sql')
+        self._sql_folder = get_file('data', f'sql-{runnable_type}')
+        self._threshold_size = config.get(f"ig_queries_{runnable_type}_threshold_size_kb")
 
         # Remove the previous sqlite file if existing.
         if os.path.isfile(self._db_path):
@@ -63,8 +58,28 @@ class Database:
         # Execute the queries previously saved.
         self.execute_sql_script(self._ig_queries_path)
 
-        # Save the current language
-        self.default_language = config.default_language
+        # Save the config
+        self._config = config
+
+        self._ig_queries_file = open(self._ig_queries_path, 'a', encoding='utf-8')
+    
+    def reduce_ig_queries_size(self):
+        """
+        Reduce the size of the ig_queries file script.
+        This file contains all the queries executed since the beginning of the game.
+        its size can grow fast. With this function, all tables from the config argument
+        "permanent_tables" are dumped into "INSERT INTO" queries and the queries overwrite
+        the current version of the ig_queries file.
+        """
+        dumps = self._conn.iterdump()
+        permanent_tables = self._config.get("permanent_tables")
+        if permanent_tables:
+            dumps_to_keep = (
+                dump for dump in dumps
+                if any(dump.startswith(f'INSERT INTO "{table}"') for table in permanent_tables)
+            )
+            with open(self._ig_queries_path, 'w') as f:
+                f.writelines(f"{dump}\n" for dump in dumps_to_keep)
 
     def execute_select_query(self, query: str):
         """
@@ -107,9 +122,8 @@ class Database:
             cur = self._conn.cursor()
             cur.execute(query)
             self._conn.commit()
-            # Save the query on the ig_query file to execute it every time you launch the app.
-            with open(self._ig_queries_path, 'a', encoding='utf-8') as f:
-                f.write(";\n" + query)
+            # Save the query on the file
+            self._ig_queries_file.write(query = ";\n")
             cur.close()
         except sql.Error as error:
             print("An error occured while querying the database with:\n",query,"\n",error)
@@ -135,9 +149,8 @@ class Database:
             cur = self._conn.cursor()
             cur.execute(query)
             self._conn.commit()
-            # Optionally log or save the query
-            with open(self._ig_queries_path, 'a', encoding='utf-8') as f:
-                f.write(";\n" + query)
+            # Save the query on the file
+            self._ig_queries_file.write(query = ";\n")
             cur.close()
         except sql.Error as error:
             print("An error occurred while querying the database with:\n", query, "\n", error)
@@ -158,6 +171,14 @@ class Database:
 
     def __del__(self):
         """Destroy the Database object. Delete the database file"""
+        self._ig_queries_file.close()
+
+        # Reduce the ig_queries file
+        ig_queries_size = os.path.getsize(self._ig_queries_path) / 1024
+        if ig_queries_size > self._threshold_size:
+            self.reduce_ig_queries_size()
+
+        # Close the connection and delete the database
         self._conn.close()
         if os.path.isfile(self._db_path) and not self._debug:
             os.remove(self._db_path)
@@ -183,7 +204,7 @@ class Database:
 
                 SELECT position, text_value
                 FROM localizations
-                WHERE language_code = '{self.default_language}'
+                WHERE language_code = '{self._config.default_language}'
                 AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
                 AND position NOT IN (
                     SELECT position
@@ -218,7 +239,7 @@ class Database:
 
                 SELECT position, sound_path
                 FROM speeches
-                WHERE language_code = '{self.default_language}'
+                WHERE language_code = '{self._config.default_language}'
                 AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
                 AND position NOT IN (
                     SELECT position
