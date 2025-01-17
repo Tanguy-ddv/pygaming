@@ -5,7 +5,7 @@ import sqlite3 as sql
 import os
 from typing import Literal
 
-from ..file import get_file
+from ..file import get_file, get_state, set_state
 from ..config import Config
 
 SERVER = 'server'
@@ -15,7 +15,7 @@ class Database:
     """
     The Database instance is used to adress queries to the database.
     No need to have 2 databases on the same code as they will connect to the same db.
-    The database automatically create a .sqlite file in the temporary folder /data/sql/db.sqlite,
+    The database automatically create a .sqlite file in the folder /data/sql/db.sqlite,
     then execute every .sql file in the data/sql/ folder.
     At instance deletion, the .sqlite file is deleted if the debug mode is not selected.
     """
@@ -35,7 +35,14 @@ class Database:
         self._table_path = get_file('data',f'sql-{runnable_type}/tables.sql')
         self._ig_queries_path = get_file('data', f'sql-{runnable_type}/ig_queries.sql')
         self._sql_folder = get_file('data', f'sql-{runnable_type}')
-        self._threshold_size = config.get(f"ig_queries_{runnable_type}_threshold_size_kb")
+        
+        # Get current state
+        self.__entry = f"ig_queries_{runnable_type}_threshold_size_kb" 
+        self._threshold_size = get_state()[self.__entry]
+        # If the current state is 0, then set it to the first value of the increment
+        # as it means that the state have not been udpated once.
+        if self._threshold_size == 0:
+            self._threshold_size = self._config.get(self.__entry, 1000)
 
         # Remove the previous sqlite file if existing.
         if os.path.isfile(self._db_path):
@@ -105,7 +112,7 @@ class Database:
             return result, description
         except sql.Error as error:
             print("An error occured while querying the database with:\n",query,"\n",error)
-            return None, None
+            return [], []
 
     def execute_insert_query(self, query: str):
         """
@@ -177,6 +184,9 @@ class Database:
         ig_queries_size = os.path.getsize(self._ig_queries_path) / 1024
         if ig_queries_size > self._threshold_size:
             self.reduce_ig_queries_size()
+        new_size = os.path.getsize(self._ig_queries_path) // 1024
+        # Increase the threshold.
+        set_state(self.__entry, new_size + self._config.get(self.__entry, 1000))
 
         # Close the connection and delete the database
         self._conn.close()
