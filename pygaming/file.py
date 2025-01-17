@@ -7,6 +7,7 @@ import os
 import json
 from functools import lru_cache
 
+
 @lru_cache(maxsize=1)
 def _get_base_path():
 
@@ -33,23 +34,3 @@ def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fo
         return os.path.join(base_path, 'assets', folder, file).replace('\\', '/')
     else:
         return os.path.join(base_path, folder, file).replace('\\', '/')
-
-def get_state():
-    """
-    Return the content of the state file.
-    """
-    state_path = get_file('data', 'state.json')
-    with open(state_path, 'r', encoding='utf-8') as f:
-        current_state: dict = json.load(f)
-    return current_state
-
-def set_state(key, value):
-    """
-    Set a new value for one of the entry of the state.
-    """
-    state_path = get_file('data', 'state.json')
-    with open(state_path, 'r', encoding='utf-8') as f:
-        current_state: dict = json.load(f)
-    current_state[key] = value
-    with open(state_path, 'w', encoding='utf-8') as f:
-        json.dump(current_state, f, indent=4)

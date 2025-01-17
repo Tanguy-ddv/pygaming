@@ -5,7 +5,8 @@ import sqlite3 as sql
 import os
 from typing import Literal
 
-from ..file import get_file, get_state, set_state
+from ..file import get_file
+from ..state import get_state, set_state
 from ..config import Config
 
 SERVER = 'server'

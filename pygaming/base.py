@@ -8,6 +8,7 @@ from .database import Database
 
 from .config import Config
 from .error import PygamingException
+from .state import set_time_now, increment_counter
 
 LEAVE = 'leave'
 STAY = 'stay'
@@ -27,6 +28,8 @@ class BaseRunnable(ABC):
         self.transitions = {}
         self.current_phase = first_phase
         self.clock = pygame.time.Clock()
+        increment_counter(f"launch_counter_{runnable_type}")
+        set_time_now(f"last_launch_{runnable_type}")
 
     @abstractmethod
     def update(self):
