@@ -21,5 +21,6 @@
     },
     "permanent_tables" : [],
     "ig_queries_game_threshold_size_kb" : 100,
-    "ig_queries_server_threshold_size_kb" : 4048
+    "ig_queries_server_threshold_size_kb" : 4048,
+    "stop_game_on_server_killed" : false
 }

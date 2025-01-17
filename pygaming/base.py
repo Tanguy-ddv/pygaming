@@ -19,7 +19,6 @@ class BaseRunnable(ABC):
 
     def __init__(self, debug: bool, runnable_type: Literal['server', 'game'], first_phase: str) -> None:
         super().__init__()
-        pygame.init()
         self.debug = debug
         self.config = Config()
         self.logger = Logger(self.config, debug)
@@ -76,4 +75,3 @@ class BaseRunnable(ABC):
             stop = self.update()
         self.phases[self.current_phase].end()
         self.stop()
-        pygame.quit()

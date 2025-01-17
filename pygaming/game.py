@@ -49,7 +49,7 @@ class Game(BaseRunnable):
         if self.online:
             self.client.update()
         is_game_over = self.update_phases(loop_duration)
-        return self._inputs.quit or is_game_over or (self.online and self.client.is_server_killed())
+        return self._inputs.quit or is_game_over or (self.online and self.client.is_server_killed() and self.config.get("stop_game_on_server_killed", False))
 
     def connect(self) -> bool:
         """Connect the game to the server."""
@@ -72,5 +72,5 @@ class Game(BaseRunnable):
 
     def stop(self):
         """Stop the algorithm properly"""
-        if self.online:
-            self.client.close()
+        self.disconnect()
+        pygame.quit()
