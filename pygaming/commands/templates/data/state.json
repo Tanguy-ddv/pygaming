@@ -1,0 +1,8 @@
+{
+    "ig_queries_game_threshold_size_kb" : 0,
+    "ig_queries_server_threshold_size_kb" : 0,
+    "launch_counter_game" : 0,
+    "launch_counter_server" : 0,
+    "last_launch_game" : null,
+    "last_laucnh_server" : null
+}
