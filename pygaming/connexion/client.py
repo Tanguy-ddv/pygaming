@@ -75,11 +75,14 @@ class Client:
             return connected
 
     def _receive(self):
+        string_buffer = ""
         while self._running:
             try:
                 data = self.client_socket.recv(self._config.max_communication_length)
                 if data:
-                    for jdata in data.decode("utf-8").split(self._config.get("network_sep")):
+                    string_buffer += data.decode("utf-8")
+                    splitted_buffer = string_buffer.split(self._config.get("network_sep"))
+                    for jdata in splitted_buffer[:-1]:
                         if jdata:
                             try:
                                 json_data = json.loads(jdata)
@@ -88,6 +91,7 @@ class Client:
                                 self._logger.write({"NetworkReadingError" : jdata}, True)
                             else:
                                 self._reception_buffer.append(json_data)
+                        string_buffer = splitted_buffer[-1]
             except ConnectionError:
                 self.close()
                 break
