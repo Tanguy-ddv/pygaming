@@ -116,7 +116,7 @@ class Database:
             print("An error occured while querying the database with:\n",query,"\n",error)
             return [], []
 
-    def execute_insert_query(self, query: str):
+    def execute_insert_query(self, query: str, params: tuple = ()):
         """
         Execute an insert query on the database.
         
@@ -129,15 +129,15 @@ class Database:
         try:
             # Execute the query on the database
             cur = self._conn.cursor()
-            cur.execute(query)
+            cur.execute(query, params)
             self._conn.commit()
             # Save the query on the file
-            self._ig_queries_file.write(query = ";\n")
+            self._ig_queries_file.write(query + ";\n")
             cur.close()
         except sql.Error as error:
             print("An error occured while querying the database with:\n",query,"\n",error)
 
-    def execute_modify_query(self, query: str):
+    def execute_modify_query(self, query: str, params: tuple = ()):
         """
         Execute a modifying query (UPDATE, DELETE, etc.) on the database.
 
@@ -156,10 +156,10 @@ class Database:
         try:
             # Execute the query on the database
             cur = self._conn.cursor()
-            cur.execute(query)
+            cur.execute(query, params)
             self._conn.commit()
             # Save the query on the file
-            self._ig_queries_file.write(query = ";\n")
+            self._ig_queries_file.write(query + ";\n")
             cur.close()
         except sql.Error as error:
             print("An error occurred while querying the database with:\n", query, "\n", error)
