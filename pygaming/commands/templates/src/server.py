@@ -1,6 +1,7 @@
 import pygaming as pgg
 import numpy.random as rd
 import math
+from numpy import sign
 
 class Player:
 
@@ -23,9 +24,9 @@ class Player:
 
     def turn(self, loop_duration, left: bool, right: bool):
         if left:
-            self.angle += loop_duration/180*math.pi/4
+            self.angle += loop_duration/180*math.pi
         if right:
-            self.angle -= loop_duration/180*math.pi/4
+            self.angle -= loop_duration/180*math.pi
     
     def update(self, loop_duration):
 
@@ -34,9 +35,9 @@ class Player:
 
         self.score += loop_duration
 
-        if self.y < 0 or self.y > 560:
+        if self.y < 0 or self.y > 560 and sign(math.sin(self.angle)) == sign(self.y):
             self.angle = -self.angle % (2*math.pi)
-        if self.x < 20 or self.x > 780:
+        if self.x < 20 or self.x > 780 and sign(math.cos(self.angle)) == sign(self.x - 20):
             self.angle = (math.pi - self.angle) % (2*math.pi)
 
 class ServerPhase(pgg.ServerPhase):
@@ -62,7 +63,8 @@ class ServerPhase(pgg.ServerPhase):
                 'y' : int(player.y)
             } for player in self.players if player.is_connected
         }
-        self.server.network.send_all("game_update", current_state)
+        if current_state:
+            self.server.network.send_all("game_update", current_state)
         for reception in self.server.network.last_receptions:
             if reception[pgg.HEADER] == 'new_player':
                 if reception[pgg.ID] not in (playr.id for playr in self.players):

@@ -312,8 +312,7 @@ class LobbyGamePhase(pgg.GamePhase):
             'blue' : self.current_color.b,
             'name': self.name_entry.get()
             }
-        )
-        
+        )        
 
     def next(self):
         if self.is_ready: # Which mean we are ready to go to the game
@@ -334,7 +333,7 @@ class LobbyGamePhase(pgg.GamePhase):
     def start(self):
         self.is_ready = False
         self.settings_frame.hide()
-
+        
     def update(self, loop_duration: int):
         if self.current_color.r != self.red_slider.get() or self.current_color.g != self.green_slider.get() or self.current_color.b != self.blue_slider.get():
             # If the player used the sliders to change the color he want to play with.
@@ -548,7 +547,6 @@ class PlaygroundGamePhase(pgg.GamePhase):
 
             # send the data to the server
             if self.keyboard.actions_pressed.get('left'):
-
                 self.game.client.send("action", "left")
             if self.keyboard.actions_pressed.get('right'):
                 self.game.client.send("action", "right")
