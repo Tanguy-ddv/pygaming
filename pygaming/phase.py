@@ -175,8 +175,6 @@ class GamePhase(BasePhase, ABC):
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
-        self.game.soundbox = SoundBox(self.settings, self._name, self.database)
-        self.game.typewriter = TypeWriter(self.database, self.settings, self._name)
         self.game.update_settings()
         for frame in self.frames:
             frame.begin()
@@ -186,8 +184,6 @@ class GamePhase(BasePhase, ABC):
 
     def finish(self):
         """This method is called at the end of the phase."""
-        self.game.soundbox = None # Unload all the sounds
-        self.game.typewriter = None # Unload all the fonts
         for frame in self.frames: # Unload
             frame.end()
         self.end()

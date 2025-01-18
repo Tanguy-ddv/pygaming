@@ -14,36 +14,56 @@ class Sound(_Sd):
     """
 
     def __init__(self, path: str, category) -> None:
-        self._full_path = get_file('sounds', path)
-        super().__init__(self._full_path)
+        super().__init__(get_file('sounds', path))
         self.category = category
 
 class SoundBox:
     """The Sound box is used to play all the sounds."""
 
-    def __init__(self, settings: Settings, phase_name: str, database: Database) -> None:
+    def __init__(self, settings: Settings, first_phase: str, database: Database) -> None:
         self._settings = settings
-        self._phase_name = phase_name
+        self._phase_name = first_phase
         self._db = database
-        self._speeches = Speeches(database, settings, phase_name)
-        speech_paths =  self._speeches.get_all()
-        self._paths: dict[str, (str, str)] = {loc : (path, "speeches") for loc, path in speech_paths.items()}
-        self._paths.update(database.get_sounds(phase_name))
-        self._sounds = {name : Sound(path, category) for name, (path, category) in self._paths.items()}
-        self.update_settings()
+        self._speeches = Speeches(database, settings, first_phase)
+        this_phase_speech_paths, all_phases_speech_paths =  self._speeches.get_all()
+
+        self._this_phase_paths: dict[str, (str, str)] = {loc : (path, "speeches") for loc, path in this_phase_speech_paths.items()}
+        self._this_phase_paths.update(database.get_sounds(first_phase))
+
+        self._all_phases_paths: dict[str, (str, str)] = {loc : (path, "speeches") for loc, path in all_phases_speech_paths.items()}
+        self._all_phases_paths.update(database.get_sounds('all'))
+
+        self._sounds = self._get_sounds_dict()
     
-    def update_settings(self):
+    def _get_sounds_dict(self):
+        """Create the full dict of sounds."""
+
+        dall = {name : Sound(path, category) for name, (path, category) in self._this_phase_paths.items()}
+        dthis = {name : Sound(path, category) for name, (path, category) in self._all_phases_paths.items()}
+        return dict(**dall, **dthis)
+    
+    def update_settings(self, settings: Settings, phase: str):
         """Change the speeches based on the language and the volumes based on the new volumes."""
-        if self._speeches.language != self._settings.language:
-            self._speeches = Speeches(self._db, self._settings, self._phase_name)
-            speech_paths =  self._speeches.get_all()
-            self._paths.update({loc : (path, "speeches") for loc, path in speech_paths.items()})
-            self._sounds = {name : Sound(path) for name, path in self._paths.items()}
-        
+        last_language = self._speeches.current_language
+        last_phase = self._speeches.current_phase
+        self._speeches.update(settings, phase)
+        this_phase_speech_paths, all_phases_speech_paths =  self._speeches.get_all()
+        if last_phase != phase:
+            self._this_phase_paths: dict[str, (str, str)] = {loc : (path, "speeches") for loc, path in this_phase_speech_paths.items()}
+            self._this_phase_paths.update(self._db.get_sounds(phase))
+
+        if last_language != self._settings.language: # if the language change, we reload all speeches
+            if last_phase == phase: # If the phase changed as well, we already update the speeches based on new phase and language above
+                self._this_phase_paths.update({loc : (path, "speeches") for loc, path in this_phase_speech_paths.items()})
+            self._all_phases_paths.update({loc : (path, "speeches") for loc, path in all_phases_speech_paths.items()})
+
+        self._sounds = self._get_sounds_dict()
+
+        # Verify all categories exists.
         for sound in self._sounds.values():
             if sound.category not in self._settings.volumes["sounds"]:
                 raise PygamingException(f"The sound category {sound.category} is not listed in the settings, got\n {list(self._settings.volumes['sounds'].keys())}.")
-            sound.set_volume(self._settings.volumes["sounds"][sound.category]*self._settings.volumes["main"])        
+            sound.set_volume(self._settings.volumes["sounds"][sound.category]*self._settings.volumes["main"])
 
     def play_sound(self, name_or_loc: str, loop: int = 0, maxtime_ms: int = 0, fade_ms: int = 0):
         """

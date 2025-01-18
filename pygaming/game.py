@@ -27,7 +27,7 @@ class Game(BaseRunnable):
         self.soundbox = SoundBox(self.settings, first_phase, self.database)
         self.jukebox = Jukebox(self.settings)
 
-        self.typewriter = TypeWriter(self.database, self.settings, self.current_phase)
+        self.typewriter = TypeWriter(self.database, self.settings, first_phase)
 
         self.mouse = Mouse(self.settings)
         self.keyboard = Keyboard()
@@ -68,11 +68,10 @@ class Game(BaseRunnable):
             self.client = None
             self.online = False
 
-
     def update_settings(self):
         """Update the language."""
-        self.typewriter.update_settings()
-        self.soundbox.update_settings()
+        self.typewriter.update_settings(self.settings, self.current_phase)
+        self.soundbox.update_settings(self.settings, self.current_phase)
         self.keyboard.update_settings()
 
     def stop(self):

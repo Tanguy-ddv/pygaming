@@ -43,25 +43,25 @@ class Font(_Ft):
 class TypeWriter:
     """The TypeWriter is a class used to manage the fonts and the text generation."""
 
-    def __init__(self, database: Database, settings: Settings, phase_name: str) -> None:
+    def __init__(self, database: Database, settings: Settings, first_phase: str) -> None:
 
         self._settings = settings
         self._db = database
-        fonts = database.get_fonts(phase_name)
+        fonts = database.get_fonts(first_phase)
         self._fonts: dict[str, Font] = {
             font_name : Font(get_file('fonts', path) if path != "default" else None, size, bold, italic, underline, strikethrough)
             for (font_name, (path, size, italic, bold, underline, strikethrough)) 
             in fonts.items()
         }
 
-        self._phase_name = phase_name
-        self._texts = Texts(database, settings, phase_name)
+        self._phase_name = first_phase
+        self._texts = Texts(database, settings, first_phase)
 
         self._default_font = Font(None, 15)
     
-    def update_settings(self):
+    def update_settings(self, settings: Settings, phase):
         """Update the texts based on the new language."""
-        self._texts = Texts(self._db, self._settings, self._phase_name)
+        self._texts.update(settings, phase)
     
     def _get_font(self, font: str) -> Font:
         """Get the font from the dict or return the default font"""
