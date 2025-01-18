@@ -21,7 +21,6 @@ class Server(BaseRunnable):
     def update(self):
         """Update the server."""
         loop_duration = self.clock.tick(self.config.get("server_frequency"))
-        print(loop_duration)
         self.logger.update(loop_duration)
         self.network.update()
         previous = self.current_phase
