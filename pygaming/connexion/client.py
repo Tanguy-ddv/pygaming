@@ -22,7 +22,8 @@ class Client:
         self.__initial_data = (initial_header, initial_payload)
         if self.is_connected:
             self.is_connected = self._connect_to_server(server_ip)
-        
+        else:
+            self.client_socket = None # This happens when nothing is broadcasted.
 
     def send(self, header: str, payload: Any):
         """Send the payload to the server, specifying the header."""
@@ -62,13 +63,14 @@ class Client:
                 for reception in self._reception_buffer:
                     if reception[HEADER] == NEW_ID:
                         self.id = reception[PAYLOAD]
-                        self.client_socket.settimeout(None)
-                        if self.__initial_data[0] and self.__initial_data[1]:
-                            self.send(*self.__initial_data)
-                        return True
             except socket.timeout:
                 self.client_socket.close()
                 return False
+            else:
+                self.client_socket.settimeout(None)
+                if self.__initial_data[0] and self.__initial_data[1]:
+                    self.send(*self.__initial_data)
+                return True
 
     def _receive(self):
         while self._running:
@@ -92,7 +94,8 @@ class Client:
         """Close the client at the end of the process."""
         self._reception_buffer = [{HEADER : EXIT}]
         self._running = False
-        self.client_socket.close()
+        if not self.client_socket is None:
+            self.client_socket.close()
         self.is_connected = False
 
     def clean_last(self):

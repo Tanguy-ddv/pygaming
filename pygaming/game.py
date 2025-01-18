@@ -51,18 +51,23 @@ class Game(BaseRunnable):
         is_game_over = self.update_phases(loop_duration)
         return self._inputs.quit or is_game_over or (self.online and self.client.is_server_killed() and self.config.get("stop_game_on_server_killed", False))
 
-    def connect(self) -> bool:
+    def connect(self, initial_message_header = None, initial_message_payload = None) -> bool:
         """Connect the game to the server."""
         if not self.online:
-            self.client = Client(self.config, self.logger)
-            self.online = True
+            self.client = Client(self.config, self.logger, initial_message_header, initial_message_payload) 
+            if not self.client.is_connected:
+                self.disconnect()
+            else:
+                self.online = True
+        return self.online
 
-    def disconnect(self) -> bool:
+    def disconnect(self):
         """Disconnect the game from the server."""
         if self.online:
             self.client.close()
             self.client = None
             self.online = False
+
 
     def update_settings(self):
         """Update the language."""
