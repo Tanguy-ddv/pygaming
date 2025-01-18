@@ -62,6 +62,10 @@ class Mask(ABC):
         """Unload the mask."""
         self.matrix = None
         self._loaded = False
+    
+    def update(self, loop_duration):
+        """Update the mask if it can be updated."""
+        pass
 
     def is_loaded(self):
         """Return True if the mask is loaded, False otherwise."""
@@ -385,7 +389,7 @@ class FromArtColor(Mask):
     Selects only one image of the art based on the index.
     """
 
-    def __init__(self, width: int, height: int, art, function: Callable[[int, int, int], float], index: int = 0) -> None:
+    def __init__(self, art, function: Callable[[int, int, int], float], index: int = 0) -> None:
         super().__init__(art.width, art.height)
         self.art = art
         self.index = index
@@ -409,7 +413,7 @@ class FromImageColor(Mask):
     Every pixel of the art is mapped to a value between 0 and 1 with the provided function.
     """
 
-    def __init__(self, width: int, height: int, path: str, function: Callable[[int, int, int], float]) -> None:
+    def __init__(self, path: str, function: Callable[[int, int, int], float]) -> None:
         self.path = get_file('images', path)
         self.im = Image.open(self.path)
         width, height = self.im.size
@@ -448,7 +452,7 @@ class SumOfMasks(_MaskCombination):
     """
 
     def _combine(self, *matrices):
-        return np.clip(np.sum(matrices), 0, 1)
+        return np.minimum(np.sum(matrices), 1)
 
 class ProductOfMasks(_MaskCombination):
     """
@@ -553,3 +557,62 @@ class BinaryMask(Mask):
 
         self.matrix = np.zeros_like(self._mask.matrix)
         self.matrix[positions_to_keep] = 1
+
+class FreeMask(Mask):
+    """A FreeMask is a mask whose matrix can be freely and explicitly change during the game."""
+
+    def __init__(self, width, height, initial_matrix):
+        super().__init__(width, height)
+        self.__initial_matrix = initial_matrix
+    
+    def _load(self, settings):
+        self.matrix = self.__initial_matrix
+
+    def update_matrix(self, new_matrix: np.ndarray):
+        if self.matrix.shape == new_matrix.shape:
+            self.matrix = new_matrix
+        else:
+            raise ValueError(f"The matrices have two different shapes: {self.matrix.shape}, {new_matrix.shape}")
+
+class _MovingMask(Mask, ABC):
+    """An abstract class for all the moving masks."""
+    
+    def __init__(self, width, height):
+        super().__init__(width, height)
+        self._velocity_x = 0
+        self._velocity_y = 0
+    
+    def set_velocity(self, vel_x, vel_y):
+        """Update the velocity of the moving mask in pixel/sec. They can be negative"""
+        self._velocity_x = vel_x/1000
+        self._velocity_y = vel_y/1000
+
+    @abstractmethod
+    def update(self, loop_duration):
+        raise NotImplementedError()
+
+class _WrappingMovingMask():
+    """An abstract class for all moving masks that would wrap around the edges."""
+
+    def __init__(self, width, height):
+        self.matrix = np.arange(0, width*height).reshape((width, height))
+        self._velocity_x = 1
+        self._velocity_y = -4
+
+    def update(self, loop_duration):
+        """Update the matrix by rearanging the rows and columns."""
+
+        Nx = self._velocity_x*loop_duration
+        Ny = self._velocity_y*loop_duration
+
+        num_rows, num_cols = self.matrix.shape
+
+        # Normalize to a valid range
+        Nx = Nx % num_rows if Nx >= 0 else -(abs(Nx) % num_rows)
+        Ny = Ny % num_cols if Ny >= 0 else -(abs(Ny) % num_cols)
+
+        if Nx != 0:
+            self.matrix = np.concatenate((self.matrix[Nx:], self.matrix[:Nx]), axis=0)
+        if Ny != 0:
+            self.matrix = np.concatenate((self.matrix[:, Ny:], self.matrix[:, :Ny]), axis=1)
+

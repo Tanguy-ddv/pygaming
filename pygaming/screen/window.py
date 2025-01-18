@@ -92,16 +92,17 @@ class Window(pygame.Rect):
 
     def get_surface(self, surface: pygame.Surface):
         """Return the surface extracted by the window."""
+        
         if self._width > surface.get_width() or self._height > surface.get_height():
             surf = pygame.Surface((self.size), pygame.SRCALPHA)
             surf.fill(self._fill_color)
             surf.blit(surface, (0, 0))
         else:
             surf = surface.copy()
-        if self.masks:
-            for mask, effects in zip(self.masks, self._effects):
-                mask.apply(surf, effects)
-            return surf
+        
+        for mask, effects in zip(self.masks, self._effects):
+            mask.update()
+            mask.apply(surf, effects)
 
         return surf
 
