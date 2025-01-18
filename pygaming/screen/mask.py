@@ -591,14 +591,12 @@ class _MovingMask(Mask, ABC):
     def update(self, loop_duration):
         raise NotImplementedError()
 
-class _WrappingMovingMask():
+class _WrappingMovingMask(_MovingMask):
     """An abstract class for all moving masks that would wrap around the edges."""
 
     def __init__(self, width, height):
-        self.matrix = np.arange(0, width*height).reshape((width, height))
-        self._velocity_x = 1
-        self._velocity_y = -4
-
+        super().__init__(self)
+    
     def update(self, loop_duration):
         """Update the matrix by rearanging the rows and columns."""
 
@@ -616,3 +614,14 @@ class _WrappingMovingMask():
         if Ny != 0:
             self.matrix = np.concatenate((self.matrix[:, Ny:], self.matrix[:, :Ny]), axis=1)
 
+class _BouncingMovingMask(_MovingMask):
+    """An abstract class for all moving masks that would bounce on the edges."""
+    
+    def __init__(self, width, height):
+        super().__init__(width, height)
+
+class _DisappearingMovingMask(_MovingMask):
+    """An abstract class for all moving masks that would disappear through on the edges."""
+
+    def __init__(self, width, height):
+        super().__init__(width, height)
