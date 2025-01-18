@@ -35,9 +35,8 @@ class SoundBox:
 
         self._sounds = self._get_sounds_dict()
     
-    def _get_sounds_dict(self):
+    def _get_sounds_dict(self) -> dict[str, Sound]:
         """Create the full dict of sounds."""
-
         dall = {name : Sound(path, category) for name, (path, category) in self._this_phase_paths.items()}
         dthis = {name : Sound(path, category) for name, (path, category) in self._all_phases_paths.items()}
         return dict(**dall, **dthis)
@@ -76,9 +75,8 @@ class SoundBox:
         - maxtime_ms: int, the maximum time (in ms) the sound can last. If 0, the sound will be played until its end.
         - fade_ms: int, the duration of the fade up (in ms). The sound will start at volume 0 and reach its full volume at fade_ms.
         """
-        try:
-            sd = self._sounds[name_or_loc]
-        except KeyError:
+        sd = self._sounds.get(name_or_loc, None)
+        if sd is None:
             raise PygamingException(f"The name {name_or_loc} is neither a sound nor a localization of the phase {self._phase_name}. The sounds loaded are:\n{self.get_sounds_names}")
 
         sd.play(loop, maxtime_ms, fade_ms)

@@ -55,11 +55,10 @@ class Texts:
                 output.append(self.get(text_loc))
             return text_or_loc.sep.join(output)
 
-        if text_or_loc in self._this_phase_dict:
-            return self._this_phase_dict[text_or_loc]
-        elif text_or_loc in self._all_phases_dict:
-            return self._all_phases_dict[text_or_loc]
-        return text_or_loc
+        text = self._this_phase_dict.get(text_or_loc, None)
+        if text is None:
+            text = self._all_phases_dict.get(text_or_loc, text_or_loc)
+        return text
     
     def get_values(self, loc: str):
         """Return the longest text that can be obtained for the same localization given any language."""
