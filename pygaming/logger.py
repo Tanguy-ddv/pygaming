@@ -37,6 +37,7 @@ class Logger:
         if self.debug or not is_it_debugging:
             data['timestamp'] = int(time.time()*1000)
             json.dump(data, self._file)
+            self._file.write('\n')
 
     @property
     def current_file(self):
