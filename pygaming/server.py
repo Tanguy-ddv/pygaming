@@ -24,7 +24,7 @@ class Server(BaseRunnable):
         """Update the server."""
         # Update the time
         new_time = time()*1000
-        loop_duration = self.__current_time - new_time
+        loop_duration = new_time - self.__current_time
         self.__current_time = new_time
         # Update the server logic
         self.logger.update(loop_duration)
