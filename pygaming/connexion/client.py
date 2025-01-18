@@ -19,9 +19,10 @@ class Client:
         self._running = True
         server_ip = self._discover_server()
         self.is_connected = bool(server_ip)
-        self.__initial_data = (initial_header, initial_payload)
         if self.is_connected:
             self.is_connected = self._connect_to_server(server_ip)
+            if initial_header and initial_payload:
+                self.send(initial_header, initial_payload)
         else:
             self.client_socket = None # This happens when nothing is broadcasted.
 
@@ -58,32 +59,33 @@ class Client:
         # start receiving data
         threading.Thread(target=self._receive).start()
         # wait for the welcome message to come.
-        while self._running:
-            try:
+        connected = False
+        try:
+            while self._running and not connected:
                 for reception in self._reception_buffer:
                     if reception[HEADER] == NEW_ID:
                         self.id = reception[PAYLOAD]
-            except socket.timeout:
-                self.client_socket.close()
-                return False
-            else:
-                self.client_socket.settimeout(None)
-                if self.__initial_data[0] and self.__initial_data[1]:
-                    self.send(*self.__initial_data)
-                return True
+                        connected = True
+
+        except socket.timeout:
+            self.client_socket.close()
+        else:
+            self.client_socket.settimeout(None)
+        finally:
+            return connected
 
     def _receive(self):
         while self._running:
             try:
                 data = self.client_socket.recv(self._config.max_communication_length)
                 if data:
-                    for jdata in data.decode().split(self._config.get("network_sep")):
+                    for jdata in data.decode("utf-8").split(self._config.get("network_sep")):
                         if jdata:
                             try:
                                 json_data = json.loads(jdata)
                             except json.JSONDecodeError:
                                 # if a non json object is read from buffer, we log it case of debugging.
-                                self._logger.write(json.dump({"NetworkReadingError" : jdata}), True)
+                                self._logger.write({"NetworkReadingError" : jdata}, True)
                             else:
                                 self._reception_buffer.append(json_data)
             except ConnectionError:
