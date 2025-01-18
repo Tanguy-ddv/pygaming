@@ -132,24 +132,24 @@ class Server:
     def send(self, client_id, header, data):
         """The data to one client."""
         for client_socket in self._client_socket_managers:
-            if client_socket.id_ == client_id and client_socket.status == ONLINE:
-                try:
-                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)}) + self._config.get("network_sep")
-                    client_socket.socket.send(json_data.encode())
-                except ConnectionResetError:
-                    client_socket.status = OFFLINE
-                except Exception:
-                    pass
-                finally:
-                    break
+            if client_socket.id_ == client_id:
+                if client_socket.status == ONLINE:
+                    try:
+                        json_data: str = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)}) + self._config.get("network_sep")
+                        client_socket.socket.send(json_data.encode("utf-8"))
+                    except ConnectionResetError:
+                        client_socket.status = OFFLINE
+                    except Exception:
+                        pass
+                break
 
     def send_all(self, header, data):
         """Send data to all the clients."""
         for client_socket in self._client_socket_managers:
             if client_socket.status == ONLINE:
                 try:
-                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)}) + self._config.get("network_sep")
-                    client_socket.socket.send(json_data.encode())
+                    json_data: str = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)}) + self._config.get("network_sep")
+                    client_socket.socket.send(json_data.encode("utf-8"))
                 except ConnectionResetError:
                     client_socket.status = OFFLINE
                 except Exception:
