@@ -28,7 +28,7 @@ class Texts:
         self._settings = settings
         self._last_language = settings.language
         texts_list = self._db.get_language_texts(self._last_language, phase_name)
-        self._text_dict = {pos : txt for pos, txt in texts_list[0]}
+        self._text_dict = {pos : txt for pos, txt in texts_list}
 
     def get_positions(self):
         """Return all the positions (text keys)."""
@@ -39,7 +39,7 @@ class Texts:
         if self._settings.language != self._last_language:
             self._last_language = self._settings.language
             texts_list = self._db.get_language_texts(self._last_language)
-            self._text_dict = {pos : txt for pos, txt in texts_list[0]}
+            self._text_dict = {pos : txt for pos, txt in texts_list}
 
         if isinstance(text_or_loc, TextFormatter):
             output = []

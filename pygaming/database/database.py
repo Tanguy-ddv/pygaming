@@ -90,7 +90,7 @@ class Database:
             with open(self._ig_queries_path, 'w') as f:
                 f.writelines(f"{dump}\n" for dump in dumps_to_keep)
 
-    def execute_select_query(self, query: str):
+    def execute_select_query(self, query: str, params: tuple = ()):
         """
         Execute a select query on the database.
 
@@ -107,7 +107,7 @@ class Database:
             print("The query is wrong:\n", query, "\nShould start by 'SELECT'")
         try:
             cur = self._conn.cursor()
-            cur.execute(query)
+            cur.execute(query, params)
             result = cur.fetchall()
             description = [descr[0] for descr in cur.description]
             cur.close()
@@ -207,32 +207,49 @@ class Database:
         """
 
         return self.execute_select_query(
-            f"""SELECT position, text_value
-                FROM localizations
-                WHERE language_code = '{language}'
-                AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
-
-                UNION
-
+            f"""
+            WITH this_language AS (
                 SELECT position, text_value
                 FROM localizations
-                WHERE language_code = '{self._config.default_language}'
-                AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
-                AND position NOT IN (
-                    SELECT position
-                    FROM localizations
-                    WHERE language_code = '{language}'
-                    AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
-            )"""
-        )
+                WHERE language_code = %s
+                AND (
+                    (tag IN (SELECT tag FROM tags WHERE phase_name = %s))
+                OR 
+                    (tag = %s))
+                )
+
+            SELECT * from this_language
+
+            UNION
+            
+            SELECT position, text_value
+            FROM localizations
+            WHERE language_code = %s
+            AND (
+                    (tag IN (SELECT tag FROM tags WHERE phase_name = %s))
+                OR 
+                    (tag = %s))
+            )
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM this_language tl 
+                WHERE tl.position = localizations.position
+            )
+            """,
+            params = (
+                language, phase_name, phase_name,  # For this_language CTE
+                self._config.default_language, phase_name, phase_name  # For fallback query
+            )
+        )[0]
 
     def get_loc_texts(self, loc: str):
         """Return the texts that can be obtain for the same localization given any language."""
         return self.execute_select_query(
             f"""SELECT text_value 
             FROM localizations
-            WHERE position = '{loc}'
-            """
+            WHERE position = %s
+            """,
+            params=(loc,)
         )[0]
 
     def get_speeches(self, language: str, phase_name: str):
@@ -242,24 +259,40 @@ class Database:
         """
 
         return self.execute_select_query(
-            f"""SELECT position, sound_path
-                FROM speeches
-                WHERE language_code = '{language}'
-                AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
-
-                UNION
-
+            f"""
+            WITH this_language AS (
                 SELECT position, sound_path
                 FROM speeches
-                WHERE language_code = '{self._config.default_language}'
-                AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
-                AND position NOT IN (
-                    SELECT position
-                    FROM speeches
-                    WHERE language_code = '{language}'
-                    AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
-            )"""
-        )
+                WHERE language_code = %s
+                AND (
+                    (tag IN (SELECT tag FROM tags WHERE phase_name = %s))
+                OR 
+                    (tag = %s))
+                )
+
+            SELECT * from this_language
+
+            UNION
+            
+            SELECT position, sound_path
+            FROM speeches
+            WHERE language_code = %s
+            AND (
+                    (tag IN (SELECT tag FROM tags WHERE phase_name = %s))
+                OR 
+                    (tag = %s))
+            )
+            AND NOT EXISTS (
+                SELECT 1 
+                FROM this_language tl 
+                WHERE tl.position = speeches.position
+            )
+            """,
+            params = (
+                language, phase_name, phase_name,  # For this_language CTE
+                self._config.default_language, phase_name, phase_name  # For fallback query
+            )
+        )[0]
 
     def get_sounds(self, phase_name: str):
         """
@@ -269,8 +302,9 @@ class Database:
         sounds = self.execute_select_query(
             f"""SELECT name, sound_path, category
                 FROM sounds
-                WHERE ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
-            """
+                WHERE (tag IN (SELECT tag FROM tags WHERE phase_name = %s)) OR (tag = %s))
+            """,
+            params=(phase_name, phase_name)
         )[0]
         return {sound_name : (sound_path, category) for sound_name, sound_path, category in sounds}
 
@@ -282,7 +316,8 @@ class Database:
         fonts = self.execute_select_query(
             f"""SELECT name, font_path, size, italic, bold, underline, strikethrough
                 FROM fonts
-                WHERE ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
-            """
+                WHERE (tag IN (SELECT tag FROM tags WHERE phase_name = %s)) OR (tag = %s))
+            """,
+            params=(phase_name, phase_name)
         )[0]
         return {font_name : (font_path, size, italic, bold, underline, strikethrough) for font_name, font_path, size, italic, bold, underline, strikethrough in fonts}

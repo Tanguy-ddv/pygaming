@@ -16,7 +16,7 @@ class Speeches:
         self._settings = settings
         self.language = settings.language
         path_list = self._db.get_speeches(self.language, phase_name)
-        self._speeches_dict = {pos : txt for pos, txt in path_list[0]}
+        self._speeches_dict = {pos : txt for pos, txt in path_list}
 
     def get_all(self):
         """Return all the locs and speech paths."""
