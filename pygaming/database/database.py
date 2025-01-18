@@ -31,7 +31,11 @@ class Database:
         - runnable_type: 'server' or 'game', used to specifiy if it is the game's database or the server's database.
         - debug: when passed to true, the delation of the database is not done at the destruction of the instance.
         """
+        # Save the config
+        self._config = config
         self._debug = debug
+
+        # Save some paths
         self._db_path = get_file('data',f'db-{runnable_type}.sqlite')
         self._table_path = get_file('data',f'sql-{runnable_type}/tables.sql')
         self._ig_queries_path = get_file('data', f'sql-{runnable_type}/ig_queries.sql')
@@ -65,9 +69,6 @@ class Database:
 
         # Execute the queries previously saved.
         self.execute_sql_script(self._ig_queries_path)
-
-        # Save the config
-        self._config = config
 
         self._ig_queries_file = open(self._ig_queries_path, 'a', encoding='utf-8')
     
@@ -177,7 +178,7 @@ class Database:
         except sql.Error as error:
             print("An error occured while querying the database with the script located at\n",script_path,"\n",error)
 
-    def __del__(self):
+    def close(self):
         """Destroy the Database object. Delete the database file"""
         self._ig_queries_file.close()
 
@@ -185,9 +186,9 @@ class Database:
         ig_queries_size = os.path.getsize(self._ig_queries_path) / 1024
         if ig_queries_size > self._threshold_size:
             self.reduce_ig_queries_size()
-        new_size = os.path.getsize(self._ig_queries_path) // 1024
-        # Increase the threshold.
-        set_state(self.__entry, new_size + self._config.get(self.__entry, 1000))
+            new_size = os.path.getsize(self._ig_queries_path) // 1024
+            # Increase the threshold.
+            set_state(self.__entry, new_size + self._config.get(self.__entry, 1000))
 
         # Close the connection and delete the database
         self._conn.close()
@@ -209,19 +210,19 @@ class Database:
             f"""SELECT position, text_value
                 FROM localizations
                 WHERE language_code = '{language}'
-                AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
+                AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
 
                 UNION
 
                 SELECT position, text_value
                 FROM localizations
                 WHERE language_code = '{self._config.default_language}'
-                AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
+                AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
                 AND position NOT IN (
                     SELECT position
                     FROM localizations
                     WHERE language_code = '{language}'
-                    AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
+                    AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
             )"""
         )
 
@@ -244,19 +245,19 @@ class Database:
             f"""SELECT position, sound_path
                 FROM speeches
                 WHERE language_code = '{language}'
-                AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
+                AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
 
                 UNION
 
                 SELECT position, sound_path
                 FROM speeches
                 WHERE language_code = '{self._config.default_language}'
-                AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
+                AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
                 AND position NOT IN (
                     SELECT position
                     FROM speeches
                     WHERE language_code = '{language}'
-                    AND ( phase_name = '{phase_name}' OR phase_name = 'all' )
+                    AND ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
             )"""
         )
 
@@ -268,7 +269,7 @@ class Database:
         sounds = self.execute_select_query(
             f"""SELECT name, sound_path, category
                 FROM sounds
-                WHERE ( phase_name = '{phase_name}' OR phase_name = 'all' )
+                WHERE ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
             """
         )[0]
         return {sound_name : (sound_path, category) for sound_name, sound_path, category in sounds}
@@ -281,7 +282,7 @@ class Database:
         fonts = self.execute_select_query(
             f"""SELECT name, font_path, size, italic, bold, underline, strikethrough
                 FROM fonts
-                WHERE ( phase_name = '{phase_name}' OR phase_name = 'all' )
+                WHERE ( phase_name_or_tag = '{phase_name}' OR phase_name_or_tag = 'all' )
             """
         )[0]
         return {font_name : (font_path, size, italic, bold, underline, strikethrough) for font_name, font_path, size, italic, bold, underline, strikethrough in fonts}

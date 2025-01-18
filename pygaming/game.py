@@ -72,5 +72,6 @@ class Game(BaseRunnable):
 
     def stop(self):
         """Stop the algorithm properly"""
+        self.database.close()
         self.disconnect()
         pygame.quit()

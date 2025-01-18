@@ -37,5 +37,6 @@ class Server(BaseRunnable):
 
     def stop(self):
         """Stop the event."""
+        self.database.close()
         self.network.send_all(EXIT, '')
         self.network.stop()
