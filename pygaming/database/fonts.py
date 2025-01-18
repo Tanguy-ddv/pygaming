@@ -47,14 +47,18 @@ class TypeWriter:
 
         self._settings = settings
         self._db = database
-        fonts = database.get_fonts(first_phase)
-        self._fonts: dict[str, Font] = {
+        self._all_phases_fonts: dict[str, Font] = {
             font_name : Font(get_file('fonts', path) if path != "default" else None, size, bold, italic, underline, strikethrough)
             for (font_name, (path, size, italic, bold, underline, strikethrough)) 
-            in fonts.items()
+            in database.get_fonts(first_phase).items()
+        }
+        self._this_phase_fonts:  dict[str, Font] = {
+            font_name : Font(get_file('fonts', path) if path != "default" else None, size, bold, italic, underline, strikethrough)
+            for (font_name, (path, size, italic, bold, underline, strikethrough)) 
+            in database.get_fonts('all').items()
         }
 
-        self._phase_name = first_phase
+        self._current_phase = first_phase
         self._texts = Texts(database, settings, first_phase)
 
         self._default_font = Font(None, 15)
@@ -62,10 +66,19 @@ class TypeWriter:
     def update_settings(self, settings: Settings, phase):
         """Update the texts based on the new language."""
         self._texts.update(settings, phase)
+        if self._current_phase != phase: # If we change the phase, we change the fonts
+            self._this_phase_fonts:  dict[str, Font] = {
+            font_name : Font(get_file('fonts', path) if path != "default" else None, size, bold, italic, underline, strikethrough)
+            for (font_name, (path, size, italic, bold, underline, strikethrough)) 
+            in self._db.get_fonts('all').items()
+        }
     
     def _get_font(self, font: str) -> Font:
         """Get the font from the dict or return the default font"""
-        return self._fonts.get(font, self._default_font)
+        thefont = self._this_phase_fonts.get(font, None)
+        if thefont is None:
+            thefont = self._all_phases_fonts.get(font, self._default_font)
+        return thefont
 
     def render(self, font: str, text_or_loc: str | TextFormatter, color: Color, background_color: Color = None, justify: tuple[float, float] = TOP_LEFT) -> Surface:
         """
