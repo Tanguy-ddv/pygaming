@@ -96,15 +96,14 @@ class Database:
 
         Params:
         ---
-        - query: str, the query to execute. Must start by 'SELECT'
+        - query: str, the query to execute
+        - params: tuple, the params of the query
 
         Returns:
         ---
         - result: list[list[Any]]: The matrix of outputs
         - description: list[str]: The list of fields
         """
-        if not (query.startswith("SELECT") or query.startswith("\nSELECT")):
-            print("The query is wrong:\n", query, "\nShould start by 'SELECT'")
         try:
             cur = self._conn.cursor()
             cur.execute(query, params)
@@ -123,9 +122,8 @@ class Database:
         Params:
         ---
         - query: str, the query to execute. Need to start with 'INSERT INTO'
+        - params: tuple, the params of the query
         """
-        if not (query.startswith("INSERT INTO") or query.startswith("\nINSERT INTO")):
-            print("The query is wrong:\n", query, "\nShould start by 'INSERT INTO'")
         try:
             # Execute the query on the database
             cur = self._conn.cursor()
@@ -144,15 +142,8 @@ class Database:
         Params:
         ---
         - query: str, the query to execute. Needs to start with 'UPDATE', 'DELETE', 'ALTER TABLE', or similar.
+        - params: tuple, the params of the query
         """
-        valid_keywords = ["UPDATE", "DELETE", "ALTER TABLE", "DROP", "CREATE", "REPLACE",
-            "\nUPDATE", "\nDELETE", "\nALTER TABLE", "\nDROP", "\nCREATE", "\nREPLACE"
-        ]
-
-        if not any(query.startswith(keyword) for keyword in valid_keywords):
-            print("The query is wrong:\n", query, "\nShould start by one of:", ', '.join(valid_keywords))
-            return
-
         try:
             # Execute the query on the database
             cur = self._conn.cursor()
@@ -207,16 +198,17 @@ class Database:
         """
 
         return self.execute_select_query(
-            f"""
+            """
             WITH this_language AS (
                 SELECT position, text_value
                 FROM localizations
-                WHERE language_code = %s
+                WHERE language_code = ?
                 AND (
-                    (tag IN (SELECT tag FROM tags WHERE phase_name = %s))
+                    (phase_name_or_tag IN (SELECT tag FROM tags WHERE phase_name = ?))
                 OR 
-                    (tag = %s))
+                    (phase_name_or_tag = ?)
                 )
+            )
 
             SELECT * from this_language
 
@@ -224,11 +216,11 @@ class Database:
             
             SELECT position, text_value
             FROM localizations
-            WHERE language_code = %s
+            WHERE language_code = ?
             AND (
-                    (tag IN (SELECT tag FROM tags WHERE phase_name = %s))
+                    (phase_name_or_tag IN (SELECT tag FROM tags WHERE phase_name = ?))
                 OR 
-                    (tag = %s))
+                    (phase_name_or_tag = ?)
             )
             AND NOT EXISTS (
                 SELECT 1 
@@ -245,9 +237,9 @@ class Database:
     def get_loc_texts(self, loc: str):
         """Return the texts that can be obtain for the same localization given any language."""
         return self.execute_select_query(
-            f"""SELECT text_value 
+            """SELECT text_value 
             FROM localizations
-            WHERE position = %s
+            WHERE position = ?
             """,
             params=(loc,)
         )[0]
@@ -259,16 +251,17 @@ class Database:
         """
 
         return self.execute_select_query(
-            f"""
+            """
             WITH this_language AS (
                 SELECT position, sound_path
                 FROM speeches
-                WHERE language_code = %s
+                WHERE language_code = ?
                 AND (
-                    (tag IN (SELECT tag FROM tags WHERE phase_name = %s))
+                    (phase_name_or_tag IN (SELECT tag FROM tags WHERE phase_name = ?))
                 OR 
-                    (tag = %s))
+                    (phase_name_or_tag = ?)
                 )
+            )
 
             SELECT * from this_language
 
@@ -276,11 +269,11 @@ class Database:
             
             SELECT position, sound_path
             FROM speeches
-            WHERE language_code = %s
+            WHERE language_code = ?
             AND (
-                    (tag IN (SELECT tag FROM tags WHERE phase_name = %s))
+                    (phase_name_or_tag IN (SELECT tag FROM tags WHERE phase_name = ?))
                 OR 
-                    (tag = %s))
+                    (phase_name_or_tag = ?)
             )
             AND NOT EXISTS (
                 SELECT 1 
@@ -300,9 +293,12 @@ class Database:
         """
 
         sounds = self.execute_select_query(
-            f"""SELECT name, sound_path, category
+            """SELECT name, sound_path, category
                 FROM sounds
-                WHERE (tag IN (SELECT tag FROM tags WHERE phase_name = %s)) OR (tag = %s))
+                WHERE 
+                    (phase_name_or_tag IN (SELECT tag FROM tags WHERE phase_name = ?))
+                OR 
+                    (phase_name_or_tag = ?)
             """,
             params=(phase_name, phase_name)
         )[0]
@@ -314,9 +310,12 @@ class Database:
         """
 
         fonts = self.execute_select_query(
-            f"""SELECT name, font_path, size, italic, bold, underline, strikethrough
+            """SELECT name, font_path, size, italic, bold, underline, strikethrough
                 FROM fonts
-                WHERE (tag IN (SELECT tag FROM tags WHERE phase_name = %s)) OR (tag = %s))
+                WHERE 
+                    (phase_name_or_tag IN (SELECT tag FROM tags WHERE phase_name = ?))
+                OR 
+                    (phase_name_or_tag = ?)
             """,
             params=(phase_name, phase_name)
         )[0]
