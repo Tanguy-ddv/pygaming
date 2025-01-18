@@ -2,7 +2,6 @@
 from .connexion import Server as Network, EXIT, NEW_PHASE
 from .database.database import SERVER
 from .base import BaseRunnable
-from time import time
 
 class Server(BaseRunnable):
     """The Server is the instance to be run as a server for online game."""
@@ -18,15 +17,11 @@ class Server(BaseRunnable):
         """
         super().__init__(debug, SERVER, first_phase)
         self.network = Network(self.config, nb_max_player)
-        self.__current_time = time()*1000
 
     def update(self):
         """Update the server."""
-        # Update the time
-        new_time = time()*1000
-        loop_duration = new_time - self.__current_time
-        self.__current_time = new_time
-        # Update the server logic
+        loop_duration = self.clock.tick(self.config.get("server_frequency"))
+        print(loop_duration)
         self.logger.update(loop_duration)
         self.network.update()
         previous = self.current_phase
