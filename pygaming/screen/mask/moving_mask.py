@@ -2,7 +2,9 @@
 
 from abc import ABC, abstractmethod
 import numpy as np
+from typing import Callable
 from .mask import Mask, Circle, GradientCircle, Rectangle, RoundedRectangle, GradientRectangle, Ellipse
+
 
 class _MovingMask(Mask, ABC):
     """An abstract class for all the moving masks."""
@@ -51,8 +53,8 @@ class _WrappingMovingMask(_MovingMask):
 
     def _move_matrix(self, Nx, Ny):
         # Normalize to a valid range
-        Nx = Nx % self.width if Nx >= 0 else -(abs(Nx) % self.width)
-        Ny = Ny % self.height if Ny >= 0 else -(abs(Ny) % self.height)
+        Nx = int(Nx % self.width if Nx >= 0 else -(abs(Nx) % self.width))
+        Ny = int(Ny % self.height if Ny >= 0 else -(abs(Ny) % self.height))
 
         if Ny != 0:
             self.matrix = np.concatenate((self.matrix[-Ny:], self.matrix[:-Ny]), axis=0)
@@ -69,16 +71,41 @@ class _WrappingMovingMask(_MovingMask):
 class WrappingMovingCircle(_WrappingMovingMask, Circle):
     """This Circle is able to move. When it reaches an end, it come back on the opposite side."""
     
-    def __init__(self, width, height, radius: int, center = None):
+    def __init__(self, width: int, height: int, radius: int, center: tuple[int, int] = None):
         Circle.__init__(self, width, height, radius, center)
-        _WrappingMovingMask.__init__(self, width, height, center)
+        _WrappingMovingMask.__init__(self, width, height, self.center)
 
 class WrappingMovingRectangle(_WrappingMovingMask, Rectangle):
     """This Rectangle is able to move. When it reaches an end, it come back on the opposite side."""
 
-    def __init__(self, width, height, left: int, top: int, right: int, bottom: int):
+    def __init__(self, width: int, height: int, left: int, top: int, right: int, bottom: int):
         Rectangle.__init__(self, width, height, left, top, right, bottom)
         center = (right + left)//2, (bottom + top)//2
+        _WrappingMovingMask.__init__(self, width, height, center)
+
+class WrappingMovingEllipse(_WrappingMovingMask, Ellipse):
+    """This Ellipse is able to move. When it reaches an end, it come back on the opposite side."""
+    def __init__(self, width: int, height: int, x_radius: int, y_radiues: int, center: tuple[int, int] = None):
+        Ellipse.__init__(self, width, height, x_radius, y_radiues, center)
+        _WrappingMovingMask.__init__(self, width, height, self.center)
+
+class WrappingMovingRoundedRectangle(_WrappingMovingMask, RoundedRectangle):
+    def __init__(self, width: int, height: int, left: int, top: int, right: int, bottom: int, radius: int):
+        RoundedRectangle.__init__(self, width, height, left, top, right, bottom, radius)
+        center = (right + left)//2, (bottom + top)//2
+        super().__init__(width, height, center)
+
+class WrappingMovingGradientCircle(_WrappingMovingMask, GradientCircle):
+    def __init__(self, width, height, inner_radius: int, outer_radius: int, transition: Callable, center: tuple[int, int] = None):
+        GradientCircle.__init__(self, width, height, inner_radius, outer_radius, transition, center)
+        _WrappingMovingMask.__init__(self, width, height, self.center)
+
+class WrappingMovingGradientRectangle(_WrappingMovingMask, GradientRectangle):
+    def __init__(self, width: int, height: int, inner_left: int, inner_top: int, inner_right: int, inner_bottom: int,
+            outer_left: int, outer_top: int, outer_right: int, outer_bottom: int, transition: Callable[[float], float] = lambda x:x):
+        GradientRectangle.__init__(self, width, height, inner_left, inner_top, inner_right, inner_bottom,
+            outer_left, outer_top, outer_right, outer_bottom, transition)
+        center = (inner_right + inner_left)//2, (inner_bottom + inner_top)//2
         _WrappingMovingMask.__init__(self, width, height, center)
 
 class _BouncingMovingMask(_MovingMask):
