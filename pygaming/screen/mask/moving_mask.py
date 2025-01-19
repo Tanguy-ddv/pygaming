@@ -122,34 +122,22 @@ class _BouncingMovingMask(_MovingMask):
     
     def __init__(self, width, height, inner_mask: Mask, center: tuple[int, int] = None):
         super().__init__(width, height, center)
-        self._dx, self._dy = inner_mask.width//2, inner_mask.height//2
+        self._dx, self._dy = inner_mask.width, inner_mask.height
         self._inner_mask = inner_mask
 
     def make_matrix(self):
         """Create the matrix of the mask based on the inner mask and its position on the screen"""
-        self.matrix = np.eye(self._width, self._height)
-        inner_matrix = self._inner_mask.matrix
+        self.matrix = np.ones((self._width, self._height))
 
-        left = self._center[0] - self._dx
-        right = self._center[0] + self._dx
-        top = self._center[1] - self._dy
-        bottom = self._center[1] - self._dy
-
-        start_x = max(0, left)
-        end_x = min(self._width, right + 1)
-        start_y = max(0, top)
-        end_y = min(self._height, bottom + 1)
-
-        inner_start_x = max(0, -left)
-        inner_end_x = self._inner_mask.width - max(0, right + 1 - self._width)
-        inner_start_y = max(0, -top)
-        inner_end_y = self._inner_mask.height - max(0, bottom + 1 - self._height)
-
-        self.matrix[start_y:end_y, start_x:end_x] = inner_matrix[inner_start_y:inner_end_y, inner_start_x:inner_end_x]
+        padded_matrix = np.pad(self.matrix, (self._dx, self._dy), mode='constant')
+        center_x = self._center[0] + self._dx
+        center_y = self._center[1] + self._dy
+        padded_matrix[center_x - self._dx//2 : center_x + self._dx//2, center_y - self._dy//2 : center_y + self._dy//2] = self._inner_mask.matrix
+        self.matrix = padded_matrix[self._dx:-self._dx, self._dy:-self._dy]
 
     def _load(self, settings):
         if not self._inner_mask.is_loaded():
-            self._inner_mask.load()
+            self._inner_mask.load(settings)
         self.make_matrix()
 
     def update(self, loop_duration):
@@ -157,19 +145,19 @@ class _BouncingMovingMask(_MovingMask):
         Nx, Ny = self._get_move(loop_duration)
         center_x, center_y = self._center[0] + Nx, self._center[1] + Ny
         # Clip and bounce the position of the center
-        if center_x - self._dx < 0 and self._velocity_x < 0:
+        if center_x - self._dx//2 < 0 and self._velocity_x < 0:
             self._velocity_x *= -1
-            center_x += 2*(self._dx - center_x)
-        elif center_x + self._dx > self.width and self._velocity_x > 0:
+            center_x += 2*(self._dx//2 - center_x)
+        elif center_x + self._dx//2 > self.width and self._velocity_x > 0:
             self._velocity_x *= -1
-            center_x -= 2*(center_x + self._dx - self.width)
+            center_x -= 2*(center_x + self._dx//2 - self.width)
         
-        if center_y - self._dy < 0 and self._velocity_y < 0:
+        if center_y - self._dy//2 < 0 and self._velocity_y < 0:
             self._velocity_y *= -1
-            center_y += 2*(self._dy - center_y)
-        elif center_y + self._dy > self.height and self._velocity_y > 0:
+            center_y += 2*(self._dy//2 - center_y)
+        elif center_y + self._dy//2 > self.height and self._velocity_y > 0:
             self._velocity_y *= -1
-            center_y -= 2*(center_y + self._dy - self.height)
+            center_y -= 2*(center_y + self._dy//2 - self.height)
         
         self._center = (center_x, center_y)
         self.make_matrix()
