@@ -1,13 +1,14 @@
 """Then entry module contains the entry widget."""
 
 from typing import Optional
-from pygame import Cursor, Surface, draw
+from pygame import Surface, draw
 from .widget import Widget
 from ..anchors import TOP_LEFT, CENTER
 from ..frame import Frame
 from ...color import Color
 from ..art.art import Art
 from ..mask import Mask
+from ...cursor import Cursor
 
 
 class Entry(Widget):

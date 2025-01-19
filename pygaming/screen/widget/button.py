@@ -1,7 +1,7 @@
 """The button module contains buttons. They are widgets used to get a user click."""
 
 from typing import Optional, Callable, Any
-from pygame import Cursor, Rect, Surface
+from pygame import Rect, Surface
 from ..frame import Frame
 from ..anchors import TOP_LEFT, CENTER
 from .widget import Widget
@@ -9,6 +9,7 @@ from ..art import Art
 from ...color import Color
 from ..mask import Mask
 from ...database import TextFormatter
+from ...cursor import Cursor
 
 class Button(Widget):
     """A Button is a basic widget used to get a player click."""

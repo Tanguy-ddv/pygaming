@@ -2,12 +2,13 @@
 
 from abc import ABC, abstractmethod
 from typing import Optional
-from pygame import Cursor, Surface, Mask as mk
+from pygame import Surface, Mask as mk
 from ..frame import Frame
 from ..element import Element
 from ..anchors import TOP_LEFT
 from ..art.art import Art
 from ..mask import Mask
+from ...cursor import Cursor
 
 class Widget(Element, ABC):
     """
