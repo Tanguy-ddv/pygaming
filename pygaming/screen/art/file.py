@@ -20,8 +20,8 @@ class ImageFile(Art):
     ImageFile("characters/char1.jpeg") is an Art displaying the image stored at "assets/images/characters/char1.jpeg"
     """
 
-    def __init__(self, file: str, transformation: Transformation = None, force_load_on_start: bool = False) -> None:
-        super().__init__(transformation, force_load_on_start)
+    def __init__(self, file: str, transformation: Transformation = None, force_load_on_start: bool = False, permanent: bool = False) -> None:
+        super().__init__(transformation, force_load_on_start, permanent)
         self.full_path = get_file('images', file)
         self._width, self._height = Image.open(self.full_path).size
         self._find_initial_dimension()
@@ -53,9 +53,10 @@ class ImageFolder(Art):
         durations: Iterable[int] | int,
         introduction: int = 0,
         transformation: Transformation = None,
-        force_load_on_start: bool = False
+        force_load_on_start: bool = False,
+        permanent: bool = False
     ) -> None:
-        super().__init__(transformation, force_load_on_start)
+        super().__init__(transformation, force_load_on_start, permanent)
         self.full_path = get_file('images', folder)
         self.durs = durations
         self._introduction = introduction
@@ -96,8 +97,8 @@ class GIFFile(Art):
     When all the images have been displayed, do not loop on the very first but on the 10th.
     """
 
-    def __init__(self, file: str, transformation: Transformation = None, introduction: int = 0, force_load_on_start: bool = False) -> None:
-        super().__init__(transformation, force_load_on_start)
+    def __init__(self, file: str, transformation: Transformation = None, introduction: int = 0, force_load_on_start: bool = False, permanent: bool = False) -> None:
+        super().__init__(transformation, force_load_on_start, permanent)
         self.full_path = get_file('images', file)
         self._introduction = introduction
         self._width, self._height = Image.open(self.full_path).size
