@@ -53,8 +53,8 @@ class Database:
         if os.path.isfile(self._db_path):
             os.remove(self._db_path)
 
-        # Create and connect to the sqlite file.
-        self._conn = sql.connect(self._db_path)
+        # Create and connect to the sqlite database.
+        self._conn = sql.connect(self._db_path if (debug or not config.get(f"in_memory_{runnable_type}_db", False)) else ":memory:")
 
         # Initialize the sqlite file with the tables.
         self.execute_sql_script(self._table_path)
