@@ -5,6 +5,7 @@ from pygame import Cursor as _Cs
 import pygame
 from .screen.art import Art
 from .file import get_file
+from .settings import Settings
 
 _pygame_system_cursors = [
     'SYSTEM_CURSOR_ARROW', 'SYSTEM_CURSOR_IBEAM', 'SYSTEM_CURSOR_WAIT', 'SYSTEM_CURSOR_CROSSHAIR', 'SYSTEM_CURSOR_WAITARROW', 'SYSTEM_CURSOR_SIZENWSE',
@@ -14,9 +15,13 @@ _pygame_cursors = [
     'arrow', 'diamond', 'broken_x', 'tri_left', 'tri_right'
 ]
 
-_pygame_bitmap_cursors = [
-    'thickarrow_strings', 'sizer_x_strings', 'sizer_y_strings', 'sizer_xy_strings', 'textmarker_strings'
-]
+_pygame_bitmap_cursors = {
+    'thickarrow_strings' : ((24, 24), (0, 0)),
+    'sizer_x_strings' : ((24, 16), (9, 5)),
+    'sizer_y_strings' : ((16, 24), (5, 9)),
+    'sizer_xy_strings' : ((24, 16), (5, 7)),
+    'textmarker_strings' : ((8, 16), (4,6))
+}
 
 def _verify_bitmap(bitmap: tuple[str]):
     max_length = max(len(row) for row in bitmap)
@@ -57,10 +62,11 @@ class Cursor:
         ...
     
     @overload
-    def __init__(self, bitmap: tuple[str]):
+    def __init__(self, bitmap: tuple[str], hotspot: tuple = (0,0)):
         ...
 
     def __init__(self, *values):
+        self.is_loaded = True # only set to false is the cursor is an art
         if len(values) == 1:
             if isinstance(values[0], str):
                 if values[0] in _pygame_system_cursors:
@@ -71,7 +77,7 @@ class Cursor:
                     self._cursors = (getattr(pygame.cursors, values[0]),)
                 elif values[0] in _pygame_bitmap_cursors:
                     # Create a cursor with a bitmap cursor
-                    self._cursors = (_Cs(*pygame.cursors.compile(getattr(pygame.cursors, values[0]))),)
+                    self._cursors = (_Cs(*_pygame_bitmap_cursors[values[0]], *pygame.cursors.compile(getattr(pygame.cursors, values[0]))),)
                 elif os.path.isfile(get_file('cursors', values[0])):
                     # Create a cursor a file
                     self._cursors = (_Cs(*pygame.cursors.load_xbm(values[0])))
@@ -81,22 +87,32 @@ class Cursor:
 
             elif isinstance(values[0], tuple):
                 # Create a cursor with a string bitmap
-                self._cursors = (_Cs(*pygame.cursors.compile(_verify_bitmap(values[0]))))
+                bitmap = _verify_bitmap(values[0])
+                hotspot = (0, 0)
+                size = len(bitmap), len(bitmap[0])
+
+                self._cursors = (_Cs(size, hotspot, *pygame.cursors.compile(bitmap)))
 
         elif len(values) == 2:
 
             if isinstance(values[0], Art):
-                values[0].load()
-                anchor = values[1][0]*values[0].width, values[1]*values[0].height
-                self._cursors = tuple(_Cs(anchor, surf) for surf in values[0].surfaces)
-                self._durations = values[0].durations
+                self.is_loaded = False
+                self._cursors = values
 
-            elif isinstance(values[0], tuple):
+            elif isinstance(values[0], str):
                 if os.path.isfile(get_file('cursors', values[0])) and os.path.isfile(get_file('cursors', values[1])):
                     self._cursors = (_Cs(*pygame.cursors.load_xbm(values[0], values[1])))
                     self._durations = (500,)
                 else:
                     raise ValueError(f"{values[0], values[1]} aren't proper arguments for a cursor.")
+        
+            elif isinstance(values[0], tuple):
+                # Create a cursor with a string bitmap
+                bitmap = _verify_bitmap(values[0])
+                hotspot = values[1]
+                size = len(bitmap), len(bitmap[0])
+
+                self._cursors = (_Cs(size, hotspot, *pygame.cursors.compile(bitmap)))
 
         if all((isinstance(value, Cursor) for value in values)):
             self._cursors = []
@@ -110,8 +126,15 @@ class Cursor:
         self._time_since_last_change = 0
         self._index = 0
 
-    def get(self):
+    def get(self, settings: Settings):
         """Return the current image to show as a cursor."""
+        if not self.is_loaded:
+            art, anchor = self._cursors
+            art.load(settings)
+            hotspot = int(anchor[0]*art.width), int(anchor[1]*art.height)
+            self._cursors = tuple(_Cs(hotspot, surf) for surf in art.surfaces)
+            self._durations = art.durations
+            self.is_loaded = True
         return self._cursors[self._index]
     
     def update(self, loop_duration):

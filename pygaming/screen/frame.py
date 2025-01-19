@@ -96,7 +96,6 @@ class Frame(Element):
         for child in self.visible_children:
             if child.is_contact(mouse_pos):
                 surf, cursor = child.update_hover()
-                print(cursor)
         return surf, cursor
 
     def update_focus(self, click: Click | None):

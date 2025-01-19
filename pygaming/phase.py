@@ -278,7 +278,7 @@ class GamePhase(BasePhase, ABC):
             self.current_hover_surface = None
 
         if cursor is None:
-            cursor = self._default_cursor.get()
+            cursor = self._default_cursor.get(self.settings)
         pygame.mouse.set_cursor(cursor)
 
     @property
