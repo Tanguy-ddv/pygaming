@@ -21,6 +21,7 @@ class _MovingMask(Mask, ABC):
     def set_center(self, new_x: int, new_y: int):
         """Reset the position of the center."""
         self._center = (new_x, new_y)
+        return self
     
     def get_center(self):
         """Get the current center of the moving geometry inside the mask."""
@@ -30,6 +31,7 @@ class _MovingMask(Mask, ABC):
         """Update the velocity of the moving mask in pixel/sec. They can be negative"""
         self._velocity_x = vel_x/1000
         self._velocity_y = vel_y/1000
+        return self
 
     def _get_move(self, loop_duration):
         return int(self._velocity_x*loop_duration), int(self._velocity_y*loop_duration)
@@ -50,6 +52,7 @@ class _WrappingMovingMask(_MovingMask):
         Ny = new_y - self._center[1]
         self._move_matrix(Nx, Ny)
         self._center = (new_x, new_y)
+        return self
 
     def _move_matrix(self, Nx, Ny):
         # Normalize to a valid range
@@ -69,14 +72,14 @@ class _WrappingMovingMask(_MovingMask):
             self._center = (self._center[0] + Nx, self._center[1] + Ny)
 
 class WrappingMovingCircle(_WrappingMovingMask, Circle):
-    """This Circle is able to move. When it reaches an end, it come back on the opposite side."""
+    """This Circle is able to move. When it reaches an end, it comes back on the opposite side."""
     
     def __init__(self, width: int, height: int, radius: int, center: tuple[int, int] = None):
         Circle.__init__(self, width, height, radius, center)
         _WrappingMovingMask.__init__(self, width, height, self.center)
 
 class WrappingMovingRectangle(_WrappingMovingMask, Rectangle):
-    """This Rectangle is able to move. When it reaches an end, it come back on the opposite side."""
+    """This Rectangle is able to move. When it reaches an end, it comes back on the opposite side."""
 
     def __init__(self, width: int, height: int, left: int, top: int, right: int, bottom: int):
         Rectangle.__init__(self, width, height, left, top, right, bottom)
@@ -84,23 +87,29 @@ class WrappingMovingRectangle(_WrappingMovingMask, Rectangle):
         _WrappingMovingMask.__init__(self, width, height, center)
 
 class WrappingMovingEllipse(_WrappingMovingMask, Ellipse):
-    """This Ellipse is able to move. When it reaches an end, it come back on the opposite side."""
-    def __init__(self, width: int, height: int, x_radius: int, y_radiues: int, center: tuple[int, int] = None):
-        Ellipse.__init__(self, width, height, x_radius, y_radiues, center)
+    """This Ellipse is able to move. When it reaches an end, it comes back on the opposite side."""
+    def __init__(self, width: int, height: int, x_radius: int, y_radius: int, center: tuple[int, int] = None):
+        Ellipse.__init__(self, width, height, x_radius, y_radius, center)
         _WrappingMovingMask.__init__(self, width, height, self.center)
 
 class WrappingMovingRoundedRectangle(_WrappingMovingMask, RoundedRectangle):
+    """This Moving Rectangle is able to move. When it reaches an end, it comes back on the opposite side."""
+
     def __init__(self, width: int, height: int, left: int, top: int, right: int, bottom: int, radius: int):
         RoundedRectangle.__init__(self, width, height, left, top, right, bottom, radius)
         center = (right + left)//2, (bottom + top)//2
         super().__init__(width, height, center)
 
 class WrappingMovingGradientCircle(_WrappingMovingMask, GradientCircle):
+    """This Gradient Circle is able to move. When it reaches an end, it comes back on the opposite side."""
+
     def __init__(self, width, height, inner_radius: int, outer_radius: int, transition: Callable, center: tuple[int, int] = None):
         GradientCircle.__init__(self, width, height, inner_radius, outer_radius, transition, center)
         _WrappingMovingMask.__init__(self, width, height, self.center)
 
 class WrappingMovingGradientRectangle(_WrappingMovingMask, GradientRectangle):
+    """This Gradient Rectangle is able to move. When it reaches an end, it comes back on the opposite side."""
+
     def __init__(self, width: int, height: int, inner_left: int, inner_top: int, inner_right: int, inner_bottom: int,
             outer_left: int, outer_top: int, outer_right: int, outer_bottom: int, transition: Callable[[float], float] = lambda x:x):
         GradientRectangle.__init__(self, width, height, inner_left, inner_top, inner_right, inner_bottom,
@@ -164,6 +173,63 @@ class _BouncingMovingMask(_MovingMask):
         
         self._center = (center_x, center_y)
         self.make_matrix()
+
+class BouncingMovingCircle(_BouncingMovingMask):
+    """This Circle is able to move. When it reaches an end, it bounces."""
+    
+    def __init__(self, width: int, height: int, radius: int, center: tuple[int, int] = None):
+        inner_mask = Circle(radius*2, radius*2, radius, (radius, radius))
+        super().__init__(width, height, inner_mask, center)
+
+class BouncingMovingRectangle(_BouncingMovingMask):
+    """This Rectangle is able to move. When it reaches an end, it bounces."""
+
+    def __init__(self, width: int, height: int, left: int, top: int, right: int, bottom: int):
+        inner_mask = Rectangle(right - left, bottom - top, 0, 0, right - left, bottom - top)
+        center = (right + left)//2, (bottom + top)//2
+        super().__init__(width, height, inner_mask, center)
+
+class BouncingMovingEllipse(_BouncingMovingMask):
+    """This Ellipse is able to move. When it reaches an end, it bounces."""
+    def __init__(self, width: int, height: int, x_radius: int, y_radius: int, center: tuple[int, int] = None):
+        inner_mask = Ellipse(x_radius*2, y_radius*2, x_radius, y_radius, (x_radius, y_radius))
+        super().__init__( width, height, inner_mask, center)
+
+class BouncingMovingRoundedRectangle(_BouncingMovingMask):
+    """This Moving Rectangle is able to move. When it reaches an end, it bounces."""
+
+    def __init__(self, width: int, height: int, left: int, top: int, right: int, bottom: int, radius: int):
+        inner_mask = RoundedRectangle(right - left, bottom - top, 0, 0, right - left, bottom - top, radius)
+        center = (right + left)//2, (bottom + top)//2
+        super().__init__(width, height, inner_mask, center)
+
+class BouncingMovingGradientCircle(_BouncingMovingMask):
+    """This Gradient Circle is able to move. When it reaches an end, it bounces."""
+
+    def __init__(self, width, height, inner_radius: int, outer_radius: int, transition: Callable, center: tuple[int, int] = None):
+        inner_mask = GradientCircle(outer_radius*2, outer_radius*2, inner_radius, outer_radius, transition, (outer_radius, outer_radius))
+        super().__init__(width, height, inner_mask, center)
+
+class BouncingMovingGradientRectangle(_BouncingMovingMask):
+    """This Gradient Rectangle is able to move. When it reaches an end, it bounces."""
+
+    def __init__(self, width: int, height: int, inner_left: int, inner_top: int, inner_right: int, inner_bottom: int,
+            outer_left: int, outer_top: int, outer_right: int, outer_bottom: int, transition: Callable[[float], float] = lambda x:x):
+        inner_mask = GradientRectangle(
+            width=outer_right - outer_left,
+            height=outer_bottom - outer_top,
+            inner_left= inner_left - outer_left,
+            inner_right= outer_right - inner_right,
+            inner_top= inner_top - outer_top,
+            inner_bottom= outer_bottom - inner_bottom,
+            outer_left=0,
+            outer_right=outer_right - outer_left,
+            outer_top=0,
+            outer_bottom=outer_bottom - outer_top,
+            transition=transition
+        )
+        center = (inner_right + inner_left)//2, (inner_bottom + inner_top)//2
+        super().__init__(width, height, inner_mask, center)
 
 class _DisappearingMovingMask(_BouncingMovingMask):
     """An abstract class for all moving masks that would disappear through on the edges."""
