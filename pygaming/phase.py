@@ -267,7 +267,7 @@ class GamePhase(BasePhase, ABC):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         x,y = self.mouse.get_position()
         cursor, surf = None, None
-        for frame in self.frames:
+        for frame in self.visible_frames:
             if frame.is_contact((x,y)):
                 surf, cursor = frame.update_hover()
                 if surf is not None:

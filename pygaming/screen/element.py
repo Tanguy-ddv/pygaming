@@ -110,7 +110,7 @@ class Element(ABC):
 
     def update_hover(self):
         """Update the hover cursor and surface."""
-        return self.hover_surface.get() if self.hover_surface else None, self.hover_cursor.get() if self.hover_surface else None
+        return self.hover_surface.get() if self.hover_surface else None, self.hover_cursor.get() if self.hover_cursor else None
 
     def get_surface(self) -> pygame.Surface:
         """Return the surface to his parent."""

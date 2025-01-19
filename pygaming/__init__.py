@@ -16,6 +16,7 @@ from .phase import ServerPhase, GamePhase
 from .server import Server
 from .settings import Settings
 from .color import Color
+from .cursor import Cursor
 
 from .screen.frame import Frame
 from .screen.element import Element
@@ -39,7 +40,7 @@ from .database import Database, TypeWriter, SoundBox, TextFormatter
 from . import commands
 
 __all__ = ['Config', 'Game', 'LEAVE', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
-           'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter',
+           'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter', 'Cursor'
            'Element', 'Controls', 'Click', 'widget', 'get_file', 'Client', 'Keyboard', 'Mouse', 'mask', 'art',
            'Network', 'HEADER', 'ID', 'PAYLOAD', 'TIMESTAMP', 'Database', 'anchors',
            'commands', 'Window', 'WindowLike', 'TypeWriter', 'SoundBox', 'Color']

@@ -92,10 +92,11 @@ class Frame(Element):
     def update_hover(self) -> tuple[bool, pygame.Surface | None]:
         """Update the hovering."""
         surf, cursor = None, None
-        hover_x, hover_y = self.game.mouse.get_position()
+        mouse_pos = self.game.mouse.get_position()
         for child in self.visible_children:
-            if child.absolute_rect.collidepoint(hover_x, hover_y):
+            if child.is_contact(mouse_pos):
                 surf, cursor = child.update_hover()
+                print(cursor)
         return surf, cursor
 
     def update_focus(self, click: Click | None):
