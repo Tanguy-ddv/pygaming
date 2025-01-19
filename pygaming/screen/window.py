@@ -101,10 +101,15 @@ class Window(pygame.Rect):
             surf = surface.copy()
         
         for mask, effects in zip(self.masks, self._effects):
-            mask.update()
             mask.apply(surf, effects)
 
         return surf
+
+    def update(self, loop_duration):
+        """Update the masks of the window."""
+        for mask in self.masks:
+            mask.update(loop_duration)
+
 
     def load(self, settings: Settings):
         """Load the masks of the window."""

@@ -201,6 +201,7 @@ class Frame(Element):
             has_changed = self.surface.update(loop_duration)
             if has_changed:
                 self.notify_change()
+        self.window.update(loop_duration)
         self.update(loop_duration)
 
     def update(self, loop_duration: int):
