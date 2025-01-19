@@ -34,6 +34,7 @@ def init_cwd():
         os.makedirs(os.path.join(cwd, 'assets', 'fonts'), exist_ok=True)
         os.makedirs(os.path.join(cwd, 'assets', 'sounds'), exist_ok=True)
         os.makedirs(os.path.join(cwd, 'assets', 'images'), exist_ok=True)
+        os.makedirs(os.path.join(cwd, 'assets', 'cursors'), exist_ok=True)
 
     if not os.path.exists(os.path.join(cwd, 'data')):
 

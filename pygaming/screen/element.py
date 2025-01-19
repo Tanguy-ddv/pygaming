@@ -8,6 +8,7 @@ from ..error import PygamingException
 from .mask import Mask
 from .anchors import TOP_LEFT
 from ..inputs import Click
+from ..cursor import Cursor
 
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
@@ -21,7 +22,7 @@ class Element(ABC):
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
         hover_surface: Optional[Art] = None,
-        hover_cursor: Optional[pygame.Cursor] = None,
+        hover_cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
         active_area: Optional[Mask | pygame.Mask] = None
@@ -32,13 +33,13 @@ class Element(ABC):
         Params:
         ----
         - master: Frame or Phase, the master of this object.
-        - surface: The surface. It is either an AnimatedSurface or a pygame.Surface
+        - surface: The surface. It is an Art
         - x, int, the coordinates in the master of the anchor point.
         - y: int, the coordinates in the master of the anchor point.
         - anchor: the anchor point in % of the width and height. 
         - hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
         frame is hovered by the mouse.
-        - hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the frame.
+        - hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the element.
         - can_be_disabled: some element can be disabled.
         - can_be_focused: Some element can be focused.
         """
@@ -52,7 +53,7 @@ class Element(ABC):
 
         self.surface = surface
         if not active_area is None and active_area.get_size() != self.surface.size:
-            raise PygamingException("The active area must have the size than the art.")
+            raise PygamingException("The active area must have the same size than the art.")
         self._active_area = active_area
 
         self.width, self.height = self.surface.width, self.surface.height
@@ -107,9 +108,13 @@ class Element(ABC):
         """Return the game."""
         return self.master.game
 
-    def update_hover(self): #pylint: disable=unused-argument
-        """Update the hover cursor and surface. To be overriden by element needing it."""
-        return self.hover_surface.get() if self.hover_surface else None, self.hover_cursor
+    def update_hover(self, loop_duration): #pylint: disable=unused-argument
+        """Update the hover cursor and surface."""
+        if self.hover_surface:
+            self.hover_surface.update(loop_duration)
+        if self.hover_cursor:
+            self.hover_cursor.update(loop_duration)
+        return self.hover_surface.get() if self.hover_surface else None, self.hover_cursor.get() if self.hover_surface else None
 
     def get_surface(self) -> pygame.Surface:
         """Return the surface to his parent."""

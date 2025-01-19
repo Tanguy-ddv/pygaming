@@ -7,7 +7,7 @@ from .error import PygamingException
 from .game import Game
 from .base import BaseRunnable
 from .server import Server
-from .database import SoundBox, TypeWriter
+from .cursor import Cursor
 
 class BasePhase(ABC):
     """
@@ -167,6 +167,7 @@ class GamePhase(BasePhase, ABC):
         self.current_hover_surface = None
         self._surface_changed = True
         self._last_surface = None
+        self._default_cursor = Cursor(self.config.default_cursor)
 
     def add_child(self, frame):
         """Add a new frame to the phase."""
@@ -277,12 +278,8 @@ class GamePhase(BasePhase, ABC):
             self.current_hover_surface = None
 
         if cursor is None:
-            cursor = self.config.default_cursor
-            if hasattr(pygame, cursor):
-                cursor = getattr(pygame, cursor)
-            pygame.mouse.set_cursor(cursor)
-        else:
-            pygame.mouse.set_cursor(cursor)
+            cursor = self._default_cursor.get()
+        pygame.mouse.set_cursor(cursor)
 
     @property
     def visible_frames(self):
