@@ -8,6 +8,6 @@ The fourth one is composed of masks extracted from arts or from images.
 The fifth one is combinations or transformation of other masks.
 The last one is moving masks.
 """
-from mask import *
-from moving_mask import *
-from transformations import *
+from .mask import *
+from .moving_mask import *
+from .transformations import *

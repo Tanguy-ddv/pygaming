@@ -1,17 +1,28 @@
+"""The transformations submodule contains all masks able to move."""
+
 from abc import ABC, abstractmethod
 import numpy as np
-from .mask import Mask
+from .mask import Mask, Circle, GradientCircle, Rectangle, RoundedRectangle, GradientRectangle, Ellipse
 
 class _MovingMask(Mask, ABC):
     """An abstract class for all the moving masks."""
     
     def __init__(self, width, height, center: tuple[int, int] = None):
-        super().__init__(width, height)
+        Mask.__init__(self, width, height)
+        ABC.__init__(self)
         self._velocity_x = 0
         self._velocity_y = 0
         if center is None:
             center = width//2, height//2
         self._center = center
+    
+    def set_center(self, new_x: int, new_y: int):
+        """Reset the position of the center."""
+        self._center = (new_x, new_y)
+    
+    def get_center(self):
+        """Get the current center of the moving geometry inside the mask."""
+        return self._center
 
     def set_velocity(self, vel_x, vel_y):
         """Update the velocity of the moving mask in pixel/sec. They can be negative"""
@@ -29,21 +40,46 @@ class _WrappingMovingMask(_MovingMask):
     """An abstract class for all moving masks that would wrap around the edges."""
 
     def __init__(self, width, height, center: tuple[int, int] = None):
-        super().__init__(self, width, height, center)
+        super().__init__(width, height, center)
 
-    def update(self, loop_duration):
-        """Update the matrix by rearanging the rows and columns."""
+    def set_center(self, new_x: int, new_y: int):
+        """Reset the position of the center."""
+        Nx = new_x - self._center[0]
+        Ny = new_y - self._center[1]
+        self._move_matrix(Nx, Ny)
+        self._center = (new_x, new_y)
 
-        Nx, Ny = self._get_move(loop_duration) 
-
+    def _move_matrix(self, Nx, Ny):
         # Normalize to a valid range
         Nx = Nx % self.width if Nx >= 0 else -(abs(Nx) % self.width)
         Ny = Ny % self.height if Ny >= 0 else -(abs(Ny) % self.height)
 
-        if Nx != 0:
-            self.matrix = np.concatenate((self.matrix[Nx:], self.matrix[:Nx]), axis=0)
         if Ny != 0:
-            self.matrix = np.concatenate((self.matrix[:, Ny:], self.matrix[:, :Ny]), axis=1)
+            self.matrix = np.concatenate((self.matrix[-Ny:], self.matrix[:-Ny]), axis=0)
+        if Nx != 0:
+            self.matrix = np.concatenate((self.matrix[:, -Nx:], self.matrix[:, :-Nx]), axis=1)
+
+    def update(self, loop_duration):
+        """Update the matrix by rearanging the rows and columns."""
+        if self._velocity_x or self._velocity_y:
+            Nx, Ny = self._get_move(loop_duration)
+            self._move_matrix(Nx, Ny)
+            self._center = (self._center[0] + Nx, self._center[1] + Ny)
+
+class WrappingMovingCircle(_WrappingMovingMask, Circle):
+    """This Circle is able to move. When it reaches an end, it come back on the opposite side."""
+    
+    def __init__(self, width, height, radius: int, center = None):
+        Circle.__init__(self, width, height, radius, center)
+        _WrappingMovingMask.__init__(self, width, height, center)
+
+class WrappingMovingRectangle(_WrappingMovingMask, Rectangle):
+    """This Rectangle is able to move. When it reaches an end, it come back on the opposite side."""
+
+    def __init__(self, width, height, left: int, top: int, right: int, bottom: int):
+        Rectangle.__init__(self, width, height, left, top, right, bottom)
+        center = (right + left)//2, (bottom + top)//2
+        _WrappingMovingMask.__init__(self, width, height, center)
 
 class _BouncingMovingMask(_MovingMask):
     """An abstract class for all moving masks that would bounce on the edges."""
@@ -102,12 +138,11 @@ class _BouncingMovingMask(_MovingMask):
         self._center = (center_x, center_y)
         self.make_matrix()
 
-
 class _DisappearingMovingMask(_BouncingMovingMask):
     """An abstract class for all moving masks that would disappear through on the edges."""
 
-    def __init__(self, width, height, center: tuple[int, int] = None):
-        super().__init__(width, height, center)
+    def __init__(self, width, height, inner_mask: Mask, center: tuple[int, int] = None):
+        super().__init__(width, height, inner_mask, center)
     
     def update(self, loop_duration):
         """Update the mask"""

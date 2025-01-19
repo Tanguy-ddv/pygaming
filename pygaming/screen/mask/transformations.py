@@ -1,4 +1,4 @@
-
+"""The transformations submodule contains all masks being transformations of an image, array or of another mask."""
 from abc import ABC, abstractmethod
 from typing import Callable
 import pygame.surfarray as sa
