@@ -35,8 +35,10 @@ class Mouse:
         """Update the mouse at every loop iteration."""
         self._x, self._y = pygame.mouse.get_pos()
         dx, dy = pygame.mouse.get_rel()
-        self.v_x = dx/loop_duration
-        self.v_y = dy/loop_duration
+        if loop_duration == 0:
+            self.v_x, self.v_y = 0, 0
+        else:
+            self.v_x, self.v_y = dx/loop_duration, dy/loop_duration
         pressed = pygame.mouse.get_pressed(5)
         for button, button_pressed in enumerate(pressed):
             if button_pressed:

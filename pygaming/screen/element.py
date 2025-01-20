@@ -77,8 +77,8 @@ class Element(ABC):
     
     def get_on_master(self):
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
-        on_screen = self.absolute_rect.colliderect((0, 0, *self.master.config.dimension))
-        self.on_master = self.master.is_child_on_me() and on_screen
+        on_screen = self.absolute_rect.colliderect((0, 0, *self.game.config.dimension))
+        self.on_master = self.master.is_child_on_me(self) and on_screen
     
     def move(self, new_x: int = None, new_y: int = None, new_anchor: tuple[float, float] = None):
         """
