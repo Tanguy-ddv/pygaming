@@ -252,19 +252,3 @@ class Frame(Element):
         """Reset the background position in the window with a new value."""
         self.background_window = pygame.Rect(new_x, new_y, *self.background_window.size)
         self.notify_change()
-
-    @property
-    def absolute_top(self):
-        """Return the top coordinate of the element in the game window."""
-        # We need to overlap this argument to take into account the background window.
-        # If the background window is focusing on (100, 100, 200, 200), the point of  relative coordinate
-        # (100, 100) is at the topleft of the window.
-        return self.master.absolute_top + self.relative_top - self.background_window.top
-
-    @property
-    def absolute_left(self):
-        """Return the left coordinate of the element in the game window."""
-        # We need to overlap this argument to take into account the background window.
-        # If the background window is focusing on (100, 100, 200, 200), the point of  relative coordinate
-        # (100, 100) is at the topleft of the window.
-        return self.master.absolute_left + self.relative_left - self.background_window.left
