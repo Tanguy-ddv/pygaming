@@ -12,7 +12,6 @@ class Screen:
         self._width, self._height = config.dimension
         self._fullscreen = settings.fullscreen
         self.screen = pygame.display.set_mode((self._width, self._height), pygame.FULLSCREEN if self._fullscreen else 0)
-        self._settings = settings
 
         pygame.display.set_caption(config.game_name)
         pygame.display.set_icon(pygame.image.load(get_file('', 'icon.ico')))
@@ -23,7 +22,9 @@ class Screen:
 
     def update(self):
         """Update the screen."""
-        if self._fullscreen != self._settings.fullscreen:
-            self._fullscreen = self._settings.fullscreen
-            self.screen = pygame.display.set_mode((self._width, self._height), pygame.FULLSCREEN if self._fullscreen else 0)
         pygame.display.flip()
+
+    def update_settings(self, settings: Settings):
+        if self._fullscreen != settings.fullscreen:
+            self._fullscreen = settings.fullscreen
+            self.screen = pygame.display.set_mode((self._width, self._height), pygame.FULLSCREEN if self._fullscreen else 0)

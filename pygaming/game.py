@@ -72,7 +72,8 @@ class Game(BaseRunnable):
         """Update the language."""
         self.typewriter.update_settings(self.settings, self.current_phase)
         self.soundbox.update_settings(self.settings, self.current_phase)
-        self.keyboard.update_settings()
+        self.keyboard.update_settings(self.settings)
+        self.jukebox.update_settings(self.settings)
 
     def stop(self):
         """Stop the algorithm properly"""

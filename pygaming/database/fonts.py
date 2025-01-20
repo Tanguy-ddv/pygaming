@@ -45,7 +45,6 @@ class TypeWriter:
 
     def __init__(self, database: Database, settings: Settings, first_phase: str) -> None:
 
-        self._settings = settings
         self._db = database
         self._all_phases_fonts: dict[str, Font] = {
             font_name : Font(get_file('fonts', path) if path != "default" else None, size, bold, italic, underline, strikethrough)
@@ -72,6 +71,7 @@ class TypeWriter:
             for (font_name, (path, size, italic, bold, underline, strikethrough)) 
             in self._db.get_fonts('all').items()
         }
+        self._antialias = settings.antialias
     
     def _get_font(self, font: str) -> Font:
         """Get the font from the dict or return the default font"""
@@ -106,12 +106,12 @@ class TypeWriter:
             background.fill((0, 0, 0, 0) if background_color is None else background_color)
             line_y = 0
             for line in lines:
-                render = thefont.render(line, self._settings.antialias, color, background_color)
+                render = thefont.render(line, self._antialias, color, background_color)
                 background.blit(render, ((bg_width - render.get_width())*justify[0], line_y))
                 line_y += line_size
             return background
 
-        return thefont.render(thetext, self._settings.antialias, color, background_color)
+        return thefont.render(thetext, self._antialias, color, background_color)
 
     def render_paragraphs(self, font: str, text_or_loc: str | TextFormatter, color: Color, rect: Rect, background_color: Color = None) -> Surface:
         """

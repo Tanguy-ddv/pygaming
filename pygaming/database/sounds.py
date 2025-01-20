@@ -21,7 +21,6 @@ class SoundBox:
     """The Sound box is used to play all the sounds."""
 
     def __init__(self, settings: Settings, first_phase: str, database: Database) -> None:
-        self._settings = settings
         self._phase_name = first_phase
         self._db = database
         self._speeches = Speeches(database, settings, first_phase)
@@ -51,18 +50,18 @@ class SoundBox:
             self._this_phase_paths: dict[str, (str, str)] = {loc : (path, "speeches") for loc, path in this_phase_speech_paths.items()}
             self._this_phase_paths.update(self._db.get_sounds(phase))
 
-        if last_language != self._settings.language: # if the language change, we reload all speeches
+        if last_language != settings.language: # if the language change, we reload all speeches
             if last_phase == phase: # If the phase changed as well, we already update the speeches based on new phase and language above
                 self._this_phase_paths.update({loc : (path, "speeches") for loc, path in this_phase_speech_paths.items()})
             self._all_phases_paths.update({loc : (path, "speeches") for loc, path in all_phases_speech_paths.items()})
 
         self._sounds = self._get_sounds_dict()
 
-        # Verify all categories exists.
+        # Verify all categories exists and set the sound.
         for sound in self._sounds.values():
-            if sound.category not in self._settings.volumes["sounds"]:
-                raise PygamingException(f"The sound category {sound.category} is not listed in the settings, got\n {list(self._settings.volumes['sounds'].keys())}.")
-            sound.set_volume(self._settings.volumes["sounds"][sound.category]*self._settings.volumes["main"])
+            if sound.category not in settings.volumes["sounds"]:
+                raise PygamingException(f"The sound category {sound.category} is not listed in the settings, got\n {list(settings.volumes['sounds'].keys())}.")
+            sound.set_volume(settings.volumes["sounds"][sound.category]*settings.volumes["main"])
 
     def play_sound(self, name_or_loc: str, loop: int = 0, maxtime_ms: int = 0, fade_ms: int = 0):
         """

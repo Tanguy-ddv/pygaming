@@ -16,12 +16,12 @@ class Controls:
     def __init__(self, settings: Settings, config: Config, phase_name: str) -> None:
 
         self._key_map_dict: dict[str, str] = {}
-        self._settings = settings
         self._config = config
         self._previous_controls = None
         self._phase_name = phase_name
+        self.update_settings(settings)
 
-    def update_settings(self):
+    def update_settings(self, settings: Settings):
         """Update the key map dict with the current settings."""
         self._key_map_dict = {}
 
@@ -34,7 +34,7 @@ class Controls:
                 self._key_map_dict[key] = action
 
         # Find the keys from the controls
-        controls = self._settings.controls[self._phase_name] if self._phase_name in self._settings.controls else {}
+        controls = settings.controls[self._phase_name] if self._phase_name in settings.controls else {}
         self._previous_controls = controls
         for key, action in controls.items():
             # The key is either stored as a string of the value of the pygame.key or as a string of the name
@@ -43,8 +43,10 @@ class Controls:
                 self._key_map_dict[str(getattr(pygame, key))] = action
             else:
                 self._key_map_dict[key] = action
+        
+        return self._get_reversed_mapping()
 
-    def get_reversed_mapping(self):
+    def _get_reversed_mapping(self):
         """Get all the defined keys and the actions."""
         reversed_mapping = {}
         for key, action in self._key_map_dict.items():
