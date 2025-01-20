@@ -66,10 +66,13 @@ class Game(BaseRunnable):
     def display_image(self) -> bool:
         """Display the image."""
         while self._display_screen:
-            self.screen_clock.tick(self.config.get("max_frame_rate"))
+            loop_duration = self.screen_clock.tick(self.config.get("max_frame_rate"))
             if not self._pause_display:
+                while self._is_calculating: # wait for the game to end its calculations
+                    pass
                 self._screen.display_phase(self.phases[self.current_phase])
                 self._screen.update()
+                self.phases[self.current_phase].update_hover(loop_duration)
 
     def update(self) -> bool:
         """Update all the component of the game."""
@@ -111,4 +114,5 @@ class Game(BaseRunnable):
         self.database.close()
         self.disconnect()
         self._display_screen = False # Stop the thread displaying the screen.
+        self._display_screen_thread.join() # And wait for it to complete.
         pygame.quit()

@@ -251,13 +251,12 @@ class GamePhase(BasePhase, ABC):
 
     def loop(self, loop_duration: int):
         """Update the phase."""
-        self.__update_focus()
-        self.__update_hover(loop_duration)
+        self._update_focus()
         self.update(loop_duration)
         for frame in self.frames:
             frame.loop(loop_duration)
 
-    def __update_focus(self):
+    def _update_focus(self):
         """Update the focus of all the frames."""
         ck1 = self.mouse.get_click(1)
         if ck1:
@@ -271,7 +270,7 @@ class GamePhase(BasePhase, ABC):
             for frame in self.frames:
                 frame.next_object_focus()
 
-    def __update_hover(self, loop_duration):
+    def update_hover(self, loop_duration):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         x,y = self.mouse.get_position()
         cursor, surf = None, None
