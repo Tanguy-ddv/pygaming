@@ -86,10 +86,11 @@ class Server:
         broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : {IP : self._host_ip, ID : self._config.get('game_id')}})
+        pause_time = self._config.get("broadcast_period")/1000
         while self._running:
             if self._broadcasting and self.get_nb_players() < self._nb_max_player:
                 broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
-            time.sleep(self._config.get("broadcast_period")/1000)  # Send broadcast every broadcast_frquency ms
+            time.sleep(pause_time)  # Send broadcast every broadcast_frquency ms
     
     def start_broadcast(self):
         """Manually start the broadcast of the server ip."""
