@@ -294,9 +294,9 @@ class GamePhase(BasePhase, ABC):
             has_changed = cursor.update(loop_duration)
             if not cursor is self.current_cursor:        
                 self.current_cursor = cursor
-                pygame.mouse.set_cursor(cursor.get())
+                pygame.mouse.set_cursor(cursor.get(self.settings))
             elif has_changed:
-                pygame.mouse.set_cursor(cursor.get())
+                pygame.mouse.set_cursor(cursor.get(self.settings))
 
     @property
     def visible_frames(self):
@@ -312,7 +312,7 @@ class GamePhase(BasePhase, ABC):
 
         if self.current_hover_surface is not None:
             x, y = self.mouse.get_position()
-            bg.blit(self.current_hover_surface.get(), (x, y - self.current_hover_surface.get_height()))
+            bg.blit(self.current_hover_surface.get(self.settings), (x, y - self.current_hover_surface.get_height()))
         return bg
 
     def notify_change(self):

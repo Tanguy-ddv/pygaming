@@ -123,7 +123,6 @@ class Art(ABC):
                 if self._index == len(self.surfaces):
                     self._index = self.introduction
                 return True
-            return False
         return False
 
     def reset(self):
