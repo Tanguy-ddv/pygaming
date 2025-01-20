@@ -8,15 +8,24 @@ import json
 from functools import lru_cache
 import base64
 
+def _open_json_file(path):
+    """Open any json file, encoded with b64 or not."""
+    with open(path, 'rb') as f:
+        binary_data = f.read()
+    try:
+        json_string = binary_data.decode('utf-8')  # Attempt to decode binary to string
+        return json.loads(json_string), True # If it works, the file wasn't encoded
+
+    except (UnicodeDecodeError, json.JSONDecodeError): # Otherwise, it was
+        decoded_data = base64.b64decode(binary_data)
+        json_string = decoded_data.decode('utf-8')
+        return json.loads(json_string), False
+
 @lru_cache(maxsize=1)
 def _get_base_path():
 
     config_path = os.path.join(os.path.abspath("."), 'data', 'config.json')
-    config_file = open(config_path,'r', encoding='utf-8')
-    base_path = json.load(config_file)['path']
-    config_file.close()
-
-    return base_path
+    return _open_json_file(config_path)[0]['path']
 
 def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fonts'], file: str):
     """
@@ -38,16 +47,7 @@ def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fo
 def load_json_file(file: str) -> tuple[dict, bool]:
     """Load a json file that may or may not be encoded. Return True if the file was encoded."""
     file_path = get_file('data', file)
-    with open(file_path, 'rb') as f:
-        binary_data = f.read()
-    try:
-        json_string = binary_data.decode('utf-8')  # Attempt to decode binary to string
-        return json.loads(json_string), True # If it works, the file wasn't encoded
-
-    except (UnicodeDecodeError, json.JSONDecodeError): # Otherwise, it was
-        decoded_data = base64.b64decode(binary_data)
-        json_string = decoded_data.decode('utf-8')
-        return json.loads(json_string), False
+    return _open_json_file(file_path)
 
 def save_json_file(file: str, data: dict, encode: bool = False):
     """Save a json file as encryoted or not."""
