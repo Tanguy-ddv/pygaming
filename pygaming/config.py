@@ -1,6 +1,5 @@
 """The config class is used to interact with the config file."""
-import json
-from .file import get_file
+from .file import load_json_file
 
 class Config:
     """
@@ -9,10 +8,7 @@ class Config:
     """
 
     def __init__(self) -> None:
-        path = get_file('data', 'config.json')
-        file = open(path, 'r', encoding='utf-8')
-        self._data: dict = json.load(file)
-        file.close()
+        self._data, _ = load_json_file("config.json")
 
     def get(self, key: str, default=None):
         """Get the value of the config attribute"""

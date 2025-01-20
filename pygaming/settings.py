@@ -1,7 +1,6 @@
 """The settings class is used to interact with the settings file."""
-import json
 from typing import Any
-from .file import get_file
+from .file import load_json_file, save_json_file
 from .error import PygamingException
 
 class Settings:
@@ -14,10 +13,7 @@ class Settings:
     """
 
     def __init__(self) -> None:
-        self._path = get_file('data', 'settings.json')
-        file = open(self._path, 'r', encoding='utf-8')
-        self._data = json.load(file)
-        file.close()
+        self._data, self._encoding = load_json_file('settings.json')
 
     def get(self, attribute: str):
         """Get the value of the settings attribute"""
@@ -56,9 +52,7 @@ class Settings:
 
     def save(self) -> None:
         """Save the current settings."""
-        file = open(self._path, 'w', encoding='utf-8')
-        json.dump(self._data, file)
-        file.close()
+        save_json_file('settings.json', self._data, self._encoding)
 
     def set_volumes(self, volumes: dict[str, Any]):
         """
