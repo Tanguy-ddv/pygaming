@@ -1,5 +1,6 @@
 """The game module contains the game class which is used to represent every game."""
 import pygame
+from threading import Thread
 from .database import TypeWriter, SoundBox, GAME
 from .music import Jukebox
 from .connexion import Client
@@ -29,7 +30,7 @@ class Game(BaseRunnable):
 
         self.typewriter = TypeWriter(self.database, self.settings, first_phase)
 
-        self.mouse = Mouse(self.settings)
+        self.mouse = Mouse()
         self.keyboard = Keyboard()
         self._inputs = Inputs(self.mouse, self.keyboard)
 
@@ -38,13 +39,43 @@ class Game(BaseRunnable):
         self.client = None
         self.online = False
 
+        self.screen_clock = pygame.time.Clock()
+        self._display_screen = True
+        self._pause_display = False
+    
+    def start(self):
+        """Call this method at the beginning of the run."""
+        self._display_screen_thread = Thread(target=self.display_image)
+        self._display_screen_thread.start()
+
+    def transition(self, next_phase):
+        # Pause the displaying thread
+        self._pause_display = True
+        # get the value for the arguments for the start of the next phase
+        new_data = self.phases[self.current_phase].apply_transition(next_phase)
+
+        # End the current phase
+        self.phases[self.current_phase].finish()
+        # change the phase
+        self.current_phase = next_phase
+        # start the new phase
+        self.phases[self.current_phase].begin(**new_data)
+        # Resume the displaying thread
+        self._pause_display = False
+
+    def display_image(self) -> bool:
+        """Display the image."""
+        while self._display_screen:
+            self.screen_clock.tick(self.config.get("max_frame_rate"))
+            if not self._pause_display:
+                self._screen.display_phase(self.phases[self.current_phase])
+                self._screen.update()
+
     def update(self) -> bool:
         """Update all the component of the game."""
         loop_duration = self.clock.tick(self.config.get("max_frame_rate"))
         self.logger.update(loop_duration)
         self._inputs.update(loop_duration)
-        self._screen.display_phase(self.phases[self.current_phase])
-        self._screen.update()
         self.jukebox.update()
         if self.online:
             self.client.update()
@@ -79,4 +110,5 @@ class Game(BaseRunnable):
         """Stop the algorithm properly"""
         self.database.close()
         self.disconnect()
+        self._display_screen = False # Stop the thread displaying the screen.
         pygame.quit()

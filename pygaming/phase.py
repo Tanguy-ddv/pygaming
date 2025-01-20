@@ -164,7 +164,7 @@ class GamePhase(BasePhase, ABC):
 
         self.absolute_left = 0
         self.absolute_top = 0
-        self.absolute_rect = pygame.Rect(0, 0 *self.config.dimension)
+        self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
         
         self._surface_changed = True
         self._last_surface = None
@@ -280,17 +280,22 @@ class GamePhase(BasePhase, ABC):
                 surf, cursor = frame.get_hover()
 
         if surf is None:
-            self.current_hover_surface.reset()
-            self.current_hover_surface = None
+            if not self.current_hover_surface is None:
+                self.current_hover_surface.reset()
+                self.current_hover_surface = None
         else:
             if not surf is self.current_hover_surface:        
                 self.current_hover_surface = surf
             surf.update(loop_duration)
 
         if cursor is None:
-            self.current_cursor.reset()
-            self.current_cursor = None
+            if not self.current_cursor is None:
+                self.current_cursor.reset()
+                self.current_cursor = None
+            self._default_cursor.update(loop_duration) # This line and the next comment's line are not useful as we know the default cursor is not an art... yet?
+            pygame.mouse.set_cursor(self._default_cursor.get(self.settings))
         else:
+            self._default_cursor.reset() # This line is not useful as well
             has_changed = cursor.update(loop_duration)
             if not cursor is self.current_cursor:        
                 self.current_cursor = cursor
