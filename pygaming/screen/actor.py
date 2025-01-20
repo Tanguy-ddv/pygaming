@@ -22,7 +22,8 @@ class Actor(Element):
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        layer: int = 0
+        layer: int = 0,
+        update_if_invisible: bool = False
     ) -> None:
         super().__init__(
             master,
@@ -34,7 +35,8 @@ class Actor(Element):
             None,
             None,
             False,
-            False
+            False,
+            update_if_invisible=update_if_invisible
         )
 
         self.surfaces = [self.surface]

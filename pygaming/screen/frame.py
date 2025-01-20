@@ -23,7 +23,8 @@ class Frame(Element):
         focused_background: Optional[Art] = None,
         background_window: Optional[WindowLike] = None,
         layer: int = 0,
-        continue_animation: bool = False
+        continue_animation: bool = False,
+        update_if_invisible: bool = False
     ) -> None:
         """
         Create the frame.
@@ -68,7 +69,8 @@ class Frame(Element):
             None,
             can_be_disabled=False,
             can_be_focused=True,
-            active_area=None
+            active_area=None,
+            update_if_invisible=update_if_invisible
         )
         self._continue_animation = continue_animation
 

@@ -22,7 +22,7 @@ class Label(Element):
         anchor = TOP_LEFT,
         layer: int = 0,
         justify = CENTER,
-        blinking_period: int = None
+        blinking_period: int = None,
     ) -> None:
         """
         Create the label
@@ -40,7 +40,7 @@ class Label(Element):
         """
         self.font = font
         self.text = str(localization_or_text)
-        super().__init__(master, background, x, y, anchor, layer, None, None, False, False, None)
+        super().__init__(master, background, x, y, anchor, layer, None, None, False, False, None, False)
         self.justify = justify
         self._bg_width, self._bg_height = self.surface.width, self.surface.height
         self._blinking_period = blinking_period

@@ -30,7 +30,8 @@ class Button(Widget):
         hover_cursor: Optional[Cursor] = None,
         continue_animation: bool = False,
         on_click_command: Optional[Callable[[],Any]] = None,
-        on_unclick_command: Optional[Callable[[],Any]] = None
+        on_unclick_command: Optional[Callable[[],Any]] = None,
+        update_if_invisible: bool = False
     ) -> None:
         """
         A Button is basic widget used to get a player click.
@@ -67,7 +68,8 @@ class Button(Widget):
             layer,
             hover_surface,
             hover_cursor,
-            continue_animation
+            continue_animation,
+            update_if_invisible
         )
         self.active_background = active_background if active_background else normal_background
         self._is_clicked = False
@@ -154,7 +156,8 @@ class TextButton(Button):
         continue_animation: bool = False,
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
-        jusitfy = CENTER
+        jusitfy = CENTER,
+        update_if_invisible: bool = False
     ) -> None:
         super().__init__(
             master,
@@ -171,7 +174,8 @@ class TextButton(Button):
             hover_cursor,
             continue_animation,
             on_click_command,
-            on_unclick_command
+            on_unclick_command,
+            update_if_invisible
         )
         self.font = font
         self.font_color = font_color

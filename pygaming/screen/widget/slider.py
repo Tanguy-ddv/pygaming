@@ -34,6 +34,7 @@ class Slider(Widget):
         continue_animation: bool = False,
         transition_function: Callable[[float], float] = lambda x:x,
         transition_duration: int = 300, # [ms]
+        update_if_invisible: bool = True
     ) -> None:
         """
         A Slider is a widget that is used to select a value in a given range by moving a cursor from left to right on a background.
@@ -75,7 +76,8 @@ class Slider(Widget):
             layer,
             hover_surface,
             hover_cursor,
-            continue_animation
+            continue_animation,
+            update_if_invisible
         )
 
         self.normal_cursor = normal_cursor

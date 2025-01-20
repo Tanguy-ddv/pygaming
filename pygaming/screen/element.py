@@ -25,7 +25,8 @@ class Element(ABC):
         hover_cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
-        active_area: Optional[Mask | pygame.Mask] = None
+        active_area: Optional[Mask | pygame.Mask] = None,
+        update_if_invisible: bool = False
     ) -> None:
         """
         Create an Element.
@@ -71,6 +72,8 @@ class Element(ABC):
         self._surface_changed: bool = True
 
         self.get_on_master()
+
+        self._update_if_invisible = update_if_invisible
     
     def get_on_master(self):
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
@@ -140,14 +143,15 @@ class Element(ABC):
 
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
-        if self.hover_surface:
-            self.hover_surface.update(loop_duration)
-        if self.hover_cursor:
-            self.hover_cursor.update(loop_duration)
-        has_changed = self.surface.update(loop_duration)
-        if has_changed:
-            self.notify_change()
-        self.update(loop_duration)
+        if self.on_master or self._update_if_invisible:
+            if self.hover_surface:
+                self.hover_surface.update(loop_duration)
+            if self.hover_cursor:
+                self.hover_cursor.update(loop_duration)
+            has_changed = self.surface.update(loop_duration)
+            if has_changed:
+                self.notify_change()
+            self.update(loop_duration)
 
     def begin(self):
         """Execute this method at the beginning of the phase to load the active area and the surface before running class-specific start method."""
