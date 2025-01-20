@@ -164,6 +164,7 @@ class GamePhase(BasePhase, ABC):
 
         self.absolute_left = 0
         self.absolute_top = 0
+        self.absolute_rect = pygame.Rect(0, 0 *self.config.dimension)
         self.current_hover_surface = None
         self._surface_changed = True
         self._last_surface = None
@@ -185,10 +186,14 @@ class GamePhase(BasePhase, ABC):
 
     def finish(self):
         """This method is called at the end of the phase."""
-        for frame in self.frames: # Unload
-            frame.end()
+        for frame in self.frames: 
+            frame.end() # Unload
         self.end()
         gc.collect()
+    
+    def is_child_on_me(self, child):
+        """Return whether the child is visible on the phase or not."""
+        return self.absolute_rect.colliderect(child.relative_rect)
 
     @property
     def game(self) -> Game:

@@ -208,11 +208,15 @@ class Frame(Element):
         """Update all the children of the frame."""
         for element in self.children:
             element.loop(loop_duration)
+    
+    def is_child_on_me(self, child: Element):
+        """Return whether the child is visible on the frame or not."""
+        return self.background_window.colliderect(child.relative_rect)
 
     @property
     def visible_children(self):
         """Return the list of visible children sorted by increasing layer."""
-        return sorted(filter(lambda ch: ch.visible and ch.on_screen, self.children), key= lambda w: w.layer)
+        return sorted(filter(lambda ch: ch.visible and ch.on_master, self.children), key= lambda w: w.layer)
 
     @property
     def _widget_children(self):
@@ -236,19 +240,20 @@ class Frame(Element):
         else:
             background = self.surface.get(self.game.settings)
         for child in self.visible_children:
-            child_rect = child.relative_rect
-            if child_rect.colliderect((0, 0, *self.window.size)):
-                surface = child.get_surface()
-                background.blit(surface, child_rect.topleft)
+            background.blit(child.get_surface(), child.relative_rect.topleft)
 
         return self.window.get_surface(background.subsurface(self.background_window))
 
     def move_background(self, dx, dy):
         """Move the background in the window."""
         self.background_window.move(dx, dy)
+        for child in self.children:
+            child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
         self.notify_change()
 
     def set_background_position(self, new_x, new_y):
         """Reset the background position in the window with a new value."""
         self.background_window = pygame.Rect(new_x, new_y, *self.background_window.size)
+        for child in self.children:
+            child.get_on_master()
         self.notify_change()

@@ -70,11 +70,12 @@ class Element(ABC):
         self._last_surface: pygame.Surface = None
         self._surface_changed: bool = True
 
-        self._get_on_screen()
+        self.get_on_master()
     
-    def _get_on_screen(self):
+    def get_on_master(self):
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
-        self.on_screen = self.absolute_rect.colliderect((0, 0, *self.master.config.dimension))
+        on_screen = self.absolute_rect.colliderect((0, 0, *self.master.config.dimension))
+        self.on_master = self.master.is_child_on_me() and on_screen
     
     def move(self, new_x: int = None, new_y: int = None, new_anchor: tuple[float, float] = None):
         """
@@ -93,13 +94,12 @@ class Element(ABC):
         if not new_x is None:
             self._x = new_x
         
-        self._get_on_screen()
-        if self.on_screen:
-            self.notify_change()
+        self.get_on_master()
+        self.notify_change()
 
     def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
         """Return True if the mouse is hovering the element."""
-        if mouse_pos is None or not self.on_screen:
+        if mouse_pos is None or not self.on_master:
             return False
         elif isinstance(mouse_pos, Click):
             x, y = mouse_pos.x, mouse_pos.y
@@ -135,7 +135,8 @@ class Element(ABC):
     def notify_change(self):
         """Notify the need to remake the last surface."""
         self._surface_changed = True
-        self.master.notify_change()
+        if self.on_master:
+            self.master.notify_change()
 
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""

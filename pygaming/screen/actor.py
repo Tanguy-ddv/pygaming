@@ -57,6 +57,8 @@ class Actor(Element):
         """Translate the actor in the frame by a given value."""
         self._x += dx
         self._y += dy
+
+        self.get_on_master()
         self.notify_change()
 
     def rotate(self, angle):
@@ -75,4 +77,5 @@ class Actor(Element):
         new_rel_y = rel_x * math.sin(rad_angle) + rel_y * math.cos(rad_angle)
         self.anchor = (new_rel_x + new_w / 2)/new_w, (new_rel_y + new_h / 2)/new_h
         # notify the master for a change
+        self.get_on_master()
         self.notify_change()
