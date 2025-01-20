@@ -165,10 +165,13 @@ class GamePhase(BasePhase, ABC):
         self.absolute_left = 0
         self.absolute_top = 0
         self.absolute_rect = pygame.Rect(0, 0 *self.config.dimension)
-        self.current_hover_surface = None
+        
         self._surface_changed = True
         self._last_surface = None
+
+        self.current_hover_surface = None # An Art
         self._default_cursor = Cursor(self.config.default_cursor)
+        self.current_cursor = self._default_cursor
 
     def add_child(self, frame):
         """Add a new frame to the phase."""
@@ -249,7 +252,7 @@ class GamePhase(BasePhase, ABC):
     def loop(self, loop_duration: int):
         """Update the phase."""
         self.__update_focus()
-        self.__update_hover()
+        self.__update_hover(loop_duration)
         self.update(loop_duration)
         for frame in self.frames:
             frame.loop(loop_duration)
@@ -268,23 +271,32 @@ class GamePhase(BasePhase, ABC):
             for frame in self.frames:
                 frame.next_object_focus()
 
-    def __update_hover(self):
+    def __update_hover(self, loop_duration):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         x,y = self.mouse.get_position()
         cursor, surf = None, None
         for frame in self.visible_frames:
             if frame.is_contact((x,y)):
-                surf, cursor = frame.update_hover()
-                if surf is not None:
-                    self.current_hover_surface: pygame.Surface = surf
-                    break
+                surf, cursor = frame.get_hover()
 
         if surf is None:
+            self.current_hover_surface.reset()
             self.current_hover_surface = None
+        else:
+            if not surf is self.current_hover_surface:        
+                self.current_hover_surface = surf
+            surf.update(loop_duration)
 
         if cursor is None:
-            cursor = self._default_cursor.get(self.settings)
-        pygame.mouse.set_cursor(cursor)
+            self.current_cursor.reset()
+            self.current_cursor = None
+        else:
+            has_changed = cursor.update(loop_duration)
+            if not cursor is self.current_cursor:        
+                self.current_cursor = cursor
+                pygame.mouse.set_cursor(cursor.get())
+            elif has_changed:
+                pygame.mouse.set_cursor(cursor.get())
 
     @property
     def visible_frames(self):
@@ -300,7 +312,7 @@ class GamePhase(BasePhase, ABC):
 
         if self.current_hover_surface is not None:
             x, y = self.mouse.get_position()
-            bg.blit(self.current_hover_surface, (x, y - self.current_hover_surface.get_height()))
+            bg.blit(self.current_hover_surface.get(), (x, y - self.current_hover_surface.get_height()))
         return bg
 
     def notify_change(self):

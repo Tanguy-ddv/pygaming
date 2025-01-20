@@ -148,3 +148,7 @@ class Cursor:
                 self._index += 1
                 if self._index == len(self._cursors):
                     self._index = self._introduction
+
+    def reset(self):
+        self._index = 0
+        self._time_since_last_change = 0

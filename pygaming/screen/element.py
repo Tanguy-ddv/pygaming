@@ -119,9 +119,9 @@ class Element(ABC):
         """Return the game."""
         return self.master.game
 
-    def update_hover(self):
+    def get_hover(self):
         """Update the hover cursor and surface."""
-        return self.hover_surface.get() if self.hover_surface else None, self.hover_cursor.get(self.game.settings) if self.hover_cursor else None
+        return self.hover_surface, self.hover_cursor
 
     def get_surface(self) -> pygame.Surface:
         """Return the surface to his parent."""
@@ -144,10 +144,6 @@ class Element(ABC):
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
         if self.on_master or self._update_if_invisible:
-            if self.hover_surface:
-                self.hover_surface.update(loop_duration)
-            if self.hover_cursor:
-                self.hover_cursor.update(loop_duration)
             has_changed = self.surface.update(loop_duration)
             if has_changed:
                 self.notify_change()

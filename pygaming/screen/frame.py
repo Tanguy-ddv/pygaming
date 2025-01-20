@@ -91,13 +91,14 @@ class Frame(Element):
         """Add a new element to the child list."""
         self.children.append(child)
 
-    def update_hover(self) -> tuple[bool, pygame.Surface | None]:
+    def get_hover(self) -> tuple[bool, pygame.Surface | None]:
         """Update the hovering."""
         surf, cursor = None, None
         mouse_pos = self.game.mouse.get_position()
         for child in self.visible_children:
             if child.is_contact(mouse_pos):
-                surf, cursor = child.update_hover()
+                surf, cursor = child.get_hover()
+                break
         return surf, cursor
 
     def update_focus(self, click: Click | None):
