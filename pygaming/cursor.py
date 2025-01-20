@@ -67,6 +67,8 @@ class Cursor:
 
     def __init__(self, *values):
         self.is_loaded = True # only set to false is the cursor is an art
+        self._durations = (500,)
+        self._introduction = 0
         if len(values) == 1:
             if isinstance(values[0], str):
                 if values[0] in _pygame_system_cursors:
@@ -83,7 +85,6 @@ class Cursor:
                     self._cursors = (_Cs(*pygame.cursors.load_xbm(values[0])))
                 else:
                     raise ValueError(f"{values[0]} isn't a proper argument for a cursor.")
-                self._durations = (500,)
 
             elif isinstance(values[0], tuple):
                 # Create a cursor with a string bitmap
@@ -102,7 +103,6 @@ class Cursor:
             elif isinstance(values[0], str):
                 if os.path.isfile(get_file('cursors', values[0])) and os.path.isfile(get_file('cursors', values[1])):
                     self._cursors = (_Cs(*pygame.cursors.load_xbm(values[0], values[1])))
-                    self._durations = (500,)
                 else:
                     raise ValueError(f"{values[0], values[1]} aren't proper arguments for a cursor.")
         
@@ -134,6 +134,7 @@ class Cursor:
             hotspot = int(anchor[0]*art.width), int(anchor[1]*art.height)
             self._cursors = tuple(_Cs(hotspot, surf) for surf in art.surfaces)
             self._durations = art.durations
+            self._introduction = art.introduction
             self.is_loaded = True
         return self._cursors[self._index]
     
@@ -146,4 +147,4 @@ class Cursor:
                 self._time_since_last_change -= self._durations[self._index]
                 self._index += 1
                 if self._index == len(self._cursors):
-                    self._index = 0
+                    self._index = self._introduction
