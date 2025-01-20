@@ -98,7 +98,8 @@ class Cursor:
 
             if isinstance(values[0], Art):
                 self.is_loaded = False
-                self._cursors = values
+                self._cursors = tuple()
+                self._future_cursors = values
 
             elif isinstance(values[0], str):
                 if os.path.isfile(get_file('cursors', values[0])) and os.path.isfile(get_file('cursors', values[1])):
@@ -129,7 +130,7 @@ class Cursor:
     def get(self, settings: Settings):
         """Return the current image to show as a cursor."""
         if not self.is_loaded:
-            art, anchor = self._cursors
+            art, anchor = self._future_cursors
             art.load(settings)
             hotspot = int(anchor[0]*art.width), int(anchor[1]*art.height)
             self._cursors = tuple(_Cs(hotspot, surf) for surf in art.surfaces)
@@ -138,9 +139,8 @@ class Cursor:
             self.is_loaded = True
         return self._cursors[self._index]
     
-    def update(self, loop_duration):
-        """Update the cursor's image to display."""
-
+    def update(self, loop_duration) -> bool:
+        """Update the cursor's image to display. Return true if the image changed."""
         if len(self._cursors) > 1:
             self._time_since_last_change += loop_duration
             if self._time_since_last_change >= self._durations[self._index]:
@@ -148,6 +148,8 @@ class Cursor:
                 self._index += 1
                 if self._index == len(self._cursors):
                     self._index = self._introduction
+                return True
+        return False
 
     def reset(self):
         self._index = 0
