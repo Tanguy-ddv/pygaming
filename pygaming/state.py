@@ -1,6 +1,6 @@
 """The state module contains functions to interact with the state file."""
 from typing import Any
-import pygame
+from time import time
 from .file import load_json_file, save_json_file
 
 class State:
@@ -54,7 +54,7 @@ class State:
         - time_variable: str, the name of the time variable to set to now.
         time is represent as a timestamp in ms.
         """
-        self._data[time_variable] = pygame.time.get_ticks()
+        self._data[time_variable] = int(time()*1000)
     
     def save(self):
         """Save the current state."""

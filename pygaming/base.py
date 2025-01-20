@@ -8,7 +8,7 @@ from .database import Database
 
 from .config import Config
 from .error import PygamingException
-from .state import set_time_now, increment_counter
+from .state import State
 
 LEAVE = 'leave'
 STAY = 'stay'
@@ -22,12 +22,14 @@ class BaseRunnable(ABC):
         self.debug = debug
         self.config = Config()
         self.logger = Logger(self.config, debug)
-        self.database = Database(self.config, runnable_type, debug)
+        self._state = State()
+        self.database = Database(self.config, self._state, runnable_type, debug)
         self.phases = {}
         self.current_phase = first_phase
         self.clock = pygame.time.Clock()
-        increment_counter(f"launch_counter_{runnable_type}")
-        set_time_now(f"last_launch_{runnable_type}")
+        
+        self._state.increment_counter(f"launch_counter_{runnable_type}")
+        self._state.set_time_now(f"last_launch_{runnable_type}")
 
     def start(self):
         """Call this method at the beginning of the run."""

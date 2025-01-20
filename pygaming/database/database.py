@@ -6,7 +6,7 @@ import os
 from typing import Literal
 
 from ..file import get_file
-from ..state import get_state, set_state
+from ..state import State
 from ..config import Config
 
 SERVER = 'server'
@@ -21,7 +21,7 @@ class Database:
     At instance deletion, the .sqlite file is deleted if the debug mode is not selected.
     """
 
-    def __init__(self, config: Config, runnable_type: Literal['server', 'game'] = GAME, debug: bool=False) -> None:
+    def __init__(self, config: Config, state: State, runnable_type: Literal['server', 'game'] = GAME, debug: bool=False) -> None:
         """
         Initialize an instance of Database.
         
@@ -42,8 +42,10 @@ class Database:
         self._sql_folder = get_file('data', f'sql-{runnable_type}')
         
         # Get current state
-        self.__entry = f"ig_queries_{runnable_type}_threshold_size_kb" 
-        self._threshold_size = get_state()[self.__entry]
+        self.__entry = f"ig_queries_{runnable_type}_threshold_size_kb"
+        self._state = state
+        self._threshold_size = self._state.get_state()[self.__entry]
+
         # If the current state is 0, then set it to the first value of the increment
         # as it means that the state have not been udpated once.
         if self._threshold_size == 0:
@@ -179,7 +181,7 @@ class Database:
             self.reduce_ig_queries_size()
             new_size = os.path.getsize(self._ig_queries_path) // 1024
             # Increase the threshold.
-            set_state(self.__entry, new_size + self._config.get(self.__entry, 1000))
+            self._state.set_state(self.__entry, new_size + self._config.get(self.__entry, 1000))
 
         # Close the connection and delete the database
         self._conn.close()
