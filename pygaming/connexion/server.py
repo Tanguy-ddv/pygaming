@@ -81,20 +81,19 @@ class Server:
                 self.stop()
 
     def _broadcast_address(self):
-        """Send in the socket.SOCK_DGRAM socket the host_ip and the host port every 5 seconds."""
+        """Send in the socket.SOCK_DGRAM socket the host_ip and the host port."""
         self._broadcasting = True
-        while self._running and self._broadcasting:
-            if self.get_nb_players() < self._nb_max_player:
-                broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-                message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : {IP : self._host_ip, ID : self._config.get('game_id')}})
+        broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : {IP : self._host_ip, ID : self._config.get('game_id')}})
+        while self._running:
+            if self._broadcasting and self.get_nb_players() < self._nb_max_player:
                 broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
-                time.sleep(self._config.get("broadcast_period")/1000)  # Send broadcast every broadcast_frquency ms
+            time.sleep(self._config.get("broadcast_period")/1000)  # Send broadcast every broadcast_frquency ms
     
     def start_broadcast(self):
         """Manually start the broadcast of the server ip."""
-        if not self._broadcasting:
-            threading.Thread(target=self._broadcast_address).start()
+        self._broadcasting = True
     
     def stop_broadcast(self):
         """Manually stop the broadcast of the server ip."""
