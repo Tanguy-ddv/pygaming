@@ -73,7 +73,7 @@ class Game(BaseRunnable):
 
     def update(self) -> bool:
         """Update all the component of the game."""
-        loop_duration = self.clock.tick(self.config.get("max_frame_rate"))
+        loop_duration = self.clock.tick(self.config.get("game_frequency"))
         self.logger.update(loop_duration)
         self._inputs.update(loop_duration)
         self.jukebox.update()
