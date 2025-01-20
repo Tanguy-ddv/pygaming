@@ -3,8 +3,8 @@
 import socket
 import threading
 import json
-import time
 from typing import Any
+from pygame.time import get_ticks
 from ._constants import DISCOVERY_PORT, PAYLOAD, HEADER, ID, NEW_ID, BROADCAST_IP, TIMESTAMP, EXIT, IP
 from ..config import Config
 from ..logger import Logger
@@ -28,7 +28,7 @@ class Client:
 
     def send(self, header: str, payload: Any):
         """Send the payload to the server, specifying the header."""
-        message = {ID : self.id, HEADER : header, PAYLOAD : payload, TIMESTAMP : int(time.time()*1000)}
+        message = {ID : self.id, HEADER : header, PAYLOAD : payload, TIMESTAMP : get_ticks()}
         json_data = json.dumps(message) + self._config.get("network_sep")
         self.client_socket.send(json_data.encode())
 

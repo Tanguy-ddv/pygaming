@@ -1,11 +1,12 @@
 """The logger is used to log in-game actions to replay matches after."""
 
-import time
 import os
 import json
 from datetime import datetime
+from pygame.time import get_ticks
 from .file import get_file
 from .config import Config
+
 
 class Logger:
     """
@@ -13,7 +14,7 @@ class Logger:
     It might be used to compute statitics, replay actions, ...
     Logs are stored as "data/logs/'timestamp'.log"
     """
-    def __init__(self, config: Config, debug: bool = False) -> None:
+    def __init__(self, config: Config, debug: bool = False, ) -> None:
 
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
         self.time_since_last_flush = 0
@@ -35,7 +36,7 @@ class Logger:
         is_it_debugging: bool, specify if the line is for debugging or not.
         """
         if self.debug or not is_it_debugging:
-            data['timestamp'] = int(time.time()*1000)
+            data['timestamp'] = get_ticks()
             json.dump(data, self._file)
             self._file.write('\n')
 

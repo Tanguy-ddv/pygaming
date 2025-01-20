@@ -3,6 +3,7 @@
 import socket
 import threading
 import json
+from pygame.time import get_ticks
 import time
 from ..config import Config
 from ._constants import DISCOVERY_PORT, TIMESTAMP, PAYLOAD, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, IP, ID
@@ -135,7 +136,7 @@ class Server:
             if client_socket.id_ == client_id:
                 if client_socket.status == ONLINE:
                     try:
-                        json_data: str = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)}) + self._config.get("network_sep")
+                        json_data: str = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : get_ticks()}) + self._config.get("network_sep")
                         client_socket.socket.send(json_data.encode("utf-8"))
                     except ConnectionResetError:
                         client_socket.status = OFFLINE
@@ -148,7 +149,7 @@ class Server:
         for client_socket in self._client_socket_managers:
             if client_socket.status == ONLINE:
                 try:
-                    json_data: str = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)}) + self._config.get("network_sep")
+                    json_data: str = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : get_ticks()}) + self._config.get("network_sep")
                     client_socket.socket.send(json_data.encode("utf-8"))
                 except ConnectionResetError:
                     client_socket.status = OFFLINE
