@@ -44,6 +44,7 @@ class Element(ABC):
         - can_be_focused: Some element can be focused.
         """
 
+        ABC.__init__(self)
         self.layer = layer
         self.visible = True
         self.can_be_focused = can_be_focused
@@ -60,7 +61,6 @@ class Element(ABC):
         self._x = x
         self._y = y
         self.anchor = anchor
-        ABC.__init__(self)
         self.master = master
         self.master.add_child(self)
 
@@ -69,6 +69,12 @@ class Element(ABC):
 
         self._last_surface: pygame.Surface = None
         self._surface_changed: bool = True
+
+        self._get_on_screen()
+    
+    def _get_on_screen(self):
+        """Reassign the on_screen argument to whether the object is inside the screen or outside."""
+        self.on_screen = self.absolute_rect.colliderect((0, 0, *self.master.config.dimension))
     
     def move(self, new_x: int = None, new_y: int = None, new_anchor: tuple[float, float] = None):
         """
@@ -87,11 +93,13 @@ class Element(ABC):
         if not new_x is None:
             self._x = new_x
         
-        self.notify_change()
+        self._get_on_screen()
+        if self.on_screen:
+            self.notify_change()
 
     def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
         """Return True if the mouse is hovering the element."""
-        if mouse_pos is None:
+        if mouse_pos is None or not self.on_screen:
             return False
         elif isinstance(mouse_pos, Click):
             x, y = mouse_pos.x, mouse_pos.y
