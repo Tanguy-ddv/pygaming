@@ -127,8 +127,8 @@ class Element(ABC):
     def get_surface(self) -> pygame.Surface:
         """Return the surface to his parent."""
         if self._surface_changed:
-            self._last_surface = self.make_surface()
             self._surface_changed = False
+            self._last_surface = self.make_surface()
         return self._last_surface
 
     @abstractmethod
