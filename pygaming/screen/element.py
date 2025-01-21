@@ -8,6 +8,7 @@ from ..error import PygamingException
 from .mask import Mask
 from .anchors import TOP_LEFT
 from ..inputs import Click
+from ..cursor import Cursor
 
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
@@ -21,10 +22,11 @@ class Element(ABC):
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
         hover_surface: Optional[Art] = None,
-        hover_cursor: Optional[pygame.Cursor] = None,
+        hover_cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
-        active_area: Optional[Mask | pygame.Mask] = None
+        active_area: Optional[Mask | pygame.Mask] = None,
+        update_if_invisible: bool = False
     ) -> None:
         """
         Create an Element.
@@ -32,17 +34,18 @@ class Element(ABC):
         Params:
         ----
         - master: Frame or Phase, the master of this object.
-        - surface: The surface. It is either an AnimatedSurface or a pygame.Surface
+        - surface: The surface. It is an Art
         - x, int, the coordinates in the master of the anchor point.
         - y: int, the coordinates in the master of the anchor point.
         - anchor: the anchor point in % of the width and height. 
         - hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
         frame is hovered by the mouse.
-        - hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the frame.
+        - hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the element.
         - can_be_disabled: some element can be disabled.
         - can_be_focused: Some element can be focused.
         """
 
+        ABC.__init__(self)
         self.layer = layer
         self.visible = True
         self.can_be_focused = can_be_focused
@@ -52,14 +55,13 @@ class Element(ABC):
 
         self.surface = surface
         if not active_area is None and active_area.get_size() != self.surface.size:
-            raise PygamingException("The active area must have the size than the art.")
+            raise PygamingException("The active area must have the same size than the art.")
         self._active_area = active_area
 
         self.width, self.height = self.surface.width, self.surface.height
         self._x = x
         self._y = y
         self.anchor = anchor
-        ABC.__init__(self)
         self.master = master
         self.master.add_child(self)
 
@@ -68,6 +70,15 @@ class Element(ABC):
 
         self._last_surface: pygame.Surface = None
         self._surface_changed: bool = True
+
+        self.get_on_master()
+
+        self._update_if_invisible = update_if_invisible
+    
+    def get_on_master(self):
+        """Reassign the on_screen argument to whether the object is inside the screen or outside."""
+        on_screen = self.absolute_rect.colliderect((0, 0, *self.game.config.dimension))
+        self.on_master = self.master.is_child_on_me(self) and on_screen
     
     def move(self, new_x: int = None, new_y: int = None, new_anchor: tuple[float, float] = None):
         """
@@ -86,11 +97,13 @@ class Element(ABC):
         if not new_x is None:
             self._x = new_x
         
-        self.notify_change()
+        self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()
 
     def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
         """Return True if the mouse is hovering the element."""
-        if mouse_pos is None:
+        if mouse_pos is None or not self.on_master:
             return False
         elif isinstance(mouse_pos, Click):
             x, y = mouse_pos.x, mouse_pos.y
@@ -107,9 +120,9 @@ class Element(ABC):
         """Return the game."""
         return self.master.game
 
-    def update_hover(self): #pylint: disable=unused-argument
-        """Update the hover cursor and surface. To be overriden by element needing it."""
-        return self.hover_surface.get() if self.hover_surface else None, self.hover_cursor
+    def get_hover(self):
+        """Update the hover cursor and surface."""
+        return self.hover_surface, self.hover_cursor
 
     def get_surface(self) -> pygame.Surface:
         """Return the surface to his parent."""
@@ -126,14 +139,16 @@ class Element(ABC):
     def notify_change(self):
         """Notify the need to remake the last surface."""
         self._surface_changed = True
-        self.master.notify_change()
+        if self.on_master:
+            self.master.notify_change()
 
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
-        has_changed = self.surface.update(loop_duration)
-        if has_changed:
-            self.notify_change()
-        self.update(loop_duration)
+        if self.on_master or self._update_if_invisible:
+            has_changed = self.surface.update(loop_duration)
+            if has_changed:
+                self.notify_change()
+            self.update(loop_duration)
 
     def begin(self):
         """Execute this method at the beginning of the phase to load the active area and the surface before running class-specific start method."""
@@ -171,19 +186,23 @@ class Element(ABC):
     def set_layer(self, new_layer: int):
         """Set a new value for the layer"""
         self.layer = new_layer
+        self.master.notify_change()
 
     def send_to_the_back(self):
         """Send the object one step to the back."""
         self.layer -= 1
+        self.master.notify_change()
 
     def send_to_the_front(self):
         """Send the object one step to the front."""
         self.layer += 1
+        self.master.notify_change()
 
     def hide(self):
         """Hide the object."""
         self.visible = False
         self.master.notify_change()
+        return self
 
     def show(self):
         """Show the object."""

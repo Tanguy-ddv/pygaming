@@ -1,6 +1,7 @@
 """The binary transformation file contains transformation that include other arts."""
 from pygame import Surface, transform as tf
 from ._transformation import Transformation
+from ....settings import Settings
 
 class Concatenate(Transformation):
     """The concatenate transformation concatenante two arts into one bigger animation."""
@@ -9,12 +10,12 @@ class Concatenate(Transformation):
         super().__init__()
         self.others = others
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
         need_to_unloads = []
         for art in self.others:
             if not art.is_loaded:
                 need_to_unloads.append(True)
-                art.load()
+                art.load(settings)
             else:
                 need_to_unloads.append(False)
 
@@ -65,12 +66,12 @@ class Average(Transformation):
         super().__init__()
         self.others = others
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
         need_to_unloads = []
         for art in self.others:
             if not art.is_loaded:
                 need_to_unloads.append(True)
-                art.load()
+                art.load(settings)
             else:
                 need_to_unloads.append(False)
 
@@ -99,10 +100,10 @@ class Blit(Transformation):
         self.other = other
         self.pos = (x,y)
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
         need_to_unload = False
         if not self.other.is_loaded:
-            self.other.load()
+            self.other.load(settings)
             need_to_unload = True
 
         combined_arts, introduction = _combine_arts(durations, self.other.durations, introduction=introduction)

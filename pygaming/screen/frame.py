@@ -23,7 +23,8 @@ class Frame(Element):
         focused_background: Optional[Art] = None,
         background_window: Optional[WindowLike] = None,
         layer: int = 0,
-        continue_animation: bool = False
+        continue_animation: bool = False,
+        update_if_invisible: bool = False
     ) -> None:
         """
         Create the frame.
@@ -68,7 +69,8 @@ class Frame(Element):
             None,
             can_be_disabled=False,
             can_be_focused=True,
-            active_area=None
+            active_area=None,
+            update_if_invisible=update_if_invisible
         )
         self._continue_animation = continue_animation
 
@@ -89,19 +91,21 @@ class Frame(Element):
         """Add a new element to the child list."""
         self.children.append(child)
 
-    def update_hover(self) -> tuple[bool, pygame.Surface | None]:
+    def get_hover(self) -> tuple[bool, pygame.Surface | None]:
         """Update the hovering."""
         surf, cursor = None, None
-        hover_x, hover_y = self.game.mouse.get_position()
+        mouse_pos = self.game.mouse.get_position()
         for child in self.visible_children:
-            if child.absolute_rect.collidepoint(hover_x, hover_y):
-                surf, cursor = child.update_hover()
+            if child.is_contact(mouse_pos):
+                surf, cursor = child.get_hover()
+                break
         return surf, cursor
 
     def update_focus(self, click: Click | None):
         """Update the focus of all the children in the frame."""
+        if not self.focused:
+            self.switch_background()
         self.focused = True
-        self.switch_background()
         one_is_clicked = False
 
         for (i,child) in enumerate(self._widget_children):
@@ -111,7 +115,8 @@ class Frame(Element):
                 one_is_clicked = True
                 self.has_a_widget_focused = True
             else:
-                child.unfocus()
+                if self.focused:
+                    child.unfocus()
         
         for (i, child) in enumerate(self._frame_childern):
             if child.is_contact(click):
@@ -145,7 +150,8 @@ class Frame(Element):
             if len(widget_children) > 1:
 
                 for element in widget_children:
-                    element.unfocus()
+                    if element.focused:
+                        element.unfocus()
 
                 next_index = (1 + self._current_object_focus)%len(widget_children)
                 widget_children[next_index].focus()
@@ -159,10 +165,11 @@ class Frame(Element):
         """Remove the focus of all the children."""
         self.focused = False
         self.has_a_widget_focused = False
-        self.focused_background.reset()
-        for child in self.children:
-            child.unfocus()
-        self.switch_background()
+        focused_children = list(child for child in self.children if child.focused)
+        if len(focused_children):
+            for child in focused_children:
+                child.unfocus()
+            self.switch_background()
 
     def switch_background(self):
         """Switch to the focused background or the normal background."""
@@ -201,17 +208,22 @@ class Frame(Element):
             has_changed = self.surface.update(loop_duration)
             if has_changed:
                 self.notify_change()
+        self.window.update(loop_duration)
         self.update(loop_duration)
 
     def update(self, loop_duration: int):
         """Update all the children of the frame."""
         for element in self.children:
             element.loop(loop_duration)
+    
+    def is_child_on_me(self, child: Element):
+        """Return whether the child is visible on the frame or not."""
+        return self.background_window.colliderect(child.relative_rect)
 
     @property
     def visible_children(self):
         """Return the list of visible children sorted by increasing layer."""
-        return sorted(filter(lambda ch: ch.visible, self.children), key= lambda w: w.layer)
+        return sorted(filter(lambda ch: ch.visible and ch.on_master, self.children), key= lambda w: w.layer)
 
     @property
     def _widget_children(self):
@@ -235,19 +247,20 @@ class Frame(Element):
         else:
             background = self.surface.get(self.game.settings)
         for child in self.visible_children:
-            child_rect = child.relative_rect
-            if child_rect.colliderect((0, 0, *self.window.size)):
-                surface = child.get_surface()
-                background.blit(surface, child_rect.topleft)
+            background.blit(child.get_surface(), child.relative_rect.topleft)
 
         return self.window.get_surface(background.subsurface(self.background_window))
 
     def move_background(self, dx, dy):
         """Move the background in the window."""
         self.background_window.move(dx, dy)
+        for child in self.children:
+            child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
         self.notify_change()
 
     def set_background_position(self, new_x, new_y):
         """Reset the background position in the window with a new value."""
         self.background_window = pygame.Rect(new_x, new_y, *self.background_window.size)
+        for child in self.children:
+            child.get_on_master()
         self.notify_change()

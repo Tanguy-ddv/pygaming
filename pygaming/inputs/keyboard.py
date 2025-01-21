@@ -23,15 +23,14 @@ class Keyboard:
     def load_controls(self, settings: Settings, config: Config, phase_name: str):
         """Load the new controls"""
         self.controls = Controls(settings, config, phase_name)
-        self.update_settings()
+        self.update_settings(settings)
         self.udpate_actions_down()
         self.update_actions_up()
         self.actions_pressed = self.actions_down.copy()
 
-    def update_settings(self):
+    def update_settings(self, settings: Settings):
         """Update the controls."""
-        self.controls.update_settings()
-        self._control_mapping = self.controls.get_reversed_mapping()
+        self._control_mapping = self.controls.update_settings(settings)
 
     def update(self, event_list: list[pygame.event.Event]):
         """Update the keyboard with the event list."""

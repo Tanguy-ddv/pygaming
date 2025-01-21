@@ -3,9 +3,10 @@
 import socket
 import threading
 import json
+from pygame.time import get_ticks
 import time
 from ..config import Config
-from ._constants import DISCOVERY_PORT, PAYLOAD, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, TIMESTAMP
+from ._constants import DISCOVERY_PORT, TIMESTAMP, PAYLOAD, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, IP, ID
 
 class _ClientSocketManager:
     """
@@ -35,8 +36,8 @@ class Server:
     """
     def __init__(self, config: Config, nb_max_player: int = 8):
 
-        host_ip = socket.gethostbyname(socket.gethostname())
-        self.config = config
+        self._host_ip = socket.gethostbyname(socket.gethostname())
+        self._config = config
 
         self._nb_max_player = nb_max_player
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -44,12 +45,12 @@ class Server:
         self._running = True
         self._reception_buffer = []
         self.last_receptions = []
-        print(f"Server launched: {host_ip}, {self.config.server_port}")
-        self._server_socket.bind((host_ip, self.config.server_port))
+        print(f"Server launched: {self._host_ip}, {self._config.server_port}")
+        self._server_socket.bind((self._host_ip, self._config.server_port))
         self._server_socket.listen(nb_max_player*2)
         threading.Thread(target=self._accept_clients).start()
-
-        threading.Thread(target=self._broadcast_address, kwargs={'host_ip' : host_ip}).start()
+        self._broadcasting = False
+        self.start_broadcast()
 
     def _accept_clients(self):
         """Accept a new client."""
@@ -72,32 +73,42 @@ class Server:
                             print(f"Client {address} (id={id_}) is now reconnected")
 
                 welcome_message = {HEADER : NEW_ID, PAYLOAD : id_}
-                json_message = json.dumps(welcome_message)
+                json_message = json.dumps(welcome_message) + self._config.get("network_sep")
                 client_socket.send(json_message.encode())
                 threading.Thread(target=self._handle_client, args=(client_socket, id_)).start()
             except OSError:
                 print("Server disconnected.")
                 self.stop()
 
-    def _broadcast_address(self, host_ip: int):
-        """Send in the socket.SOCK_DGRAM socket the host_ip and the host port every 5 seconds."""
+    def _broadcast_address(self):
+        """Send in the socket.SOCK_DGRAM socket the host_ip and the host port."""
+        self._broadcasting = True
+        broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : {IP : self._host_ip, ID : self._config.get('game_id')}})
+        pause_time = self._config.get("broadcast_period")/1000
         while self._running:
-            if self.get_nb_players() < self._nb_max_player:
-                broadcast_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-                message = json.dumps({HEADER : BROADCAST_IP, PAYLOAD : host_ip})
+            if self._broadcasting and self.get_nb_players() < self._nb_max_player:
                 broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
-                time.sleep(self.config.get("broadcast_frequency")/1000)  # Send broadcast every broadcast_frquency ms
+            time.sleep(pause_time)  # Send broadcast every broadcast_frquency ms
+    
+    def start_broadcast(self):
+        """Manually start the broadcast of the server ip."""
+        self._broadcasting = True
+    
+    def stop_broadcast(self):
+        """Manually stop the broadcast of the server ip."""
+        self._broadcasting = False
 
     def _handle_client(self, client_socket: socket.socket, id_: int):
         while self._running:
             try:
-                data = client_socket.recv(self.config.max_communication_length)
+                data = client_socket.recv(self._config.max_communication_length)
                 if data:
                     try:
-                        json_data = json.loads(data.decode())
-                        self._reception_buffer.append(json_data)
-                    except json.decoder.JSONDecodeError:
+                        json_data = [json.loads(jdata) for jdata in data.decode().split(self._config.get("network_sep")) if jdata]
+                        self._reception_buffer.extend(json_data)
+                    except json.JSONDecodeError:
                         print(f"Unable to understand {data} as a data object.")
             except ConnectionError:
                 for client_sck in self._client_socket_managers:
@@ -122,24 +133,24 @@ class Server:
     def send(self, client_id, header, data):
         """The data to one client."""
         for client_socket in self._client_socket_managers:
-            if client_socket.id_ == client_id and client_socket.status == ONLINE:
-                try:
-                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)})
-                    client_socket.socket.send(json_data.encode())
-                except ConnectionResetError:
-                    client_socket.status = OFFLINE
-                except Exception:
-                    pass
-                finally:
-                    break
+            if client_socket.id_ == client_id:
+                if client_socket.status == ONLINE:
+                    try:
+                        json_data: str = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : get_ticks()}) + self._config.get("network_sep")
+                        client_socket.socket.send(json_data.encode("utf-8"))
+                    except ConnectionResetError:
+                        client_socket.status = OFFLINE
+                    except Exception:
+                        pass
+                break
 
     def send_all(self, header, data):
         """Send data to all the clients."""
         for client_socket in self._client_socket_managers:
             if client_socket.status == ONLINE:
                 try:
-                    json_data = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : int(time.time()*1000)})
-                    client_socket.socket.send(json_data.encode())
+                    json_data: str = json.dumps({HEADER : header, PAYLOAD : data, TIMESTAMP : get_ticks()}) + self._config.get("network_sep")
+                    client_socket.socket.send(json_data.encode("utf-8"))
                 except ConnectionResetError:
                     client_socket.status = OFFLINE
                 except Exception:

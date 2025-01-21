@@ -10,6 +10,7 @@ import shutil
 import json
 import locale
 import importlib.resources
+import uuid
 
 def init_cwd():
     """Create some files and folder in the current working directory."""
@@ -29,6 +30,12 @@ def init_cwd():
             text = ''.join(f.readlines())
         print("\033[33m" + text + "\033[0m")
 
+        os.makedirs(os.path.join(cwd, 'assets', 'musics'), exist_ok=True)
+        os.makedirs(os.path.join(cwd, 'assets', 'fonts'), exist_ok=True)
+        os.makedirs(os.path.join(cwd, 'assets', 'sounds'), exist_ok=True)
+        os.makedirs(os.path.join(cwd, 'assets', 'images'), exist_ok=True)
+        os.makedirs(os.path.join(cwd, 'assets', 'cursors'), exist_ok=True)
+
     if not os.path.exists(os.path.join(cwd, 'data')):
 
         language = locale.getlocale()[0]
@@ -42,14 +49,16 @@ def init_cwd():
             settings = json.load(f)
             settings['current_language'] = language
         with open(os.path.join(cwd, 'data/settings.json'), 'w', encoding='utf-8') as f:
-            json.dump(settings, f)
+            json.dump(settings, f, indent=4)
 
         with open(os.path.join(cwd, 'data/config.json'), 'r', encoding='utf-8') as f:
             config = json.load(f)
             config['default_language'] = language
             config['path'] = cwd
+            config['game_id'] = str(uuid.uuid4()).replace('-','')
+        
         with open(os.path.join(cwd, 'data/config.json'), 'w', encoding='utf-8') as f:
-            json.dump(config, f)
+            json.dump(config, f, indent=4)
 
 
         with open(os.path.join(this_dir, 'commands/init_texts/data_success.txt'), 'r', encoding='utf-8') as f:

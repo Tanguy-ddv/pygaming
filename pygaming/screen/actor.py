@@ -22,7 +22,8 @@ class Actor(Element):
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        layer: int = 0
+        layer: int = 0,
+        update_if_invisible: bool = False
     ) -> None:
         super().__init__(
             master,
@@ -34,7 +35,8 @@ class Actor(Element):
             None,
             None,
             False,
-            False
+            False,
+            update_if_invisible=update_if_invisible
         )
 
         self.surfaces = [self.surface]
@@ -57,7 +59,10 @@ class Actor(Element):
         """Translate the actor in the frame by a given value."""
         self._x += dx
         self._y += dy
-        self.notify_change()
+
+        self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()
 
     def rotate(self, angle):
         """Rotate the actor."""
@@ -75,4 +80,6 @@ class Actor(Element):
         new_rel_y = rel_x * math.sin(rad_angle) + rel_y * math.cos(rad_angle)
         self.anchor = (new_rel_x + new_w / 2)/new_w, (new_rel_y + new_h / 2)/new_h
         # notify the master for a change
-        self.notify_change()
+        self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()

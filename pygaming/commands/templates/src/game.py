@@ -50,8 +50,8 @@ class SettingsFrame(pgg.Frame):
             'LOC_LANGUAGE_EN' if self.language == 'en_US' else 'LOC_LANGUAGE_FR',
             on_unclick_command=self.toggle_language,
             anchor=pgg.anchors.CENTER
-
         )
+        
         self.controls = master.settings.controls['playground']['K_RIGHT'] == 'right' # True if normal, False is inverted
         self.controls_button = pgg.widget.TextButton(
             self,
@@ -305,7 +305,14 @@ class LobbyGamePhase(pgg.GamePhase):
         self.button.enable()
 
     def set_ready(self):
-        self.is_ready = True # When the button is clicked, this flag is set to True
+         # Connect to the server. If the connection fails, abort the connection and set is_ready to false
+        self.is_ready = self.game.connect('new_player', {
+            'red' : self.current_color.r,
+            'green' : self.current_color.g,
+            'blue' : self.current_color.b,
+            'name': self.name_entry.get()
+            }
+        )        
 
     def next(self):
         if self.is_ready: # Which mean we are ready to go to the game
@@ -326,7 +333,7 @@ class LobbyGamePhase(pgg.GamePhase):
     def start(self):
         self.is_ready = False
         self.settings_frame.hide()
-
+        
     def update(self, loop_duration: int):
         if self.current_color.r != self.red_slider.get() or self.current_color.g != self.green_slider.get() or self.current_color.b != self.blue_slider.get():
             # If the player used the sliders to change the color he want to play with.
@@ -368,36 +375,25 @@ class Player:
         self.pawn = pawn
         self._height = frame.game.typewriter.get_linesize("default") + 10
         self.name = name
-        self.name_label = pgg.widget.Label(
+        self.label = pgg.widget.Label(
             frame,
             pgg.art.ColoredRectangle((0, 0, 0, 0), 100, self._height),
             "default",
             color,
-            name,
+            pgg.TextFormatter(self.name, "0"),
             0,
             rank*self._height,
             justify=pgg.anchors.CENTER_LEFT
         )
 
-        self.score_label = pgg.widget.Label(
-            frame,
-            pgg.art.ColoredRectangle((0, 0, 0, 0), frame.game.typewriter.size("default", "1000")[0] + 10, self._height),
-            "default",
-            self.color,
-            str(initial_score),
-            100,
-            rank*self._height,
-            justify=pgg.anchors.CENTER_LEFT
-        )
         self.score = initial_score
 
     def update_score(self, new_score: int):
         self.score = new_score
-        self.score_label.set_localization_or_text(str(self.score))
+        self.label.set_localization_or_text(pgg.TextFormatter(self.name, str(new_score)))
 
     def update_rank(self, new_rank: str):
-        self.name_label.move(None, self._height*new_rank, None)
-        self.score_label.move(None, self._height*new_rank, None)
+        self.label.move(None, self._height*new_rank, None)
 
 
 class PlaygroundGamePhase(pgg.GamePhase):
@@ -505,10 +501,6 @@ class PlaygroundGamePhase(pgg.GamePhase):
         self.frame.children.clear() # remove all children (labels and pawns) of players.
 
     def start(self, red, blue, green, name):
-        self.game.connect()
-        self.players = {}
-        self.game.client.send('new_player', {'red' : red, 'blue' : blue, 'green' : green, 'name': name})
-
         # (Re)init the game.
         self.players.clear()
         self.asked_to_leave = False
@@ -555,7 +547,6 @@ class PlaygroundGamePhase(pgg.GamePhase):
 
             # send the data to the server
             if self.keyboard.actions_pressed.get('left'):
-
                 self.game.client.send("action", "left")
             if self.keyboard.actions_pressed.get('right'):
                 self.game.client.send("action", "right")
@@ -578,7 +569,7 @@ class PlaygroundGamePhase(pgg.GamePhase):
         self.settings_frame.show()
         self.pause_frame.hide()
 
-g = pgg.Game(LOBBY, debug=False) # Instantiate the game
+g = pgg.Game(LOBBY, debug=True) # Instantiate the game
 LobbyGamePhase(g) # Instantiate each phases
 PlaygroundGamePhase(g)
 g.run() # Run the game

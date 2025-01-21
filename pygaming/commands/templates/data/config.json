@@ -4,10 +4,14 @@
     "default_cursor": "SYSTEM_CURSOR_ARROW", 
     "screen": [800, 600], 
     "max_frame_rate": 100,
+    "server_frequency" : 250,
+    "game_frequency" : 250,
     "server_port" : 50505,
     "max_communication_length" : 2048,
     "flush_frequency" : 5000,
-    "broadcast_frequency" : 200,
+    "broadcast_period" : 200,
+    "network_sep": "\u001F",
+    "timeout" : 1000,
     "widget_keys" : {
         "K_TAB": "tab",
         "K_RETURN": "return",
@@ -16,5 +20,11 @@
         "K_RIGHT": "right",
         "K_UP": "up",
         "K_DOWN": "down"
-    }
+    },
+    "permanent_tables" : [],
+    "ig_queries_game_threshold_size_kb" : 100,
+    "ig_queries_server_threshold_size_kb" : 4048,
+    "stop_game_on_server_killed" : false,
+    "in_memory_game_db" : true,
+    "in_memory_server_db" : true
 }

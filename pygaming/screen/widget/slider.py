@@ -1,13 +1,14 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
 from typing import Optional, Iterable, Callable, Any
 import numpy as np
-from pygame import Cursor, Surface, surfarray as sa
+from pygame import Surface, surfarray as sa
 from ...error import PygamingException
 from .widget import Widget
 from..anchors import TOP_LEFT
 from ..frame import Frame
 from ..art.art import Art
 from ..mask import Mask
+from ...cursor import Cursor
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -33,6 +34,7 @@ class Slider(Widget):
         continue_animation: bool = False,
         transition_function: Callable[[float], float] = lambda x:x,
         transition_duration: int = 300, # [ms]
+        update_if_invisible: bool = True
     ) -> None:
         """
         A Slider is a widget that is used to select a value in a given range by moving a cursor from left to right on a background.
@@ -74,7 +76,8 @@ class Slider(Widget):
             layer,
             hover_surface,
             hover_cursor,
-            continue_animation
+            continue_animation,
+            update_if_invisible
         )
 
         self.normal_cursor = normal_cursor

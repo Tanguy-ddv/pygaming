@@ -1,13 +1,15 @@
 """The button module contains buttons. They are widgets used to get a user click."""
 
 from typing import Optional, Callable, Any
-from pygame import Cursor, Rect, Surface
+from pygame import Rect, Surface
 from ..frame import Frame
 from ..anchors import TOP_LEFT, CENTER
 from .widget import Widget
 from ..art import Art
 from ...color import Color
 from ..mask import Mask
+from ...database import TextFormatter
+from ...cursor import Cursor
 
 class Button(Widget):
     """A Button is a basic widget used to get a player click."""
@@ -28,7 +30,8 @@ class Button(Widget):
         hover_cursor: Optional[Cursor] = None,
         continue_animation: bool = False,
         on_click_command: Optional[Callable[[],Any]] = None,
-        on_unclick_command: Optional[Callable[[],Any]] = None
+        on_unclick_command: Optional[Callable[[],Any]] = None,
+        update_if_invisible: bool = False
     ) -> None:
         """
         A Button is basic widget used to get a player click.
@@ -65,7 +68,8 @@ class Button(Widget):
             layer,
             hover_surface,
             hover_cursor,
-            continue_animation
+            continue_animation,
+            update_if_invisible
         )
         self.active_background = active_background if active_background else normal_background
         self._is_clicked = False
@@ -140,7 +144,7 @@ class TextButton(Button):
         normal_background: Art,
         font : str,
         font_color: Color,
-        localization_or_text: str,
+        localization_or_text: str | TextFormatter,
         active_background: Optional[Art] = None,
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
@@ -152,7 +156,8 @@ class TextButton(Button):
         continue_animation: bool = False,
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
-        jusitfy = CENTER
+        jusitfy = CENTER,
+        update_if_invisible: bool = False
     ) -> None:
         super().__init__(
             master,
@@ -169,7 +174,8 @@ class TextButton(Button):
             hover_cursor,
             continue_animation,
             on_click_command,
-            on_unclick_command
+            on_unclick_command,
+            update_if_invisible
         )
         self.font = font
         self.font_color = font_color
@@ -178,7 +184,7 @@ class TextButton(Button):
 
     def make_surface(self):
         bg = super().make_surface()
-        rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None)
+        rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None, self.justify)
         text_width, text_height = rendered_text.get_size()
         just_x = self.justify[0]*(bg.get_width() - text_width)
         just_y = self.justify[1]*(bg.get_height() - text_height)

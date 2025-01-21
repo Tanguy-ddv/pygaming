@@ -15,6 +15,7 @@ HOST_PORT = 'host_port'
 TIMESTAMP = 'timestamp'
 NEW_PHASE = 'new_phase'
 DISCONNECTION = 'disconnection'
+IP = 'ip'
 
 ONLINE = 'online'
 OFFLINE = 'offline'

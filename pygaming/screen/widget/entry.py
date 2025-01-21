@@ -1,13 +1,14 @@
 """Then entry module contains the entry widget."""
 
 from typing import Optional
-from pygame import Cursor, Surface, draw
+from pygame import Surface, draw
 from .widget import Widget
 from ..anchors import TOP_LEFT, CENTER
 from ..frame import Frame
 from ...color import Color
 from ..art.art import Art
 from ..mask import Mask
+from ...cursor import Cursor
 
 
 class Entry(Widget):
@@ -40,6 +41,7 @@ class Entry(Widget):
         caret_frequency: int = 500,
         caret_width: int = 2,
         max_length: int = 10,
+        update_if_invisible: bool = False
     ) -> None:
         """
         The Entry widget is used to allow the user to add a textual input.
@@ -86,7 +88,8 @@ class Entry(Widget):
             layer,
             hover_surface,
             hover_cursor,
-            continue_animation
+            continue_animation,
+            update_if_invisible
         )
 
         self._text = str(initial_value)

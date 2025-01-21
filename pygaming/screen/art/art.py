@@ -12,7 +12,7 @@ from .transformation import Transformation
 class Art(ABC):
     """The art class is the base for all the surfaces and animated surfaces of the game."""
 
-    def __init__(self, transformation: Transformation = None, force_load_on_start: bool = False) -> None:
+    def __init__(self, transformation: Transformation = None, force_load_on_start: bool = False, permanent: bool = False) -> None:
         super().__init__()
         self.surfaces: tuple[Surface] = ()
         self.durations: tuple[int] = ()
@@ -27,6 +27,7 @@ class Art(ABC):
         self._on_loading_transformation = transformation
 
         self._force_load_on_start = force_load_on_start
+        self._permanent = permanent
         self._copies: list[Art] = []
     
     def set_load_on_start(self):
@@ -88,19 +89,21 @@ class Art(ABC):
 
     def unload(self):
         """Unload the surfaces."""
-        self.surfaces = ()
-        self.durations = ()
-        self._loaded = False
+        if not self._permanent:
+            self.surfaces = ()
+            self.durations = ()
+            self._loaded = False
 
     def load(self, settings: Settings):
         """Load the art at the beginning of the phase"""
         self._time_since_last_change = 0
         self._index = 0
-        self._load(settings)
-        self._verify_sizes()
-        self._loaded = True
-        if not self._on_loading_transformation is None:
-            self.transform(self._on_loading_transformation, settings)
+        if not self._loaded:
+            self._load(settings)
+            self._verify_sizes()
+            self._loaded = True
+            if not self._on_loading_transformation is None:
+                self.transform(self._on_loading_transformation, settings)
 
         for copy in self._copies:
             if not copy.is_loaded:
@@ -120,7 +123,6 @@ class Art(ABC):
                 if self._index == len(self.surfaces):
                     self._index = self.introduction
                 return True
-            return False
         return False
 
     def reset(self):
@@ -141,10 +143,6 @@ class Art(ABC):
 
     def transform(self, transformation: Transformation, settings: Settings = None):
         """Apply a transformation"""
-        if settings is None:
-            antialias = False
-        else:
-            antialias = settings.antialias
         if self._loaded:
             (   self.surfaces,
                 self.durations,
@@ -159,7 +157,7 @@ class Art(ABC):
                 self._index,
                 self._width,
                 self._height,
-                antialias
+                settings
             )
         else:
             raise PygamingException("A transformation have be called on an unloaded Art, please use the art's constructor to transform the initial art.")
@@ -191,8 +189,8 @@ class Art(ABC):
 
 class _ArtFromCopy(Art):
 
-    def __init__(self, original: Art, additional_transformation: Transformation):
-        super().__init__(additional_transformation, original._force_load_on_start)
+    def __init__(self, original: Art, additional_transformation: Transformation, permanent: bool = False):
+        super().__init__(additional_transformation, original._force_load_on_start, permanent)
         # The on load transformation has been removed because the transformation are executed during the loading of the original
         self._original = original
         self._height = self._original.height

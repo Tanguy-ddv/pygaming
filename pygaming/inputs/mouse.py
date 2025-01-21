@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 import pygame
-from ..settings import Settings
 
 @dataclass(init=False)
 class Click:
@@ -24,21 +23,23 @@ class Click:
 class Mouse:
     """The Mouse class is used to manage mouse inputs."""
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self) -> None:
 
         self._x, self._y = pygame.mouse.get_pos()
         self.v_x = 0
         self.v_y = 0
-        self._settings = settings
         self.event_list: list[pygame.event.Event] = []
         self.clicks: list[Click | None] = [None, None, None, None, None]
 
     def update(self, loop_duration: int, event_list: list[pygame.event.Event]):
         """Update the mouse at every loop iteration."""
-        self._x, self._y = pygame.mouse.get_pos()
-        dx, dy = pygame.mouse.get_rel()
-        self.v_x = dx/loop_duration
-        self.v_y = dy/loop_duration
+        x, y = pygame.mouse.get_pos()
+        dx, dy = x - self._x, y - self._y
+        self._x, self._y = x, y
+        if loop_duration == 0:
+            self.v_x, self.v_y = 0, 0
+        else:
+            self.v_x, self.v_y = dx/loop_duration, dy/loop_duration
         pressed = pygame.mouse.get_pressed(5)
         for button, button_pressed in enumerate(pressed):
             if button_pressed:
@@ -51,8 +52,8 @@ class Mouse:
         self.event_list = event_list
 
     def get_velocity(self) -> tuple[float, float]:
-        """Return the velocity corrected by the sensibility settings."""
-        return self.v_x*self._settings.get("sensibility")*2, self.v_y*self._settings.get("sensibility")*2
+        """Return the velocity of the mouse."""
+        return self.v_x, self.v_y
 
     def is_moving(self) -> bool:
         """Return True if the user is moving the mouse."""

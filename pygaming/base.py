@@ -8,8 +8,9 @@ from .database import Database
 
 from .config import Config
 from .error import PygamingException
+from .state import State
 
-NO_NEXT = 'no_next'
+LEAVE = 'leave'
 STAY = 'stay'
 
 
@@ -18,15 +19,20 @@ class BaseRunnable(ABC):
 
     def __init__(self, debug: bool, runnable_type: Literal['server', 'game'], first_phase: str) -> None:
         super().__init__()
-        pygame.init()
         self.debug = debug
         self.config = Config()
         self.logger = Logger(self.config, debug)
-        self.database = Database(self.config, runnable_type, debug)
+        self._state = State()
+        self.database = Database(self.config, self._state, runnable_type, debug)
         self.phases = {}
-        self.transitions = {}
         self.current_phase = first_phase
         self.clock = pygame.time.Clock()
+        
+        self._state.increment_counter(f"launch_counter_{runnable_type}")
+        self._state.set_time_now(f"last_launch_{runnable_type}")
+
+    def start(self):
+        """Call this method at the beginning of the run."""
 
     @abstractmethod
     def update(self):
@@ -35,12 +41,13 @@ class BaseRunnable(ABC):
 
     def set_phase(self, name: str, phase):
         """Add a new phase to the game."""
-        if not self.phases:
-            self.current_phase = name
         if name in self.phases:
             raise PygamingException("This name is already assigned to another frame.")
         self.phases[name] = phase
-        return self
+    
+    @abstractmethod
+    def transition(self, next_phase):
+        """Make a transition between the current and the next phase."""
 
     def update_phases(self, loop_duration: int):
         """Update the phases of the game."""
@@ -49,18 +56,12 @@ class BaseRunnable(ABC):
         # Ask what is next
         next_phase = self.phases[self.current_phase].next()
         # Verify if the phase is over
-        if next_phase not in [NO_NEXT, STAY]:
-            # get the value for the arguments for the start of the next phase
-            new_data = self.phases[self.current_phase].apply_transition(next_phase)
-            # End the current phase
-            self.phases[self.current_phase].finish()
-            # change the phase
-            self.current_phase = next_phase
-            # start the new phase
-            self.phases[self.current_phase].begin(**new_data)
+        if next_phase not in (LEAVE, STAY):
+            # If yes, apply a transition
+            self.transition(next_phase)
 
-        # if NO_NEXT was return, end the game.
-        return next_phase == NO_NEXT
+        # if LEAVE was returned, end the game.
+        return next_phase == LEAVE
 
     def stop(self):
         """Stop the algorithm properly."""
@@ -69,8 +70,8 @@ class BaseRunnable(ABC):
         """Run the game."""
         stop = False
         self.phases[self.current_phase].begin(**kwargs0)
+        self.start() # Start the game display thread
         while not stop:
             stop = self.update()
         self.phases[self.current_phase].end()
         self.stop()
-        pygame.quit()

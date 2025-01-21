@@ -1,4 +1,4 @@
-"""The anchors moduls contains predefined anchors."""
+"""The anchors module contains predefined anchors."""
 TOP_RIGHT = 1, 0
 TOP_LEFT = 0, 0
 CENTER = 0.5, 0.5

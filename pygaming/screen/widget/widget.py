@@ -2,12 +2,13 @@
 
 from abc import ABC, abstractmethod
 from typing import Optional
-from pygame import Cursor, Surface, Mask as mk
+from pygame import Surface, Mask as mk
 from ..frame import Frame
 from ..element import Element
 from ..anchors import TOP_LEFT
 from ..art.art import Art
 from ..mask import Mask
+from ...cursor import Cursor
 
 class Widget(Element, ABC):
     """
@@ -29,7 +30,8 @@ class Widget(Element, ABC):
         layer: int = 0,
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,
-        continue_animation: bool = False
+        continue_animation: bool = False,
+        update_if_invisible: bool = False
     ) -> None:
         super().__init__(
             master,
@@ -42,7 +44,8 @@ class Widget(Element, ABC):
             hover_cursor,
             True,
             True,
-            active_area
+            active_area,
+            update_if_invisible
         )
         self._continue_animation = continue_animation
         if focused_background is None:

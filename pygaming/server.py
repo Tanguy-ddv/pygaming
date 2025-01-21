@@ -20,7 +20,7 @@ class Server(BaseRunnable):
 
     def update(self):
         """Update the server."""
-        loop_duration = self.clock.tick(self.config.get("max_frame_rate"))
+        loop_duration = self.clock.tick(self.config.get("server_frequency"))
         self.logger.update(loop_duration)
         self.network.update()
         previous = self.current_phase
@@ -31,5 +31,16 @@ class Server(BaseRunnable):
 
     def stop(self):
         """Stop the event."""
+        self.database.close()
         self.network.send_all(EXIT, '')
         self.network.stop()
+    
+    def transition(self, next_phase):
+        # get the value for the arguments for the start of the next phase
+        new_data = self.phases[self.current_phase].apply_transition(next_phase)
+        # End the current phase
+        self.phases[self.current_phase].finish()
+        # change the phase
+        self.current_phase = next_phase
+        # start the new phase
+        self.phases[self.current_phase].begin(**new_data)

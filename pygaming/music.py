@@ -17,10 +17,10 @@ class Jukebox:
 
         self._introduction = 0
         self._playing = False
-        self._settings = settings
         self._loops_or_playlist = _LOOPS
         self._playlist_idx = 0
         self._playlist = []
+        self.update_settings(settings)
 
     def stop(self):
         """Stop the music currently playing."""
@@ -94,7 +94,7 @@ class Jukebox:
 
     def update(self):
         """This function should be called at the end of every gameloop to make the music loop or the jukebox play a new music."""
-        pygame.mixer.music.set_volume(self._settings.volumes['main']*self._settings.volumes['music'])
+    
         # If we are playing a looping music.
         if self._playing and self._loops_or_playlist == _LOOPS and not pygame.mixer.music.get_busy() and self._loop_instant is not None:
             pygame.mixer.music.play(0, self._loop_instant/1000)
@@ -105,3 +105,7 @@ class Jukebox:
             path = self._playlist[self._playlist_idx]
             pygame.mixer.music.load(path)
             pygame.mixer.music.play(0)
+
+    def update_settings(self, settings: Settings):
+        """Update the current settings of the jukebox."""
+        pygame.mixer.music.set_volume(settings.volumes['main']*settings.volumes['music'])
