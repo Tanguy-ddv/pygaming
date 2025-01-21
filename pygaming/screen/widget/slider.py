@@ -140,10 +140,9 @@ class Slider(Widget):
         ]
 
         self._cursor_position = self._positions[self._index]
-    
+
     def end(self):
         """Nothing to do at the end of the phase for this widget."""
-        pass
 
     def _start_transition(self, new_index):
         """Start a transition."""

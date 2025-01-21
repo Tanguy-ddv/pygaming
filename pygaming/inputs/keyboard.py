@@ -66,6 +66,10 @@ class Keyboard:
             for action, keys in self._control_mapping.items()}
 
     def update_actions_up(self):
+        """
+        Return a dict of str: bool specifying if the action is triggered or not.
+        The action is triggered if the user just unpressed the key.
+        """
         types = [event.key for event in self.event_list if event.type == pygame.KEYUP]
         self.actions_up = {
             action : any(int(key) in types for key in keys)

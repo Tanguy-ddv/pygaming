@@ -43,7 +43,7 @@ class Controls:
                 self._key_map_dict[str(getattr(pygame, key))] = action
             else:
                 self._key_map_dict[key] = action
-        
+
         return self._get_reversed_mapping()
 
     def _get_reversed_mapping(self):

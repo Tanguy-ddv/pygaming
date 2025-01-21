@@ -29,8 +29,9 @@ class Art(ABC):
         self._force_load_on_start = force_load_on_start
         self._permanent = permanent
         self._copies: list[Art] = []
-    
+
     def set_load_on_start(self):
+        """Set the force_load_start_attribute to be True."""
         self._force_load_on_start = True
 
     def start(self, settings: Settings):
@@ -55,7 +56,7 @@ class Art(ABC):
     def size(self):
         """Return the size of the art."""
         return (self.width, self._height)
-    
+
     @property
     def height(self):
         """Return the height of the art."""
@@ -65,7 +66,7 @@ class Art(ABC):
     def width(self):
         """Return the width of the art."""
         return self._width
-    
+
     @property
     def is_loaded(self):
         """Return true if the art is loaded"""
@@ -204,4 +205,3 @@ class _ArtFromCopy(Art):
         self.surfaces = tuple(surf.copy() for surf in self._original.surfaces)
         self.durations = self._original.durations
         self.introduction = self._original.introduction
-

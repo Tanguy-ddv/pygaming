@@ -40,7 +40,7 @@ class Database:
         self._table_path = get_file('data',f'sql-{runnable_type}/tables.sql')
         self._ig_queries_path = get_file('data', f'sql-{runnable_type}/ig_queries.sql')
         self._sql_folder = get_file('data', f'sql-{runnable_type}')
-        
+
         # Get current state
         self.__entry = f"ig_queries_{runnable_type}_threshold_size_kb"
         self._state = state
@@ -73,7 +73,7 @@ class Database:
         self.execute_sql_script(self._ig_queries_path)
 
         self._ig_queries_file = open(self._ig_queries_path, 'a', encoding='utf-8')
-    
+
     def reduce_ig_queries_size(self):
         """
         Reduce the size of the ig_queries file script.
@@ -89,7 +89,7 @@ class Database:
                 dump for dump in dumps
                 if any(dump.startswith(f'INSERT INTO "{table}"') for table in permanent_tables)
             )
-            with open(self._ig_queries_path, 'w') as f:
+            with open(self._ig_queries_path, 'w', encoding='utf-8') as f:
                 f.writelines(f"{dump}\n" for dump in dumps_to_keep)
 
     def execute_select_query(self, query: str, params: tuple = ()):

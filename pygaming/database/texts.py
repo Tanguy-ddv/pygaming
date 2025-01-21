@@ -29,17 +29,18 @@ class Texts:
         self._last_language = settings.language
         self._all_phases_dict = self._query_db(settings.language, 'all')
         self._this_phase_dict = self._query_db(settings.language, first_phase)
-    
+
     def _query_db(self, language, phase_name):
         """Query the database for the texts"""
         texts_list = self._db.get_language_texts(language, phase_name)
         return {pos : txt for pos, txt in texts_list}
-    
+
     def get_all_positions(self):
         """Return all the positions (text keys) in this phase."""
         return list(self._this_phase_dict.keys()) + list(self._all_phases_dict.keys())
 
     def update(self, settings: Settings, phase: str):
+        """Update the texts based on the new settings (new language) and/or new phase."""
         if settings.language == self._last_language:
             self._this_phase_dict = self._query_db(settings.language, phase)
         else:
@@ -59,7 +60,7 @@ class Texts:
         if text is None:
             text = self._all_phases_dict.get(text_or_loc, text_or_loc)
         return text
-    
+
     def get_values(self, loc: str):
         """Return the longest text that can be obtained for the same localization given any language."""
         return self._db.get_loc_texts(self, loc)

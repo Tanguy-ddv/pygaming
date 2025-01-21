@@ -7,7 +7,6 @@ from pygame.time import get_ticks
 from .file import get_file
 from .config import Config
 
-
 class Logger:
     """
     A logger is used to store the log of a game.

@@ -18,7 +18,7 @@ class Speeches:
         self._all_phases_dict = self._query_db(self.current_language, 'all')
         self._this_phase_dict = self._query_db(self.current_language, first_phase)
         self.current_phase = first_phase
-    
+
     def _query_db(self, language, phase_name):
         """Query the database for the speeches"""
         texts_list = self._db.get_speeches(language, phase_name)

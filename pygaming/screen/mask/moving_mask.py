@@ -1,14 +1,13 @@
 """The transformations submodule contains all masks able to move."""
-
+from typing import Callable
 from abc import ABC, abstractmethod
 import numpy as np
-from typing import Callable
 from .mask import Mask, Circle, GradientCircle, Rectangle, RoundedRectangle, GradientRectangle, Ellipse
 
 
 class _MovingMask(Mask, ABC):
     """An abstract class for all the moving masks."""
-    
+
     def __init__(self, width, height, center: tuple[int, int] = None):
         Mask.__init__(self, width, height)
         ABC.__init__(self)
@@ -17,12 +16,12 @@ class _MovingMask(Mask, ABC):
         if center is None:
             center = width//2, height//2
         self._center = center
-    
+
     def set_center(self, new_x: int, new_y: int):
         """Reset the position of the center."""
         self._center = (new_x, new_y)
         return self
-    
+
     def get_center(self):
         """Get the current center of the moving geometry inside the mask."""
         return self._center
@@ -42,9 +41,6 @@ class _MovingMask(Mask, ABC):
 
 class _WrappingMovingMask(_MovingMask):
     """An abstract class for all moving masks that would wrap around the edges."""
-
-    def __init__(self, width, height, center: tuple[int, int] = None):
-        super().__init__(width, height, center)
 
     def set_center(self, new_x: int, new_y: int):
         """Reset the position of the center."""
@@ -73,7 +69,7 @@ class _WrappingMovingMask(_MovingMask):
 
 class WrappingMovingCircle(_WrappingMovingMask, Circle):
     """This Circle is able to move. When it reaches an end, it comes back on the opposite side."""
-    
+
     def __init__(self, width: int, height: int, radius: int, center: tuple[int, int] = None):
         Circle.__init__(self, width, height, radius, center)
         _WrappingMovingMask.__init__(self, width, height, self.center)
@@ -119,7 +115,7 @@ class WrappingMovingGradientRectangle(_WrappingMovingMask, GradientRectangle):
 
 class _BouncingMovingMask(_MovingMask):
     """An abstract class for all moving masks that would bounce on the edges."""
-    
+
     def __init__(self, width, height, inner_mask: Mask, center: tuple[int, int] = None):
         super().__init__(width, height, center)
         self._dx, self._dy = inner_mask.width, inner_mask.height
@@ -151,20 +147,20 @@ class _BouncingMovingMask(_MovingMask):
         elif center_x + self._dx//2 > self.width and self._velocity_x > 0:
             self._velocity_x *= -1
             center_x -= 2*(center_x + self._dx//2 - self.width)
-        
+
         if center_y - self._dy//2 < 0 and self._velocity_y < 0:
             self._velocity_y *= -1
             center_y += 2*(self._dy//2 - center_y)
         elif center_y + self._dy//2 > self.height and self._velocity_y > 0:
             self._velocity_y *= -1
             center_y -= 2*(center_y + self._dy//2 - self.height)
-        
+
         self._center = (center_x, center_y)
         self.make_matrix()
 
 class BouncingMovingCircle(_BouncingMovingMask):
     """This Circle is able to move. When it reaches an end, it bounces."""
-    
+
     def __init__(self, width: int, height: int, radius: int, center: tuple[int, int] = None):
         inner_mask = Circle(radius*2, radius*2, radius, (radius, radius))
         super().__init__(width, height, inner_mask, center)
@@ -222,18 +218,15 @@ class BouncingMovingGradientRectangle(_BouncingMovingMask):
 class _DisappearingMovingMask(_BouncingMovingMask):
     """An abstract class for all moving masks that would disappear through on the edges."""
 
-    def __init__(self, width, height, inner_mask: Mask, center: tuple[int, int] = None):
-        super().__init__(width, height, inner_mask, center)
-    
     def update(self, loop_duration):
         """Update the mask"""
         Nx, Ny = self._get_move(loop_duration)
-        self._center = self._center[0] + Nx, self._center[1] + Ny   
+        self._center = self._center[0] + Nx, self._center[1] + Ny
         self.make_matrix()
 
 class DisappearingMovingCircle(_DisappearingMovingMask):
     """This Circle is able to move. When it reaches an end, it disappears through."""
-    
+
     def __init__(self, width: int, height: int, radius: int, center: tuple[int, int] = None):
         inner_mask = Circle(radius*2, radius*2, radius, (radius, radius))
         super().__init__(width, height, inner_mask, center)

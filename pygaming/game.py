@@ -1,6 +1,6 @@
 """The game module contains the game class which is used to represent every game."""
-import pygame
 from threading import Thread
+import pygame
 from .database import TypeWriter, SoundBox, GAME
 from .music import Jukebox
 from .connexion import Client
@@ -42,10 +42,10 @@ class Game(BaseRunnable):
         self.screen_clock = pygame.time.Clock()
         self._display_screen = True
         self._pause_display = False
-    
+        self._display_screen_thread = Thread(target=self.display_image)
+
     def start(self):
         """Call this method at the beginning of the run."""
-        self._display_screen_thread = Thread(target=self.display_image)
         self._display_screen_thread.start()
 
     def transition(self, next_phase):
@@ -81,12 +81,14 @@ class Game(BaseRunnable):
         if self.online:
             self.client.update()
         is_game_over = self.update_phases(loop_duration)
-        return self._inputs.quit or is_game_over or (self.online and self.client.is_server_killed() and self.config.get("stop_game_on_server_killed", False))
+        return self._inputs.quit or is_game_over or (
+            self.online and self.client.is_server_killed() and self.config.get("stop_game_on_server_killed", False)
+        )
 
     def connect(self, initial_message_header = None, initial_message_payload = None) -> bool:
         """Connect the game to the server."""
         if not self.online:
-            self.client = Client(self.config, self.logger, initial_message_header, initial_message_payload) 
+            self.client = Client(self.config, self.logger, initial_message_header, initial_message_payload)
             if not self.client.is_connected:
                 self.disconnect()
             else:

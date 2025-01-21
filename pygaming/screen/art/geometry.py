@@ -150,7 +150,7 @@ class TexturedPolygon(Art):
         for p in points:
             if p[0] < 0 or p[1] < 0:
                 raise ValueError(f"All points coordinates of a polygon must have a positive value, got {p}")
-  
+
         self.points = points
         super().__init__(transformation, force_load_on_start, permanent)
 

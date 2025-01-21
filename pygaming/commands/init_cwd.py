@@ -56,7 +56,7 @@ def init_cwd():
             config['default_language'] = language
             config['path'] = cwd
             config['game_id'] = str(uuid.uuid4()).replace('-','')
-        
+
         with open(os.path.join(cwd, 'data/config.json'), 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=4)
 

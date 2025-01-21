@@ -27,7 +27,7 @@ class BaseRunnable(ABC):
         self.phases = {}
         self.current_phase = first_phase
         self.clock = pygame.time.Clock()
-        
+
         self._state.increment_counter(f"launch_counter_{runnable_type}")
         self._state.set_time_now(f"last_launch_{runnable_type}")
 
@@ -44,7 +44,7 @@ class BaseRunnable(ABC):
         if name in self.phases:
             raise PygamingException("This name is already assigned to another frame.")
         self.phases[name] = phase
-    
+
     @abstractmethod
     def transition(self, next_phase):
         """Make a transition between the current and the next phase."""

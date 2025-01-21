@@ -8,8 +8,9 @@ from .file import get_file
 from .settings import Settings
 
 _pygame_system_cursors = [
-    'SYSTEM_CURSOR_ARROW', 'SYSTEM_CURSOR_IBEAM', 'SYSTEM_CURSOR_WAIT', 'SYSTEM_CURSOR_CROSSHAIR', 'SYSTEM_CURSOR_WAITARROW', 'SYSTEM_CURSOR_SIZENWSE',
-    'SYSTEM_CURSOR_SIZENESW', 'SYSTEM_CURSOR_SIZEWE', 'SYSTEM_CURSOR_SIZENS', 'SYSTEM_CURSOR_SIZEALL', 'SYSTEM_CURSOR_NO', 'SYSTEM_CURSOR_HAND'
+    'SYSTEM_CURSOR_ARROW', 'SYSTEM_CURSOR_IBEAM', 'SYSTEM_CURSOR_WAIT', 'SYSTEM_CURSOR_CROSSHAIR',
+    'SYSTEM_CURSOR_WAITARROW', 'SYSTEM_CURSOR_SIZENWSE', 'SYSTEM_CURSOR_SIZENESW', 'SYSTEM_CURSOR_SIZEWE',
+    'SYSTEM_CURSOR_SIZENS', 'SYSTEM_CURSOR_SIZEALL', 'SYSTEM_CURSOR_NO', 'SYSTEM_CURSOR_HAND'
 ]
 _pygame_cursors = [
     'arrow', 'diamond', 'broken_x', 'tri_left', 'tri_right'
@@ -44,7 +45,7 @@ class Cursor:
     @overload
     def __init__(self, cursor_name: str):
         ...
-    
+
     @overload
     def __init__(self, path: str):
         ...
@@ -60,7 +61,7 @@ class Cursor:
     @overload
     def __init__(self, art: Art, anchor: tuple[float, float]):
         ...
-    
+
     @overload
     def __init__(self, bitmap: tuple[str], hotspot: tuple = (0,0)):
         ...
@@ -106,7 +107,7 @@ class Cursor:
                     self._cursors = (_Cs(*pygame.cursors.load_xbm(values[0], values[1])))
                 else:
                     raise ValueError(f"{values[0], values[1]} aren't proper arguments for a cursor.")
-        
+
             elif isinstance(values[0], tuple):
                 # Create a cursor with a string bitmap
                 bitmap = _verify_bitmap(values[0])
@@ -130,7 +131,7 @@ class Cursor:
     def get(self, settings: Settings):
         """Return the current image to show as a cursor."""
         if not self.is_loaded:
-            art, anchor = self._future_cursors
+            art, anchor = self._future_cursors # pylint: disable=unbalanced-tuple-unpacking
             art.load(settings)
             hotspot = int(anchor[0]*art.width), int(anchor[1]*art.height)
             self._cursors = tuple(_Cs(hotspot, surf) for surf in art.surfaces)
@@ -138,7 +139,7 @@ class Cursor:
             self._introduction = art.introduction
             self.is_loaded = True
         return self._cursors[self._index]
-    
+
     def update(self, loop_duration) -> bool:
         """Update the cursor's image to display. Return true if the image changed."""
         if len(self._cursors) > 1:
@@ -152,5 +153,6 @@ class Cursor:
         return False
 
     def reset(self):
+        """Reset the cursor to its initial state."""
         self._index = 0
         self._time_since_last_change = 0

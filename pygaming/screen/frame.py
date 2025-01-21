@@ -34,8 +34,8 @@ class Frame(Element):
         - master: Another Frame or a phase.
         - window: Window or tuple[x, y, width, height] or tuple[x, y, width, height, anchor],
         the window in which the frame will be display. The window might have a mask.
-        If a tuple of for int is specified, act like a window without any mask, where the two first values are the top_left coordinate of the
-        frame in its master, the two next are the dimension
+        If a tuple of for int is specified, act like a window without any mask, where the two first values are the top_left coordinate
+        of the frame in its master, the two next are the dimension
         If a tuple of for int and an anchor is specified, act like a window without any mask but with a specify anchor. In this case, 
         the two first values are the coordinate of the anchor (last element of the tuple) point on the frame.
         - background: The AnimatedSurface or Surface representing the background of the Frame.
@@ -77,7 +77,9 @@ class Frame(Element):
         if background_window is None:
             background_window = pygame.Rect(0, 0, *self.window.size)
         if self.window.size != background_window.size:
-            raise PygamingException(f"window and background window must have the same dimension, got {self.window.size} and {background_window.size}")
+            raise PygamingException(
+                f"window and background window must have the same dimension, got {self.window.size} and {background_window.size}"
+            )
         self.background_window = background_window
 
         self.focused = False
@@ -117,21 +119,21 @@ class Frame(Element):
             else:
                 if self.focused:
                     child.unfocus()
-        
+
         for (i, child) in enumerate(self._frame_childern):
             if child.is_contact(click):
                 child.update_focus(click)
         if not one_is_clicked:
             self._current_object_focus = None
             self.has_a_widget_focused = False
-    
+
     def notify_change_all(self):
         """Force the change notification to remake every surface."""
         self.notify_change()
 
         for child in self.children:
             child.notify_change()
-        
+
         for frame in self._all_frame_children:
             frame.notify_change_all()
 
@@ -166,7 +168,7 @@ class Frame(Element):
         self.focused = False
         self.has_a_widget_focused = False
         focused_children = list(child for child in self.children if child.focused)
-        if len(focused_children):
+        if focused_children:
             for child in focused_children:
                 child.unfocus()
             self.switch_background()
@@ -179,7 +181,7 @@ class Frame(Element):
             else:
                 self.surface.reset()
         self.notify_change()
-    
+
     def start(self):
         """Execute this method at the beginning of the phase."""
         for child in self.children:
@@ -215,7 +217,7 @@ class Frame(Element):
         """Update all the children of the frame."""
         for element in self.children:
             element.loop(loop_duration)
-    
+
     def is_child_on_me(self, child: Element):
         """Return whether the child is visible on the frame or not."""
         return self.background_window.colliderect(child.relative_rect)
