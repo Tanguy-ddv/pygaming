@@ -49,8 +49,8 @@ class Server:
         self._server_socket.bind((self._host_ip, self._config.server_port))
         self._server_socket.listen(nb_max_player*2)
         threading.Thread(target=self._accept_clients).start()
-        self._broadcasting = False
-        self.start_broadcast()
+        self._broadcasting = True
+        threading.Thread(target=self._broadcast_address).start()
 
     def _accept_clients(self):
         """Accept a new client."""
