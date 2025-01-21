@@ -103,8 +103,9 @@ class Frame(Element):
 
     def update_focus(self, click: Click | None):
         """Update the focus of all the children in the frame."""
+        if not self.focused:
+            self.switch_background()
         self.focused = True
-        self.switch_background()
         one_is_clicked = False
 
         for (i,child) in enumerate(self._widget_children):
@@ -114,7 +115,8 @@ class Frame(Element):
                 one_is_clicked = True
                 self.has_a_widget_focused = True
             else:
-                child.unfocus()
+                if self.focused:
+                    child.unfocus()
         
         for (i, child) in enumerate(self._frame_childern):
             if child.is_contact(click):
@@ -148,7 +150,8 @@ class Frame(Element):
             if len(widget_children) > 1:
 
                 for element in widget_children:
-                    element.unfocus()
+                    if element.focused:
+                        element.unfocus()
 
                 next_index = (1 + self._current_object_focus)%len(widget_children)
                 widget_children[next_index].focus()
@@ -162,10 +165,11 @@ class Frame(Element):
         """Remove the focus of all the children."""
         self.focused = False
         self.has_a_widget_focused = False
-        self.focused_background.reset()
-        for child in self.children:
-            child.unfocus()
-        self.switch_background()
+        focused_children = list(child for child in self.children if child.focused)
+        if len(focused_children):
+            for child in focused_children:
+                child.unfocus()
+            self.switch_background()
 
     def switch_background(self):
         """Switch to the focused background or the normal background."""

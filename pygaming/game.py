@@ -68,8 +68,6 @@ class Game(BaseRunnable):
         while self._display_screen:
             loop_duration = self.screen_clock.tick(self.config.get("max_frame_rate"))
             if not self._pause_display:
-                while self._is_calculating: # wait for the game to end its calculations
-                    pass
                 self._screen.display_phase(self.phases[self.current_phase])
                 self._screen.update()
                 self.phases[self.current_phase].update_hover(loop_duration)
