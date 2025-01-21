@@ -54,7 +54,7 @@ def install():
     config['path'] = modified_path_to_install
 
     with open(config_path, 'wb') as f:
-        f.write(base64.b64encode(json.dumps(config)))
+        f.write(base64.b64encode(json.dumps(config).encode('utf-8')))
 
     # Encode the settings and state
     settings_path = os.path.join(base_path, 'data', 'settings.json')
@@ -62,14 +62,14 @@ def install():
     with open(settings_path, 'r', encoding='utf-8') as f:
         settings = json.load(f)
     with open(settings_path, 'wb') as f:
-        f.write(base64.b64encode(json.dumps(settings)))
+        f.write(base64.b64encode(json.dumps(settings).encode('utf-8')))
 
     state_path = os.path.join(base_path, 'data', 'state.json')
 
     with open(state_path, 'r', encoding='utf-8') as f:
         state = json.load(f)
     with open(state_path, 'wb') as f:
-        f.write(base64.b64encode(json.dumps(state)))
+        f.write(base64.b64encode(json.dumps(state).encode('utf-8')))
 
     # Copy the data folder
     shutil.copytree(
