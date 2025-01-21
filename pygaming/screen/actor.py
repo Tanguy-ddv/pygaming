@@ -61,7 +61,8 @@ class Actor(Element):
         self._y += dy
 
         self.get_on_master()
-        self.notify_change()
+        if self.on_master:
+            self.master.notify_change()
 
     def rotate(self, angle):
         """Rotate the actor."""
@@ -80,4 +81,5 @@ class Actor(Element):
         self.anchor = (new_rel_x + new_w / 2)/new_w, (new_rel_y + new_h / 2)/new_h
         # notify the master for a change
         self.get_on_master()
-        self.notify_change()
+        if self.on_master:
+            self.master.notify_change()

@@ -98,7 +98,8 @@ class Element(ABC):
             self._x = new_x
         
         self.get_on_master()
-        self.notify_change()
+        if self.on_master:
+            self.master.notify_change()
 
     def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
         """Return True if the mouse is hovering the element."""
@@ -185,19 +186,23 @@ class Element(ABC):
     def set_layer(self, new_layer: int):
         """Set a new value for the layer"""
         self.layer = new_layer
+        self.master.notify_change()
 
     def send_to_the_back(self):
         """Send the object one step to the back."""
         self.layer -= 1
+        self.master.notify_change()
 
     def send_to_the_front(self):
         """Send the object one step to the front."""
         self.layer += 1
+        self.master.notify_change()
 
     def hide(self):
         """Hide the object."""
         self.visible = False
         self.master.notify_change()
+        return self
 
     def show(self):
         """Show the object."""
