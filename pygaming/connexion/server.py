@@ -3,8 +3,8 @@
 import socket
 import threading
 import json
-from pygame.time import get_ticks
 import time
+from pygame.time import get_ticks
 from ..config import Config
 from ._constants import DISCOVERY_PORT, TIMESTAMP, PAYLOAD, HEADER, NEW_ID, ONLINE, OFFLINE, BROADCAST_IP, IP, ID
 
@@ -49,8 +49,8 @@ class Server:
         self._server_socket.bind((self._host_ip, self._config.server_port))
         self._server_socket.listen(nb_max_player*2)
         threading.Thread(target=self._accept_clients).start()
-        self._broadcasting = False
-        self.start_broadcast()
+        self._broadcasting = True
+        threading.Thread(target=self._broadcast_address).start()
 
     def _accept_clients(self):
         """Accept a new client."""
@@ -91,11 +91,11 @@ class Server:
             if self._broadcasting and self.get_nb_players() < self._nb_max_player:
                 broadcast_socket.sendto(message.encode(), ('<broadcast>', DISCOVERY_PORT))
             time.sleep(pause_time)  # Send broadcast every broadcast_frquency ms
-    
+
     def start_broadcast(self):
         """Manually start the broadcast of the server ip."""
         self._broadcasting = True
-    
+
     def stop_broadcast(self):
         """Manually stop the broadcast of the server ip."""
         self._broadcasting = False

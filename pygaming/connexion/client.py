@@ -71,8 +71,8 @@ class Client:
             self.client_socket.close()
         else:
             self.client_socket.settimeout(None)
-        finally:
-            return connected
+
+        return connected
 
     def _receive(self):
         string_buffer = ""

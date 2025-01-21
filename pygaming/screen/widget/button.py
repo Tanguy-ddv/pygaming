@@ -93,11 +93,9 @@ class Button(Widget):
 
     def start(self):
         """Nothing to do at the start of the phase for this widget."""
-        pass
 
     def end(self):
         """Nothing to do at the end of the phase for this widget."""
-        pass
 
     def update(self, loop_duration: int):
         """Update the button every loop iteration if it is visible."""
@@ -190,7 +188,7 @@ class TextButton(Button):
         just_y = self.justify[1]*(bg.get_height() - text_height)
         bg.blit(rendered_text, (just_x, just_y))
         return bg
-    
+
     def set_localization_or_text(self, localization_or_text: str):
         """Set the button text to a new value."""
         if self.text != localization_or_text:

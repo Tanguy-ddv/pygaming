@@ -1,12 +1,12 @@
 """The transformations submodule contains all masks being transformations of an image, array or of another mask."""
 from abc import ABC, abstractmethod
 from typing import Callable
+from PIL import Image
 import pygame.surfarray as sa
 import numpy as np
 from ...settings import Settings
 from .mask import Mask
 from ...file import get_file
-from PIL import Image
 from ...error import PygamingException
 
 

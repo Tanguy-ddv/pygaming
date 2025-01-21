@@ -40,7 +40,7 @@ from .database import Database, TypeWriter, SoundBox, TextFormatter
 from . import commands
 
 __all__ = ['Config', 'Game', 'LEAVE', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
-           'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter', 'Cursor'
+           'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter', 'Cursor',
            'Element', 'Controls', 'Click', 'widget', 'get_file', 'Client', 'Keyboard', 'Mouse', 'mask', 'art',
            'Network', 'HEADER', 'ID', 'PAYLOAD', 'TIMESTAMP', 'Database', 'anchors',
            'commands', 'Window', 'WindowLike', 'TypeWriter', 'SoundBox', 'Color']

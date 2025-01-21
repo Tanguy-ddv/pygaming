@@ -75,6 +75,7 @@ class BasePhase(ABC):
         """
         return STAY
 
+    # pylint: disable=unused-argument
     def apply_transition(self, next_phase: str):
         """
         This method is called if the method next returns a new phase. Its argument is the name of the next phase.
@@ -165,7 +166,7 @@ class GamePhase(BasePhase, ABC):
         self.absolute_left = 0
         self.absolute_top = 0
         self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
-        
+
         self._surface_changed = True
         self._last_surface = None
 
@@ -195,11 +196,11 @@ class GamePhase(BasePhase, ABC):
 
     def finish(self):
         """This method is called at the end of the phase."""
-        for frame in self.frames: 
+        for frame in self.frames:
             frame.end() # Unload
         self.end()
         gc.collect()
-    
+
     def is_child_on_me(self, child):
         """Return whether the child is visible on the phase or not."""
         return self.absolute_rect.colliderect(child.relative_rect)
@@ -247,10 +248,11 @@ class GamePhase(BasePhase, ABC):
         raise PygamingException("The game is not connected yet, there is no network to reach.")
 
     def notify_change_all(self):
+        """Notify the change to everyone."""
         self.notify_change()
         for frame in self.frames:
             frame.notify_change_all()
-    
+
     def is_visible(self):
         """Return always True as the phase itself can't be hidden. Used for the recursive is_visible method of elements."""
         return True
@@ -289,13 +291,13 @@ class GamePhase(BasePhase, ABC):
                 self.current_hover_surface.reset()
                 self.current_hover_surface = None
         else:
-            if not surf is self.current_hover_surface:        
+            if not surf is self.current_hover_surface:
                 self.current_hover_surface = surf
             surf.update(loop_duration)
 
         if cursor is None:
             cursor = self._default_cursor
-        
+
         if cursor is self.current_cursor:
             has_changed = self.current_cursor.update(loop_duration)
             if has_changed:
@@ -332,6 +334,6 @@ class GamePhase(BasePhase, ABC):
     def get_surface(self) -> pygame.Surface:
         """Return the surface to his parent."""
         if self._surface_changed:
-            self._last_surface = self.make_surface()
             self._surface_changed = False
+            self._last_surface = self.make_surface()
         return self._last_surface

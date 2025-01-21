@@ -61,7 +61,8 @@ class TypeWriter:
         self._texts = Texts(database, settings, first_phase)
 
         self._default_font = Font(None, 15)
-    
+        self._antialias = False
+
     def update_settings(self, settings: Settings, phase):
         """Update the texts based on the new language."""
         self._texts.update(settings, phase)
@@ -72,7 +73,7 @@ class TypeWriter:
             in self._db.get_fonts('all').items()
         }
         self._antialias = settings.antialias
-    
+
     def _get_font(self, font: str) -> Font:
         """Get the font from the dict or return the default font"""
         thefont = self._this_phase_fonts.get(font, None)
@@ -223,7 +224,7 @@ class TypeWriter:
             bg_width = max(thefont.size(line)[0] for line in lines)
             bg_height = len(lines)*line_size
             return bg_width, bg_height
-        
+
         return self._get_font(font).size(text)
 
     def get_ascent(self, font: str):

@@ -54,10 +54,10 @@ def save_json_file(file: str, data: dict, encode: bool = False):
     file_path = get_file('data', file)
     if encode:
         # Save as Base64-encoded JSON
-        with open(file_path, 'wb') as file:
+        with open(file_path, 'wb') as f:
             encoded_data = base64.b64encode(json.dumps(data).encode('utf-8'))
-            file.write(encoded_data)
+            f.write(encoded_data)
     else:
         # Save as plain JSON
-        with open(file_path, 'w') as file:
-            json.dump(data, file, indent=4)
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4)

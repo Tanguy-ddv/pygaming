@@ -4,6 +4,7 @@ from time import time
 from .file import load_json_file, save_json_file
 
 class State:
+    """The State class contains variables that are persistent through multiple launch of the game."""
 
     def __init__(self):
         self._data, self._encoding = load_json_file('state.json')
@@ -55,7 +56,7 @@ class State:
         time is represent as a timestamp in ms.
         """
         self._data[time_variable] = int(time()*1000)
-    
+
     def save(self):
         """Save the current state."""
         save_json_file("state.json", self._data, self._encoding)

@@ -52,10 +52,9 @@ class Mask(ABC):
         """Unload the mask."""
         self.matrix = None
         self._loaded = False
-    
+
     def update(self, loop_duration):
         """Update the mask if it can be updated."""
-        pass
 
     def is_loaded(self):
         """Return True if the mask is loaded, False otherwise."""
@@ -160,11 +159,12 @@ class FreeMask(Mask):
     def __init__(self, width, height, initial_matrix):
         super().__init__(width, height)
         self.__initial_matrix = initial_matrix
-    
+
     def _load(self, settings):
         self.matrix = self.__initial_matrix
 
     def update_matrix(self, new_matrix: np.ndarray):
+        """Update the current matrix with a user-defined matrix. Both matrices should have the same shape."""
         if self.matrix.shape == new_matrix.shape:
             self.matrix = new_matrix
         else:

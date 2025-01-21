@@ -10,7 +10,7 @@ def launch_server():
 
     if current_directory not in sys.path:
         sys.path.append(current_directory)
-    
+
     importlib.import_module('src.server')
 
 if __name__ == '__main__':

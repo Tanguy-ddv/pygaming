@@ -74,12 +74,12 @@ class Element(ABC):
         self.get_on_master()
 
         self._update_if_invisible = update_if_invisible
-    
+
     def get_on_master(self):
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
         on_screen = self.absolute_rect.colliderect((0, 0, *self.game.config.dimension))
         self.on_master = self.master.is_child_on_me(self) and on_screen
-    
+
     def move(self, new_x: int = None, new_y: int = None, new_anchor: tuple[float, float] = None):
         """
         Move the element in the master frame.
@@ -96,14 +96,14 @@ class Element(ABC):
             self._y = new_y
         if not new_x is None:
             self._x = new_x
-        
+
         self.get_on_master()
         if self.on_master:
             self.master.notify_change()
 
     def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
         """Return True if the mouse is hovering the element."""
-        if mouse_pos is None or not self.on_master:
+        if mouse_pos is None or not self.on_master or self._active_area is None:
             return False
         elif isinstance(mouse_pos, Click):
             x, y = mouse_pos.x, mouse_pos.y
@@ -127,8 +127,8 @@ class Element(ABC):
     def get_surface(self) -> pygame.Surface:
         """Return the surface to his parent."""
         if self._surface_changed:
-            self._last_surface = self.make_surface()
             self._surface_changed = False
+            self._last_surface = self.make_surface()
         return self._last_surface
 
     @abstractmethod
@@ -151,7 +151,10 @@ class Element(ABC):
             self.update(loop_duration)
 
     def begin(self):
-        """Execute this method at the beginning of the phase to load the active area and the surface before running class-specific start method."""
+        """
+        Execute this method at the beginning of the phase
+        to load the active area and the surface before running class-specific start method.
+        """
         if isinstance(self._active_area, Mask):
             self._active_area.load(self.game.settings)
         elif self._active_area is None:
@@ -208,7 +211,7 @@ class Element(ABC):
         """Show the object."""
         self.visible = True
         self.master.notify_change()
-    
+
     def is_visible(self):
         """Return wether the widget is visible or not."""
         return self.visible and self.master.is_visible()

@@ -33,13 +33,13 @@ class SoundBox:
         self._all_phases_paths.update(database.get_sounds('all'))
 
         self._sounds = self._get_sounds_dict()
-    
+
     def _get_sounds_dict(self) -> dict[str, Sound]:
         """Create the full dict of sounds."""
         dall = {name : Sound(path, category) for name, (path, category) in self._this_phase_paths.items()}
         dthis = {name : Sound(path, category) for name, (path, category) in self._all_phases_paths.items()}
-        return dict(**dall, **dthis)
-    
+        return {**dall, **dthis}
+
     def update_settings(self, settings: Settings, phase: str):
         """Change the speeches based on the language and the volumes based on the new volumes."""
         last_language = self._speeches.current_language
@@ -79,7 +79,7 @@ class SoundBox:
             raise PygamingException(f"The name {name_or_loc} is neither a sound nor a localization of the phase {self._phase_name}. The sounds loaded are:\n{self.get_sounds_names}")
 
         sd.play(loop, maxtime_ms, fade_ms)
-    
+
     def get_sounds_names(self):
         """Return the list of the name of the sounds loaded for the phase."""
         return list(self._sounds.keys())

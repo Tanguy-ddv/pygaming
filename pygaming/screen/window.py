@@ -57,7 +57,9 @@ class Window(pygame.Rect):
         """
         if isinstance(mask, Sequence):
             if not isinstance(mask_effects, Sequence) or len(mask_effects) != len(mask):
-                raise PygamingException(f"Unmatching mask and mask effect numbers, got {len(mask)} masks and {len(mask_effects)} mask effects.")
+                raise PygamingException(
+                    f"Unmatching mask and mask effect numbers, got {len(mask)} masks and {len(mask_effects)} mask effects."
+                )
         elif isinstance(mask_effects, Sequence):
             raise PygamingException("Both mask_effects and mask must be a Sequence at the same time, or be a simple element.")
 
@@ -76,7 +78,10 @@ class Window(pygame.Rect):
             if SATURATE in mask_eff and DESATURATE in mask_eff:
                 raise PygamingException("SATURATE and DESATURATE cannot be effects of the same mask.")
             if any(key not in _EFFECT_LIST for key in mask_eff):
-                raise PygamingException("Invalid keys for mask effects, key allowed are pygaming.ALPHA, pygaming.LIGHTEN, pygaming.DARKEN, pygaming.SATURATE, pygaming.DESATURATE")
+                raise PygamingException(
+                    """Invalid keys for mask effects, key allowed are: 
+                    pygaming.ALPHA, pygaming.LIGHTEN, pygaming.DARKEN, pygaming.SATURATE, pygaming.DESATURATE"""
+                )
 
         self._effects = mask_effects
 
@@ -92,14 +97,13 @@ class Window(pygame.Rect):
 
     def get_surface(self, surface: pygame.Surface):
         """Return the surface extracted by the window."""
-        
         if self._width > surface.get_width() or self._height > surface.get_height():
             surf = pygame.Surface((self.size), pygame.SRCALPHA)
             surf.fill(self._fill_color)
             surf.blit(surface, (0, 0))
         else:
             surf = surface.copy()
-        
+
         for mask, effects in zip(self.masks, self._effects):
             mask.apply(surf, effects)
 

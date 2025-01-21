@@ -34,7 +34,7 @@ class Server(BaseRunnable):
         self.database.close()
         self.network.send_all(EXIT, '')
         self.network.stop()
-    
+
     def transition(self, next_phase):
         # get the value for the arguments for the start of the next phase
         new_data = self.phases[self.current_phase].apply_transition(next_phase)

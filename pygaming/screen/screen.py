@@ -25,6 +25,7 @@ class Screen:
         pygame.display.flip()
 
     def update_settings(self, settings: Settings):
+        """Update the screen based on the new settings."""
         if self._fullscreen != settings.fullscreen:
             self._fullscreen = settings.fullscreen
             self.screen = pygame.display.set_mode((self._width, self._height), pygame.FULLSCREEN if self._fullscreen else 0)

@@ -94,7 +94,7 @@ class Jukebox:
 
     def update(self):
         """This function should be called at the end of every gameloop to make the music loop or the jukebox play a new music."""
-    
+
         # If we are playing a looping music.
         if self._playing and self._loops_or_playlist == _LOOPS and not pygame.mixer.music.get_busy() and self._loop_instant is not None:
             pygame.mixer.music.play(0, self._loop_instant/1000)

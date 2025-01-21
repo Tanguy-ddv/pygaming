@@ -21,6 +21,7 @@ class Config:
 
     @property
     def timeout(self):
+        """Return the time before timeout on connexion."""
         return self.get("timeout", self.get("broadcast_period", 500)/100)
 
     @property
