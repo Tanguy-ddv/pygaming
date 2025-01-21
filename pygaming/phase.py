@@ -179,10 +179,16 @@ class GamePhase(BasePhase, ABC):
 
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
+        # Update the game settings
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
         self.game.update_settings()
+
+        # Start the frames
         for frame in self.frames:
             frame.begin()
+        # Change to default cursor
+        self.current_cursor = self._default_cursor
+        pygame.mouse.set_cursor(self._default_cursor.get(self.settings))
         # Start the phase
         self.notify_change_all()
         self.start(**kwargs)
@@ -272,7 +278,7 @@ class GamePhase(BasePhase, ABC):
 
     def update_hover(self, loop_duration):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
-        x,y = self.mouse.get_position()
+        x, y = self.mouse.get_position()
         cursor, surf = None, None
         for frame in self.visible_frames:
             if frame.is_contact((x,y)):
@@ -288,19 +294,19 @@ class GamePhase(BasePhase, ABC):
             surf.update(loop_duration)
 
         if cursor is None:
-            if not self.current_cursor is None:
-                self.current_cursor.reset()
-                self.current_cursor = None
-            self._default_cursor.update(loop_duration) # This line and the next comment's line are not useful as we know the default cursor is not an art... yet?
-            pygame.mouse.set_cursor(self._default_cursor.get(self.settings))
+            cursor = self._default_cursor
+        
+        if cursor is self.current_cursor:
+            has_changed = self.current_cursor.update(loop_duration)
+            if has_changed:
+                pygame.mouse.set_cursor(self.current_cursor.get(self.settings))
+                # Manually slightly move the mouse to trigger the update of the cursor.
+                pygame.mouse.set_pos(x + 1, y)
+                pygame.mouse.set_pos(x, y)
         else:
-            self._default_cursor.reset() # This line is not useful as well
-            has_changed = cursor.update(loop_duration)
-            if not cursor is self.current_cursor:        
-                self.current_cursor = cursor
-                pygame.mouse.set_cursor(cursor.get(self.settings))
-            elif has_changed:
-                pygame.mouse.set_cursor(cursor.get(self.settings))
+            self.current_cursor.reset()
+            self.current_cursor = cursor
+            pygame.mouse.set_cursor(self.current_cursor.get(self.settings))
 
     @property
     def visible_frames(self):

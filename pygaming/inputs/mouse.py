@@ -33,8 +33,9 @@ class Mouse:
 
     def update(self, loop_duration: int, event_list: list[pygame.event.Event]):
         """Update the mouse at every loop iteration."""
-        self._x, self._y = pygame.mouse.get_pos()
-        dx, dy = pygame.mouse.get_rel()
+        x, y = pygame.mouse.get_pos()
+        dx, dy = x - self._x, y - self._y
+        self._x, self._y = x, y
         if loop_duration == 0:
             self.v_x, self.v_y = 0, 0
         else:
