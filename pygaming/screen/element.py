@@ -103,7 +103,7 @@ class Element(ABC):
 
     def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
         """Return True if the mouse is hovering the element."""
-        if mouse_pos is None or not self.on_master:
+        if mouse_pos is None or not self.on_master or self._active_area is None:
             return False
         elif isinstance(mouse_pos, Click):
             x, y = mouse_pos.x, mouse_pos.y
