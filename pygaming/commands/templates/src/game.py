@@ -18,6 +18,13 @@ class SettingsFrame(pgg.Frame):
 
         super().__init__(master, bg.to_window(master.config.dimension[0]//2, master.config.dimension[1]//2, pgg.anchors.CENTER), bg)
 
+        cursor_art = pgg.art.ColoredCircle((135, 100, 200, 255), 10, transformation=pgg.art.transformation.Pipeline(
+            pgg.art.transformation.Concatenate(
+                pgg.art.ColoredCircle((205, 100, 200, 255), 10)),
+            pgg.art.transformation.ResetDurations(1000),
+        ))
+        cursor = pgg.Cursor(cursor_art, pgg.anchors.CENTER)
+
         self.validate_button = pgg.widget.TextButton(
             self,
             self.width//2, 5*self.height//6,
@@ -26,7 +33,8 @@ class SettingsFrame(pgg.Frame):
             pgg.Color("white"),
             'LOC_VALIDATE_SETTINGS',
             on_unclick_command=self.update_settings,
-            anchor=pgg.anchors.CENTER
+            anchor=pgg.anchors.CENTER,
+            hover_cursor=cursor
         )
         self.fullscreen = master.settings.fullscreen
         self.fullscreen_button = pgg.widget.TextButton(
@@ -37,7 +45,8 @@ class SettingsFrame(pgg.Frame):
             pgg.Color("white"),
             'LOC_FULLSCREEN_ON' if self.fullscreen else 'LOC_FULLSCREEN_OFF',
             on_unclick_command=self.toggle_fullscreen,
-            anchor=pgg.anchors.CENTER
+            anchor=pgg.anchors.CENTER,
+            hover_cursor=cursor
         )
 
         self.language = master.settings.language
@@ -49,7 +58,8 @@ class SettingsFrame(pgg.Frame):
             pgg.Color("white"),
             'LOC_LANGUAGE_EN' if self.language == 'en_US' else 'LOC_LANGUAGE_FR',
             on_unclick_command=self.toggle_language,
-            anchor=pgg.anchors.CENTER
+            anchor=pgg.anchors.CENTER,
+            hover_cursor=cursor
         )
         
         self.controls = master.settings.controls['playground']['K_RIGHT'] == 'right' # True if normal, False is inverted
@@ -61,8 +71,8 @@ class SettingsFrame(pgg.Frame):
             pgg.Color("white"),
             'LOC_CONTROLS_NORMAL' if self.controls else 'LOC_CONTROLS_INVERTED',
             on_unclick_command=self.toggle_controls,
-            anchor=pgg.anchors.CENTER
-
+            anchor=pgg.anchors.CENTER,
+            hover_cursor=cursor
         )
 
     def init_values(self):
