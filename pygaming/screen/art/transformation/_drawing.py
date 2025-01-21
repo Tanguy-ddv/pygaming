@@ -4,6 +4,7 @@ import numpy as np
 from pygame import Surface, draw, gfxdraw, SRCALPHA, transform, surfarray
 from ._transformation import Transformation
 from ....color import ColorLike
+from ....settings import Settings
 
 class DrawCircle(Transformation):
     """Draw a circle on the art."""
@@ -34,8 +35,8 @@ class DrawCircle(Transformation):
         self.allow_antialias = allow_antialias
         self.angle = angle
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
-        antialias = antialias and self.allow_antialias
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
+        antialias = settings.antialias and self.allow_antialias
         background = Surface((self.radius*2, self.radius*2), SRCALPHA)
         if antialias:
             gfxdraw.aacircle(background, *self.center, self.radius, self.color)
@@ -91,9 +92,9 @@ class DrawRectangle(Transformation):
         self.border_bottom_right_radius = border_bottom_right_radius
         self.allow_antialias = allow_antialias
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
         rectangle_bg = Surface((self.width, self.height), SRCALPHA)
-        if self.allow_antialias and antialias and (
+        if self.allow_antialias and settings.antialias and (
             self.border_radius
             or self.border_top_left_radius != -1
             or self.border_top_right_radius != -1
@@ -148,8 +149,8 @@ class DrawEllipse(Transformation):
         self.thickness = thickness
         self.allow_antialias = allow_antialias
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
-        antialias = self.allow_antialias and antialias
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
+        antialias = self.allow_antialias and settings.antialias
 
         ellipse_bg = Surface((self.x_radius*2, self.y_radius*2), SRCALPHA)
         if antialias and self.thickness > 1:
@@ -188,8 +189,8 @@ class DrawPolygon(Transformation):
         self.thickness = thickness
         self.allow_antialias = allow_antialias
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
-        antialias = self.allow_antialias and antialias
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
+        antialias = self.allow_antialias and settings.antialias
         for surf in surfaces:
             if self.thickness < 2 and antialias:
                 gfxdraw.aapolygon(surf, self.points, self.color)
@@ -208,8 +209,8 @@ class DrawLine(Transformation):
         self.allow_antialias = allow_antialias
         super().__init__()
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
-        antialias = self.allow_antialias and antialias
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
+        antialias = self.allow_antialias and settings.antialias
         if self.thickness == 1 and self.p1[0] == self.p2[0] and not antialias:
             for surf in surfaces:
                 gfxdraw.vline(surf, self.p1[0], self.p1[1], self.p2[1], self.color)
@@ -254,10 +255,10 @@ class DrawLines(Transformation):
         self.allow_antialias = allow_antialias
         super().__init__()
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
-        antialias = self.allow_antialias and antialias
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
+        antialias = self.allow_antialias and settings.antialias
 
-        if not antialias:
+        if antialias:
             for surf in surfaces:
                 draw.lines(surf, self.color, self.closed, self.points, self.thickness)
         elif self.thickness == 1:
@@ -329,8 +330,8 @@ class DrawArc(Transformation):
 
         super().__init__()
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
-        antialias = self.allow_antialias and antialias
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
+        antialias = self.allow_antialias and settings.antialias
         background = Surface((self.rx*2, self.ry*2), SRCALPHA)
         if antialias and self.thickness != 1:
             gfxdraw.aaellipse(background, self.rx, self.ry, self.rx, self.ry, self.color)
@@ -357,7 +358,7 @@ class DrawBezier(Transformation):
         self.steps = steps
         super().__init__()
 
-    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, antialias: bool):
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
         for surf in surfaces:
             gfxdraw.bezier(surf, self.points, self.steps, self.color)
         return surfaces, durations, introduction, index, width, height

@@ -143,10 +143,6 @@ class Art(ABC):
 
     def transform(self, transformation: Transformation, settings: Settings = None):
         """Apply a transformation"""
-        if settings is None:
-            antialias = False
-        else:
-            antialias = settings.antialias
         if self._loaded:
             (   self.surfaces,
                 self.durations,
@@ -161,7 +157,7 @@ class Art(ABC):
                 self._index,
                 self._width,
                 self._height,
-                antialias
+                settings
             )
         else:
             raise PygamingException("A transformation have be called on an unloaded Art, please use the art's constructor to transform the initial art.")
