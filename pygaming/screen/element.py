@@ -3,26 +3,28 @@ from abc import ABC, abstractmethod
 from typing import Optional, Union
 import pygame
 from ..phase import GamePhase
+from .tooltip import Tooltip
 from .art.art import Art
 from ..error import PygamingException
 from .mask import Mask
 from .anchors import TOP_LEFT
 from ..inputs import Click
 from ..cursor import Cursor
+from .tooltip import Tooltip
 
 class Element(ABC):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
 
     def __init__(
         self,
-        master: Union[GamePhase, 'Element'], # Frame or phase, no direct typing of frame to avoid circular import
+        master: Union[GamePhase, 'Element', Tooltip], # Frame or phase, no direct typing of frame to avoid circular import
         surface: Art,
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
-        hover_surface: Optional[Art] = None,
-        hover_cursor: Optional[Cursor] = None,
+        tooltip: Optional[Tooltip] = None,
+        cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
         active_area: Optional[Mask | pygame.Mask] = None,
@@ -38,9 +40,9 @@ class Element(ABC):
         - x, int, the coordinates in the master of the anchor point.
         - y: int, the coordinates in the master of the anchor point.
         - anchor: the anchor point in % of the width and height. 
-        - hover_surface: Surface. If a surface is provided, it to be displayed at the mouse location when the
+        - tooltip: Tooltip. If a surface is provided, it to be displayed at the mouse location when the
         frame is hovered by the mouse.
-        - hover_cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the element.
+        - cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the element.
         - can_be_disabled: some element can be disabled.
         - can_be_focused: Some element can be focused.
         """
@@ -65,8 +67,8 @@ class Element(ABC):
         self.master = master
         self.master.add_child(self)
 
-        self.hover_cursor = hover_cursor
-        self.hover_surface = hover_surface
+        self._cursor = cursor
+        self._tooltip = tooltip
 
         self._last_surface: pygame.Surface = None
         self._surface_changed: bool = True
@@ -122,7 +124,7 @@ class Element(ABC):
 
     def get_hover(self):
         """Update the hover cursor and surface."""
-        return self.hover_surface, self.hover_cursor
+        return self._tooltip, self._cursor
 
     def get_surface(self) -> pygame.Surface:
         """Return the surface to his parent."""
