@@ -60,8 +60,14 @@ class Frame(Element):
         self.has_a_widget_focused = False
 
         if camera is None:
-            camera = pygame.Rect(0, 0, *self.window.size)
-        self.camera = camera
+            camera = Window(0, 0, *self.window.size)
+
+        if isinstance(camera, Window):
+            self.camera = camera
+        elif len(camera) in [4, 5]:
+            self.camera = Window(*camera)
+        else:
+            raise ValueError("window must be either a Window, or a tuple (x,y, width, height) or a tuple (x,y, width, height, anchor)")
 
         self._compute_wc_ratio()
 
@@ -263,8 +269,9 @@ class Frame(Element):
         dx, dy = int(dx), int(dy)
         dx = np.clip(dx, - self.camera.left, self.width - self.camera.right)
         dy = np.clip(dy, - self.camera.top, self.height - self.camera.bottom)
-        if dx != 0 and dy != 0:
-            self.camera.move(dx, dy)
+        print(dx, dy)
+        if dx != 0 or dy != 0:
+            self.camera.move_ip(dx, dy)
             for child in self.children:
                 child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
             self.notify_change()
@@ -296,7 +303,7 @@ class Frame(Element):
         new_width = np.minimum(self.camera.width/ratio_x, self.width)
         new_height = np.minimum(self.camera.height/ratio_y, self.height)
 
-        if ratio_x != 1:
+        if ratio_x != 1 or ratio_y != 1:
             zoom_point = self.camera.width*target[0], self.camera.height*target[1]
             left = zoom_point[0] - new_width
             top = zoom_point[1] - new_height
