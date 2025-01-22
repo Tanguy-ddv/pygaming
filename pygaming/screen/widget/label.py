@@ -86,7 +86,7 @@ class Label(Element):
     def end(self):
         """Nothing to do at the end."""
 
-class Paragraphs(Label):
+class Paragraph(Label):
     """A Paragraph is used to display a piece of a text as a justified paragraph."""
 
     def _render_text(self):
