@@ -9,7 +9,7 @@ from ...color import Color
 from ..art.art import Art
 from ..mask import Mask
 from ...cursor import Cursor
-
+from ..tooltip import Tooltip
 
 class Entry(Widget):
     """The Entry widget is used to allow the user to add a textual input."""
@@ -34,8 +34,8 @@ class Entry(Widget):
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         active_area: Optional[Mask] = None,
         layer: int = 0,
-        hover_surface: Surface | None = None,
-        hover_cursor: Cursor | None = None,
+        tooltip: Optional[Tooltip] = None,
+        cursor: Cursor | None = None,
         continue_animation: bool = False,
         justify = CENTER,
         caret_frequency: int = 500,
@@ -70,8 +70,8 @@ class Entry(Widget):
           Use TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT or BOTTOM_RIGHT, or another personized tuple.
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the slider. if None, then it is the whole background.
         - layer: int, the layer of the slider in its master frame
-        - hover_surface: Surface, The surface to show when the slider is hovered.
-        - hover_cursor: Cursor The cursor of the mouse to use when the widget is hovered,
+        - tooltip: Tooltip, The tooltip to show when the slider is hovered.
+        - cursor: Cursor The cursor of the mouse to use when the widget is hovered,
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
         - justify: str, the position of the text in the entry. can be TEXT_CENTERED, TEXT_RIGHT, TEXT_LEFT
         - caret_frequency: int, The blinking frequency of the caret (ms)
@@ -89,8 +89,8 @@ class Entry(Widget):
             anchor,
             active_area,
             layer,
-            hover_surface,
-            hover_cursor,
+            tooltip,
+            cursor,
             continue_animation,
             update_if_invisible
         )

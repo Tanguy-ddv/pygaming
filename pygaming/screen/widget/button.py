@@ -10,6 +10,8 @@ from ...color import Color
 from ..mask import Mask
 from ...database import TextFormatter
 from ...cursor import Cursor
+from ..tooltip import Tooltip
+
 
 class Button(Widget):
     """A Button is a basic widget used to get a player click."""
@@ -26,8 +28,8 @@ class Button(Widget):
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         active_area: Optional[Mask] = None,
         layer: int = 0,
-        hover_surface: Optional[Surface] = None,
-        hover_cursor: Optional[Cursor] = None,
+        tooltip: Optional[Tooltip] = None,
+        cursor: Cursor | None = None,
         continue_animation: bool = False,
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
@@ -50,8 +52,8 @@ class Button(Widget):
           Use TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT or BOTTOM_RIGHT, or another personized tuple.
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the button. if None, then it is the whole background.
         - layer: int, the layer of the button in its master frame
-        - hover_surface: Surface, The surface to show when the button is hovered.
-        - hover_cursor: Cursor The cursor of the mouse to use when the widget is hovered
+        - tooltip: Tooltip, The tooltip to show when the button is hovered.
+        - cursor: Cursor The cursor of the mouse to use when the widget is hovered
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
         - on_click_command: a function to be called every time the button is clicked
         - on_unclick_command: a function to be call every time the button is unclicked
@@ -66,8 +68,8 @@ class Button(Widget):
             anchor,
             active_area,
             layer,
-            hover_surface,
-            hover_cursor,
+            tooltip,
+            cursor,
             continue_animation,
             update_if_invisible
         )

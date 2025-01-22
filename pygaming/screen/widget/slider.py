@@ -10,6 +10,7 @@ from ..art.art import Art
 from ..mask import Mask
 from ...cursor import Cursor
 from ...ZOcallable import ZOCallable, linear, verify_ZOCallable
+from ..tooltip import Tooltip
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -30,8 +31,8 @@ class Slider(Widget):
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         active_area: Optional[Mask] = None,
         layer: int = 0,
-        hover_surface: Surface | None = None,
-        hover_cursor: Cursor | None = None,
+        tooltip: Optional[Tooltip] = None,
+        cursor: Cursor | None = None,
         continue_animation: bool = False,
         transition_function: ZOCallable = linear,
         transition_duration: int = 300, # [ms]
@@ -58,8 +59,8 @@ class Slider(Widget):
           Use TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT or BOTTOM_RIGHT, or another personized tuple.
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the slider. if None, then it is the whole background.
         - layer: int, the layer of the slider in its master frame
-        - hover_surface: Surface, The surface to show when the slider is hovered.
-        - hover_cursor: Cursor The cursor of the mouse to use when the widget is hovered
+        - tooltip: Tooltip, the tooltip to show when the slider is hovered.
+        - cursor: Cursor The cursor of the mouse to use when the widget is hovered
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
         - transition_function: func [0, 1] -> [0, 1] A function that represent the position of the cursor during a transition given the transition duration.
             Default is lambda x:x. For an accelerating transition, use lambda x:x**2, for a decelerating transition, lambda x:x**(1/2), or other.
@@ -78,8 +79,8 @@ class Slider(Widget):
             anchor,
             active_area,
             layer,
-            hover_surface,
-            hover_cursor,
+            tooltip,
+            cursor,
             continue_animation,
             update_if_invisible
         )

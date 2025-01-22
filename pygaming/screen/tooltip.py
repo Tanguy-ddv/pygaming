@@ -4,7 +4,7 @@ from ..phase import GamePhase
 from .art.art import Art
 
 class Tooltip():
-    """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
+    """Tooltip is a graphical overlay displayed on hover."""
 
     def __init__(
         self,
