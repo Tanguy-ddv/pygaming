@@ -8,6 +8,7 @@ from .game import Game
 from .base import BaseRunnable
 from .server import Server
 from .cursor import Cursor
+from .inputs.mouse import Click
 
 _TOOLTIP_DELAY = 500 # [ms]
 
@@ -289,6 +290,7 @@ class GamePhase(BasePhase, ABC):
         x, y = self.mouse.get_position()
         cursor, tooltip = None, None
         for frame in self.visible_frames:
+            
             if frame.is_contact((x,y)):
                 tooltip, cursor = frame.get_hover()
 

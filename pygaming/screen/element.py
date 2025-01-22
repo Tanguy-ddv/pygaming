@@ -103,10 +103,12 @@ class Element(ABC):
         if self.on_master:
             self.master.notify_change()
 
-    def is_contact(self, click: Optional[Click]):
+    def is_contact(self, click: Optional[Click | tuple[int, int]]):
         """Return True if the mouse is hovering the element."""
         if click is None or not self.on_master or self._active_area is None:
             return False
+        if isinstance(click, tuple):
+            click = Click(*click)
         ck = click.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
         if ck.x < 0 or ck.x >= self.width or ck.y < 0 or ck.y >= self.height:
             return False
