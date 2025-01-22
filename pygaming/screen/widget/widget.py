@@ -9,6 +9,7 @@ from ..anchors import TOP_LEFT
 from ..art.art import Art
 from ..mask import Mask
 from ...cursor import Cursor
+from ..tooltip import Tooltip
 
 class Widget(Element, ABC):
     """
@@ -28,8 +29,8 @@ class Widget(Element, ABC):
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         active_area: Optional[Mask | mk] = None,
         layer: int = 0,
-        hover_surface: Surface | None = None,
-        hover_cursor: Cursor | None = None,
+        tooltip: Optional[Tooltip] = None,
+        cursor: Cursor | None = None,
         continue_animation: bool = False,
         update_if_invisible: bool = False
     ) -> None:
@@ -40,8 +41,8 @@ class Widget(Element, ABC):
             y,
             anchor,
             layer,
-            hover_surface,
-            hover_cursor,
+            tooltip,
+            cursor,
             True,
             True,
             active_area,

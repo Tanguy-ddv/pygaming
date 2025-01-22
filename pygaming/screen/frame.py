@@ -1,12 +1,13 @@
 """The frame module contain the Frame class, base of all displayed object."""
 from __future__ import annotations
 from typing import Optional
+import numpy as np
 import pygame
 from ..phase import GamePhase
-from ..error import PygamingException
 from .element import Element
 from .art.art import Art
 from .window import Window, WindowLike
+from .anchors import CENTER, TOP_LEFT
 from ..inputs import Click
 
 class Frame(Element):
@@ -21,7 +22,7 @@ class Frame(Element):
         window: WindowLike,
         background: Art,
         focused_background: Optional[Art] = None,
-        background_window: Optional[WindowLike] = None,
+        camera: Optional[WindowLike] = None,
         layer: int = 0,
         continue_animation: bool = False,
         update_if_invisible: bool = False
@@ -41,7 +42,7 @@ class Frame(Element):
         - background: The AnimatedSurface or Surface representing the background of the Frame.
         - focused_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
         If None, copy the background
-        - background_window: WindowLike, the rectangle of the background to get the image from. Use if you have a big background
+        - camera: WindowLike, the rectangle of the background to get the image from. Use if you have a big background
         If None, the top left is 0,0 and the dimensions are the window dimensions.
         - layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
         - continue_animation: bool. If set to False, switching from focused to unfocused will reset the animations.
@@ -57,6 +58,18 @@ class Frame(Element):
             raise ValueError("window must be either a Window, or a tuple (x,y, width, height) or a tuple (x,y, width, height, anchor)")
 
         self.has_a_widget_focused = False
+
+        if camera is None:
+            camera = Window(0, 0, *self.window.size)
+
+        if isinstance(camera, Window):
+            self.camera = camera
+        elif len(camera) in [4, 5]:
+            self.camera = Window(*camera)
+        else:
+            raise ValueError("window must be either a Window, or a tuple (x,y, width, height) or a tuple (x,y, width, height, anchor)")
+
+        self._compute_wc_ratio()
 
         Element.__init__(
             self,
@@ -74,20 +87,16 @@ class Frame(Element):
         )
         self._continue_animation = continue_animation
 
-        if background_window is None:
-            background_window = pygame.Rect(0, 0, *self.window.size)
-        if self.window.size != background_window.size:
-            raise PygamingException(
-                f"window and background window must have the same dimension, got {self.window.size} and {background_window.size}"
-            )
-        self.background_window = background_window
-
         self.focused = False
         self._current_object_focus = None
         if focused_background is None:
             self.focused_background = self.surface
         else:
             self.focused_background = focused_background
+    
+    def _compute_wc_ratio(self):
+        """Recompute the ratio between the window and the camera dimensions."""
+        self.wc_ratio = self.window.width/self.camera.width, self.window.height/self.camera.height
 
     def add_child(self, child: Element):
         """Add a new element to the child list."""
@@ -220,7 +229,7 @@ class Frame(Element):
 
     def is_child_on_me(self, child: Element):
         """Return whether the child is visible on the frame or not."""
-        return self.background_window.colliderect(child.relative_rect)
+        return self.camera.colliderect(child.relative_rect)
 
     @property
     def visible_children(self):
@@ -251,18 +260,84 @@ class Frame(Element):
         for child in self.visible_children:
             background.blit(child.get_surface(), child.relative_rect.topleft)
 
-        return self.window.get_surface(background.subsurface(self.background_window))
+        surf = background.subsurface(self.camera)
+        if self.window.size != self.camera.size:
+            surf = pygame.transform.scale(surf, self.window.size)
+        return self.window.get_surface(surf)
 
-    def move_background(self, dx, dy):
-        """Move the background in the window."""
-        self.background_window.move(dx, dy)
-        for child in self.children:
-            child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
-        self.notify_change()
+    def move_camera(self, dx, dy):
+        """Move the camera on the frame."""
+        dx, dy = int(dx), int(dy)
+        dx = np.clip(dx, - self.camera.left, self.width - self.camera.right)
+        dy = np.clip(dy, - self.camera.top, self.height - self.camera.bottom)
+        print(dx, dy)
 
-    def set_background_position(self, new_x, new_y):
-        """Reset the background position in the window with a new value."""
-        self.background_window = pygame.Rect(new_x, new_y, *self.background_window.size)
-        for child in self.children:
-            child.get_on_master()
-        self.notify_change()
+        if dx != 0 or dy != 0:
+            self.camera.move_ip(dx, dy)
+            self._compute_wc_ratio()
+            for child in self.children:
+                child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
+            self.notify_change()
+            
+
+    def set_camera_position(self, new_x, new_y, anchor: tuple[float, float] = TOP_LEFT):
+        """Reset the camera position on the frame with a new value."""
+        new_y = np.clip(int(new_y - anchor[1]*self.camera.height), 0, self.height - self.camera.height)
+        new_x = np.clip(int(new_x - anchor[0]*self.camera.width), 0, self.width - self.camera.width)
+        if (new_x, new_y) != self.window.topleft:
+
+            self.camera = Window(new_x, new_y, *self.camera.size)
+            self._compute_wc_ratio()
+            for child in self.children:
+                child.get_on_master()
+            self.notify_change()
+            
+
+    
+    def zoom_camera(self, ratio_x: float, target: tuple[float, float] = CENTER, ratio_y = None):
+        """
+        Zoom by a given factor on the target point.
+
+        if ratio is > 1, the camera will zoom by a factor ratio (the details will appear bigger).
+        if ratio is < 1, the camera will unzoom by a factor ratio (the details will appear smaller).
+        """
+
+        if ratio_y is None:
+            ratio_y = ratio_x
+        
+        new_width = np.minimum(self.camera.width/ratio_x, self.width)
+        new_height = np.minimum(self.camera.height/ratio_y, self.height)
+
+        if ratio_x != 1 or ratio_y != 1:
+            zoom_point = self.camera.width*target[0], self.camera.height*target[1]
+            left = zoom_point[0] - new_width
+            top = zoom_point[1] - new_height
+            left = np.clip(left, 0, self.width - new_width)
+            top = np.clip(top, 0, self.height - new_height)
+
+            self.camera = Window(left, top, new_width, new_height)
+            self._compute_wc_ratio()
+            for child in self.children:
+                child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
+            self.notify_change()
+            
+
+    @property
+    def absolute_left(self):
+        """The absolute coordinates of the frame depends on the camera."""
+        return int(self.master.absolute_left + self.relative_left - self.camera.left*self.wc_ratio[0])
+    
+    @property
+    def absolute_top(self):
+        """The absolute coordinates of the frame depends on the camera."""
+        return int(self.master.absolute_top + self.relative_top - self.camera.top*self.wc_ratio[1])
+
+    @property
+    def absolute_right(self):
+        """The absolute coordinates of the frame depends on the camera."""
+        return self.absolute_left + self.window.width*self.wc_ratio[0]
+
+    @property
+    def absolute_bottom(self):
+        """The absolute coordinates of the frame depends on the camera."""
+        return self.absolute_top + self.window.height*self.wc_ratio[1]

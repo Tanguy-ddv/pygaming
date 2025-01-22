@@ -9,6 +9,8 @@ from ..frame import Frame
 from ..art.art import Art
 from ..mask import Mask
 from ...cursor import Cursor
+from ...ZOcallable import ZOCallable, linear, verify_ZOCallable
+from ..tooltip import Tooltip
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -29,12 +31,13 @@ class Slider(Widget):
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         active_area: Optional[Mask] = None,
         layer: int = 0,
-        hover_surface: Surface | None = None,
-        hover_cursor: Cursor | None = None,
+        tooltip: Optional[Tooltip] = None,
+        cursor: Cursor | None = None,
         continue_animation: bool = False,
-        transition_function: Callable[[float], float] = lambda x:x,
+        transition_function: ZOCallable = linear,
         transition_duration: int = 300, # [ms]
-        update_if_invisible: bool = True
+        update_if_invisible: bool = True,
+        step_wth_arrow: int = 1,
     ) -> None:
         """
         A Slider is a widget that is used to select a value in a given range by moving a cursor from left to right on a background.
@@ -56,13 +59,15 @@ class Slider(Widget):
           Use TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT or BOTTOM_RIGHT, or another personized tuple.
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the slider. if None, then it is the whole background.
         - layer: int, the layer of the slider in its master frame
-        - hover_surface: Surface, The surface to show when the slider is hovered.
-        - hover_cursor: Cursor The cursor of the mouse to use when the widget is hovered
+        - tooltip: Tooltip, the tooltip to show when the slider is hovered.
+        - cursor: Cursor The cursor of the mouse to use when the widget is hovered
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
         - transition_function: func [0, 1] -> [0, 1] A function that represent the position of the cursor during a transition given the transition duration.
             Default is lambda x:x. For an accelerating transition, use lambda x:x**2, for a decelerating transition, lambda x:x**(1/2), or other.
             Conditions: transition_function(0) = 0, transition_function(1) = 1
         - transition_duration: int [ms], the duration of the transition in ms.
+        - update_if_invisible: bool, set to True if you want the widget to be update even if it is not visible. Default is True to finish the transitions.
+        - step_wth_arrow: int, the number of step the slider should do when it is updated with an arrow of the keyboard. Default is 1
         """
         super().__init__(
             master,
@@ -74,8 +79,8 @@ class Slider(Widget):
             anchor,
             active_area,
             layer,
-            hover_surface,
-            hover_cursor,
+            tooltip,
+            cursor,
             continue_animation,
             update_if_invisible
         )
@@ -95,11 +100,14 @@ class Slider(Widget):
         self._holding_cursor = False
 
         # Transition-related attributes
+        verify_ZOCallable(transition_function)
         self._transition_func = transition_function
         self._transition_duration = transition_duration
         self._current_transition = None
         self._current_transition_delta = 0
         self._cursor_position = None
+
+        self._step_wth_arrow = step_wth_arrow
 
     def get(self):
         """Return the value selected by the player."""
@@ -161,7 +169,7 @@ class Slider(Widget):
         # If the user is clicking:
         if self.is_contact(ck1) and not self.disabled:
 
-            local_x = ck1.x - self.absolute_left
+            local_x = ck1.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio).x
             # If the user is clicking on the cursor, we want the cursor to follow the user click
             if self._cursor_position < local_x < self._cursor_position + self._cursor_width:
                 self._holding_cursor = True
@@ -201,9 +209,9 @@ class Slider(Widget):
         # Verify the use of the arrows
         if self.focused and not self.disabled:
             if self.game.keyboard.actions_down['left'] and self._index > 0:
-                self._start_transition(self._index - 1)
+                self._start_transition(max(0, self._index - self._step_wth_arrow))
             if self.game.keyboard.actions_down['right'] and self._index < len(self._values) - 1:
-                self._start_transition(self._index + 1)
+                self._start_transition(min(self._index + self._step_wth_arrow, len(self._values) - 1))
 
 
     def _get_index_of_click(self, x):

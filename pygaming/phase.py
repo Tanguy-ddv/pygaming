@@ -8,6 +8,9 @@ from .game import Game
 from .base import BaseRunnable
 from .server import Server
 from .cursor import Cursor
+from .inputs.mouse import Click
+
+_TOOLTIP_DELAY = 500 # [ms]
 
 class BasePhase(ABC):
     """
@@ -165,14 +168,18 @@ class GamePhase(BasePhase, ABC):
 
         self.absolute_left = 0
         self.absolute_top = 0
-        self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
+        self.camera = self.window = self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
+        self.wc_ratio = (1, 1)
 
         self._surface_changed = True
         self._last_surface = None
 
-        self.current_hover_surface = None # An Art
+        # Data about the hovering
+        self.current_tooltip = None 
         self._default_cursor = Cursor(self.config.default_cursor)
         self.current_cursor = self._default_cursor
+        self._tooltip_x, self._tooltip_y = None, None
+        self._tooltip_delay = _TOOLTIP_DELAY # [ms], the delay waited before showing the tooltip
 
     def add_child(self, frame):
         """Add a new frame to the phase."""
@@ -281,19 +288,27 @@ class GamePhase(BasePhase, ABC):
     def update_hover(self, loop_duration):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         x, y = self.mouse.get_position()
-        cursor, surf = None, None
+        cursor, tooltip = None, None
         for frame in self.visible_frames:
+            
             if frame.is_contact((x,y)):
-                surf, cursor = frame.get_hover()
+                tooltip, cursor = frame.get_hover()
 
-        if surf is None:
-            if not self.current_hover_surface is None:
-                self.current_hover_surface.reset()
-                self.current_hover_surface = None
-        else:
-            if not surf is self.current_hover_surface:
-                self.current_hover_surface = surf
-            surf.update(loop_duration)
+        if tooltip is None: # We are not on a widget requiring a tooltip
+            if not self.current_tooltip is None:
+                self.current_tooltip = None
+                self.notify_change()
+        else: # We are on a widget requiring a tooltip
+            if tooltip is self.current_tooltip: # It is the same as the current tooltip
+                self._tooltip_delay -= loop_duration
+                if self._tooltip_delay < 0:
+                    self.notify_change() # We ask to remake the screen only if the delay is exceeded
+            else: # We have a new tooltip
+                self.current_tooltip = tooltip
+                self._tooltip_delay = _TOOLTIP_DELAY
+                self._tooltip_x, self._tooltip_y = x, y
+                
+            self.current_tooltip.loop(loop_duration)
 
         if cursor is None:
             cursor = self._default_cursor
@@ -322,9 +337,8 @@ class GamePhase(BasePhase, ABC):
             surf = frame.get_surface()
             bg.blit(surf, (frame.relative_left, frame.relative_top))
 
-        if self.current_hover_surface is not None:
-            x, y = self.mouse.get_position()
-            bg.blit(self.current_hover_surface.get(self.settings), (x, y - self.current_hover_surface.get_height()))
+        if not self.current_tooltip is None and self._tooltip_delay < 0:
+            bg.blit(self.current_tooltip.get_surface(), (self._tooltip_x, self._tooltip_y - self.current_tooltip.height))
         return bg
 
     def notify_change(self):
