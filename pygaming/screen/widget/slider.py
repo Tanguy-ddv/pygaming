@@ -9,6 +9,7 @@ from ..frame import Frame
 from ..art.art import Art
 from ..mask import Mask
 from ...cursor import Cursor
+from ...ZOcallable import ZOCallable, linear, verify_ZOCallable
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -32,7 +33,7 @@ class Slider(Widget):
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,
         continue_animation: bool = False,
-        transition_function: Callable[[float], float] = lambda x:x,
+        transition_function: ZOCallable = linear,
         transition_duration: int = 300, # [ms]
         update_if_invisible: bool = True,
         step_wth_arrow: int = 1,
@@ -98,6 +99,7 @@ class Slider(Widget):
         self._holding_cursor = False
 
         # Transition-related attributes
+        verify_ZOCallable(transition_function)
         self._transition_func = transition_function
         self._transition_duration = transition_duration
         self._current_transition = None

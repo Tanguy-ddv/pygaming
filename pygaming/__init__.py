@@ -38,9 +38,10 @@ from .connexion import Client, Server as Network, HEADER, ID, PAYLOAD, TIMESTAMP
 
 from .database import Database, TypeWriter, SoundBox, TextFormatter
 from . import commands
+from . import ZOcallable
 
 __all__ = ['Config', 'Game', 'LEAVE', 'STAY', 'Logger', 'ServerPhase', 'GamePhase',
-           'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter', 'Cursor',
+           'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter', 'Cursor', 'ZOcallable',
            'Element', 'Controls', 'Click', 'widget', 'get_file', 'Client', 'Keyboard', 'Mouse', 'mask', 'art',
            'Network', 'HEADER', 'ID', 'PAYLOAD', 'TIMESTAMP', 'Database', 'anchors',
            'commands', 'Window', 'WindowLike', 'TypeWriter', 'SoundBox', 'Color']

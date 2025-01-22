@@ -7,6 +7,7 @@ import cv2
 from pygame import Surface, surfarray as sa, SRCALPHA, draw, Rect
 from ...error import PygamingException
 from ...settings import Settings
+from ...ZOcallable import verify_ZOCallable, ZOCallable, linear
 
 # Mask effects
 ALPHA = 'alpha'
@@ -285,12 +286,13 @@ class GradientCircle(Mask):
             height: int,
             inner_radius: int,
             outer_radius: int,
-            transition: Callable[[float], float] = lambda x:x,
+            transition: ZOCallable = linear,
             center: tuple[int, int] = None
         ):
         super().__init__(width, height)
         self.inner_radius = inner_radius
         self.outer_radius = outer_radius
+        verify_ZOCallable(transition)
         self.transition = transition
 
         if center is None:
@@ -323,7 +325,7 @@ class GradientRectangle(Mask):
         outer_right: int = None,
         outer_top: int = None,
         outer_bottom: int = None,
-        transition: Callable[[float], float] = lambda x:x,
+        transition: ZOCallable = linear
     ):
 
         super().__init__(width, height)
@@ -355,6 +357,7 @@ class GradientRectangle(Mask):
         self.outer_bottom = outer_bottom
         self.outer_top = outer_top
 
+        verify_ZOCallable(transition)
         self.transition = transition
 
     def _load(self, settings: Settings):
