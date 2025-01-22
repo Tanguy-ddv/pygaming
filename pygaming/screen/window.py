@@ -28,7 +28,6 @@ class Window(pygame.Rect):
         anchor: tuple[float, float] = TOP_LEFT,
         mask: Mask | Sequence[Mask] = None,
         mask_effects: dict[str, float] | Sequence[dict[str, float]] = {ALPHA : 100},
-        fill_color: ColorLike = Color(0, 0, 0, 0)
     ):
         """
         Create a new mask.
@@ -87,33 +86,24 @@ class Window(pygame.Rect):
 
         self._x = x
         self._y = y
-        self._width = width
-        self._height = height
+ 
         self.anchor = anchor
         self.masks = mask
 
-        super().__init__(self._x, self._y, self._width, self._height)
-        self._fill_color = fill_color
+        super().__init__(self._x, self._y, width, height)
 
     def get_surface(self, surface: pygame.Surface):
         """Return the surface extracted by the window."""
-        if self._width > surface.get_width() or self._height > surface.get_height():
-            surf = pygame.Surface((self.size), pygame.SRCALPHA)
-            surf.fill(self._fill_color)
-            surf.blit(surface, (0, 0))
-        else:
-            surf = surface.copy()
 
         for mask, effects in zip(self.masks, self._effects):
-            mask.apply(surf, effects)
+            mask.apply(surface, effects)
 
-        return surf
+        return surface
 
     def update(self, loop_duration):
         """Update the masks of the window."""
         for mask in self.masks:
             mask.update(loop_duration)
-
 
     def load(self, settings: Settings):
         """Load the masks of the window."""

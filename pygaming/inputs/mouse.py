@@ -1,24 +1,36 @@
 """The mouse module contains the mouse and click classes to know what is the player doing with the mouse."""
 
-from dataclasses import dataclass
 import pygame
 
-@dataclass(init=False)
 class Click:
     """A click represent the fact that the player is clicking with one of the 5 buttons."""
 
-    def __init__(self: int, x: int, y: int) -> None:
-        self.start_x = x
-        self.start_y = y
+    def __init__(self, x: int, y: int, start_x: int = None, start_y: int = None, duration: int = 0) -> None:
+        if start_x is None:
+            start_x = x
+        if start_y is None:
+            start_y = y
+        self.start_x = start_x
+        self.start_y = start_y
         self.x = x
         self.y = y
-        self.duration = 0
+        self.duration = duration
 
     def update_pos(self, x: int, y: int, loop_duration: int):
         """Update the position of the click at every loop iteration."""
         self.x = x
         self.y = y
         self.duration += loop_duration
+    
+    def make_local_click(self, absolute_left, absolute_top, wc_ratio) -> 'Click':
+        """Create a local click with coordinates related to a frame, taking into account the camera."""
+        return Click(
+            int((self.x - absolute_left)/wc_ratio[0]),
+            int((self.y - absolute_top)/wc_ratio[1]),
+            int((self.start_x - absolute_left)/wc_ratio[0]),
+            int((self.start_y - absolute_top)/wc_ratio[1]),
+            self.duration
+        )
 
 class Mouse:
     """The Mouse class is used to manage mouse inputs."""

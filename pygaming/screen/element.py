@@ -103,19 +103,14 @@ class Element(ABC):
         if self.on_master:
             self.master.notify_change()
 
-    def is_contact(self, mouse_pos: Optional[tuple[int, int] | Click]):
+    def is_contact(self, click: Optional[Click]):
         """Return True if the mouse is hovering the element."""
-        if mouse_pos is None or not self.on_master or self._active_area is None:
+        if click is None or not self.on_master or self._active_area is None:
             return False
-        elif isinstance(mouse_pos, Click):
-            x, y = mouse_pos.x, mouse_pos.y
-        else:
-            x, y = mouse_pos
-        x -= self.absolute_left
-        y -= self.absolute_top
-        if x < 0 or x >= self.width or y < 0 or y >= self.height:
+        ck = click.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
+        if ck.x < 0 or ck.x >= self.width or ck.y < 0 or ck.y >= self.height:
             return False
-        return bool(self._active_area.get_at((x,y)))
+        return bool(self._active_area.get_at((ck.x, ck.y)))
 
     @property
     def game(self):
@@ -267,7 +262,7 @@ class Element(ABC):
     @property
     def absolute_rect(self):
         """Return the rect of the element in the game window."""
-        return pygame.rect.Rect(self.absolute_left, self.absolute_top, self.width, self.height)
+        return pygame.rect.Rect(self.absolute_left, self.absolute_top, self.width*self.master.wc_ratio[0], self.height*self.master.wc_ratio[1])
 
     @property
     def shape(self):
@@ -282,7 +277,7 @@ class Element(ABC):
     @property
     def absolute_right(self):
         """Return the right coordinate of the element in the game window"""
-        return self.absolute_left + self.width
+        return self.absolute_left + self.width*self.master.wc_ratio[0]
 
     @property
     def relative_bottom(self):
@@ -292,7 +287,7 @@ class Element(ABC):
     @property
     def absolute_bottom(self):
         """Return the bottom coordinate of the element in the game window."""
-        return self.absolute_top + self.height
+        return self.absolute_top + self.height**self.master.wc_ratio[1]
 
     @property
     def relative_left(self):
@@ -302,7 +297,7 @@ class Element(ABC):
     @property
     def absolute_left(self):
         """Return the left coordinate of the element in the game window."""
-        return self.master.absolute_left + self.relative_left
+        return self.master.absolute_left + self.relative_left*self.master.wc_ratio[0]
 
     @property
     def relative_top(self):
@@ -312,4 +307,4 @@ class Element(ABC):
     @property
     def absolute_top(self):
         """Return the top coordinate of the element in the game window."""
-        return self.master.absolute_top + self.relative_top
+        return self.master.absolute_top + self.relative_top*self.master.wc_ratio[1]

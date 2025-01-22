@@ -33,6 +33,10 @@ class Tooltip():
         self._rect = pygame.Rect(0, 0, self.width, self.height)
 
         self.absolute_left, self.absolute_top = 0, 0 # use by children, just an artefact.
+        self.camera = self.window = self.absolute_rect = pygame.Rect((0, 0, *self.phase.config.dimension))
+
+        self.wc_ratio = (1, 1)
+
     
     @property
     def game(self):

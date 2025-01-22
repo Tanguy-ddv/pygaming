@@ -167,7 +167,8 @@ class GamePhase(BasePhase, ABC):
 
         self.absolute_left = 0
         self.absolute_top = 0
-        self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
+        self.camera = self.window = self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
+        self.wc_ratio = (1, 1)
 
         self._surface_changed = True
         self._last_surface = None

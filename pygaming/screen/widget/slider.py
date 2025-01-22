@@ -169,7 +169,7 @@ class Slider(Widget):
         # If the user is clicking:
         if self.is_contact(ck1) and not self.disabled:
 
-            local_x = ck1.x - self.absolute_left
+            local_x = ck1.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio).x
             # If the user is clicking on the cursor, we want the cursor to follow the user click
             if self._cursor_position < local_x < self._cursor_position + self._cursor_width:
                 self._holding_cursor = True
