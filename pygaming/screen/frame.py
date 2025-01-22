@@ -95,6 +95,7 @@ class Frame(Element):
             self.focused_background = focused_background
     
     def _compute_wc_ratio(self):
+        """Recompute the ratio between the window and the camera dimensions."""
         self.wc_ratio = self.window.width/self.camera.width, self.window.height/self.camera.height
 
     def add_child(self, child: Element):
@@ -270,23 +271,27 @@ class Frame(Element):
         dx = np.clip(dx, - self.camera.left, self.width - self.camera.right)
         dy = np.clip(dy, - self.camera.top, self.height - self.camera.bottom)
         print(dx, dy)
+
         if dx != 0 or dy != 0:
             self.camera.move_ip(dx, dy)
+            self._compute_wc_ratio()
             for child in self.children:
                 child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
             self.notify_change()
-            self._compute_wc_ratio()
+            
 
     def set_camera_position(self, new_x, new_y, anchor: tuple[float, float] = TOP_LEFT):
         """Reset the camera position on the frame with a new value."""
         new_y = np.clip(int(new_y - anchor[1]*self.camera.height), 0, self.height - self.camera.height)
         new_x = np.clip(int(new_x - anchor[0]*self.camera.width), 0, self.width - self.camera.width)
         if (new_x, new_y) != self.window.topleft:
+
             self.camera = Window(new_x, new_y, *self.camera.size)
+            self._compute_wc_ratio()
             for child in self.children:
                 child.get_on_master()
             self.notify_change()
-            self._compute_wc_ratio()
+            
 
     
     def zoom_camera(self, ratio_x: float, target: tuple[float, float] = CENTER, ratio_y = None):
@@ -311,11 +316,11 @@ class Frame(Element):
             top = np.clip(top, 0, self.height - new_height)
 
             self.camera = Window(left, top, new_width, new_height)
-
+            self._compute_wc_ratio()
             for child in self.children:
                 child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
             self.notify_change()
-            self._compute_wc_ratio()
+            
 
     @property
     def absolute_left(self):
