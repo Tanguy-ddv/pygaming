@@ -41,7 +41,10 @@ class Entry(Widget):
         caret_frequency: int = 500,
         caret_width: int = 2,
         max_length: int = 10,
-        update_if_invisible: bool = False
+        update_if_invisible: bool = False,
+        empty_text_or_loc: str = "",
+        empty_font: str = None,
+        empty_font_color: str = None,
     ) -> None:
         """
         The Entry widget is used to allow the user to add a textual input.
@@ -121,6 +124,10 @@ class Entry(Widget):
         self._show_caret = True
         self._caret_delta = 0
 
+        self._empty_text_or_loc = empty_text_or_loc
+        self._empty_font = empty_font if not empty_font is None else self._normal_font
+        self._empty_font_color = empty_font_color if not empty_font_color is None else self._normal_font_color
+
     def set_text(self, new_text: str):
         """Set a new value for the entry."""
         self._text = str(new_text)
@@ -145,17 +152,22 @@ class Entry(Widget):
     def _make_focused_surface(self) -> Surface:
         return self._make_surface(
             self.focused_background.get(self.surface if self._continue_animation else None),
-            self._focused_font, self._focused_font_color, self._show_caret
+            self._focused_font, self._focused_font_color, self._show_caret, self._text
         )
 
     def _make_normal_surface(self) -> Surface:
+        if self._text: # if the current text is not empty
+            return self._make_surface(
+                self.normal_background.get(self.game.settings),
+                self._normal_font, self._normal_font_color, False, self._text
+            )
         return self._make_surface(
             self.normal_background.get(self.game.settings),
-            self._normal_font, self._normal_font_color, False
+            self._empty_font, self._empty_font_color, False, self._empty_text_or_loc
         )
 
-    def _make_surface(self, background: Surface, font: str, color: Color, caret: bool):
-        rendered_text = self.game.typewriter.render(font, self._text, color)
+    def _make_surface(self, background: Surface, font: str, color: Color, caret: bool, text: str):
+        rendered_text = self.game.typewriter.render(font, text, color)
         text_width, text_height = rendered_text.get_size()
         just_x = self._justify[0]*(background.get_width() - text_width)
         just_y = self._justify[1]*(background.get_height() - text_height)
