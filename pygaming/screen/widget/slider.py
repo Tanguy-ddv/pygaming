@@ -34,7 +34,8 @@ class Slider(Widget):
         continue_animation: bool = False,
         transition_function: Callable[[float], float] = lambda x:x,
         transition_duration: int = 300, # [ms]
-        update_if_invisible: bool = True
+        update_if_invisible: bool = True,
+        step_wth_arrow: int = 1,
     ) -> None:
         """
         A Slider is a widget that is used to select a value in a given range by moving a cursor from left to right on a background.
@@ -63,6 +64,8 @@ class Slider(Widget):
             Default is lambda x:x. For an accelerating transition, use lambda x:x**2, for a decelerating transition, lambda x:x**(1/2), or other.
             Conditions: transition_function(0) = 0, transition_function(1) = 1
         - transition_duration: int [ms], the duration of the transition in ms.
+        - update_if_invisible: bool, set to True if you want the widget to be update even if it is not visible. Default is True to finish the transitions.
+        - step_wth_arrow: int, the number of step the slider should do when it is updated with an arrow of the keyboard. Default is 1
         """
         super().__init__(
             master,
@@ -100,6 +103,8 @@ class Slider(Widget):
         self._current_transition = None
         self._current_transition_delta = 0
         self._cursor_position = None
+
+        self._step_wth_arrow = step_wth_arrow
 
     def get(self):
         """Return the value selected by the player."""
@@ -201,9 +206,9 @@ class Slider(Widget):
         # Verify the use of the arrows
         if self.focused and not self.disabled:
             if self.game.keyboard.actions_down['left'] and self._index > 0:
-                self._start_transition(self._index - 1)
+                self._start_transition(max(0, self._index - self._step_wth_arrow))
             if self.game.keyboard.actions_down['right'] and self._index < len(self._values) - 1:
-                self._start_transition(self._index + 1)
+                self._start_transition(min(self._index + self._step_wth_arrow, len(self._values) - 1))
 
 
     def _get_index_of_click(self, x):
