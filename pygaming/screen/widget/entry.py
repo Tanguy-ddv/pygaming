@@ -169,8 +169,14 @@ class Entry(Widget):
     def _make_surface(self, background: Surface, font: str, color: Color, caret: bool, text: str):
         rendered_text = self.game.typewriter.render(font, text, color)
         text_width, text_height = rendered_text.get_size()
-        just_x = self._justify[0]*(background.get_width() - text_width)
         just_y = self._justify[1]*(background.get_height() - text_height)
+        # if the text is too long, we center on the charet, if the charet is too much on the right or left, we let the first/last 
+        # character be on the left/right.
+        if text_width > background.get_width():
+            just_x = min(0, -self.game.typewriter.size(font, self._text[:self._caret_index])[0] + background.get_width()//2)
+            just_x = max(just_x, background.get_width() - text_width)
+        else:
+            just_x = self._justify[0]*(background.get_width() - text_width)
         background.blit(rendered_text, (just_x, just_y))
         if caret:
             caret_height = self.game.typewriter.get_linesize(font)
