@@ -14,7 +14,7 @@ CREATE TABLE localizations (
 );
 
 CREATE TABLE speeches (
-    position TEXT NOT NULL UNIQUE,
+    position TEXT NOT NULL,
     phase_name_or_tag TEXT NOT NULL,
     language_code TEXT,
     sound_path TEXT NOT NULL
