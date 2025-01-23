@@ -69,8 +69,7 @@ class Frame(Element):
         else:
             raise ValueError("window must be either a Window, or a tuple (x,y, width, height) or a tuple (x,y, width, height, anchor)")
 
-        self._compute_wc_ratio()
-
+        self._compute_wc_ratio(master=master)
         Element.__init__(
             self,
             master,
@@ -94,9 +93,11 @@ class Frame(Element):
         else:
             self.focused_background = focused_background
     
-    def _compute_wc_ratio(self):
+    def _compute_wc_ratio(self, master = None):
         """Recompute the ratio between the window and the camera dimensions."""
-        self.wc_ratio = self.window.width/self.camera.width, self.window.height/self.camera.height
+        if master is None:
+            master = self.master
+        self.wc_ratio = self.window.width/self.camera.width*master.wc_ratio[0], self.window.height/self.camera.height*master.wc_ratio[1]
 
     def add_child(self, child: Element):
         """Add a new element to the child list."""

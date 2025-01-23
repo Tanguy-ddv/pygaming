@@ -289,7 +289,7 @@ class Element(ABC):
     @property
     def absolute_bottom(self):
         """Return the bottom coordinate of the element in the game window."""
-        return self.absolute_top + self.height**self.master.wc_ratio[1]
+        return self.absolute_top + self.height*self.master.wc_ratio[1]
 
     @property
     def relative_left(self):
