@@ -7,7 +7,7 @@ from .connexion import Client
 from .inputs import Inputs, Mouse, Keyboard
 from .settings import Settings
 from .screen.screen import Screen
-from .base import BaseRunnable
+from ._base import BaseRunnable
 
 class Game(BaseRunnable):
     """

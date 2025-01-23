@@ -10,7 +10,7 @@ actors and dynamic sprites, masks
 """
 from .config import Config
 from .game import Game
-from .base import LEAVE, STAY
+from ._base import LEAVE, STAY
 from .logger import Logger
 from .phase import ServerPhase, GamePhase
 from .server import Server

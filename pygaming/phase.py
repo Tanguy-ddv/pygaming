@@ -2,13 +2,11 @@
 from abc import ABC, abstractmethod
 import gc
 import pygame
-from .base import STAY
 from .error import PygamingException
 from .game import Game
-from .base import BaseRunnable
+from ._base import BaseRunnable, STAY
 from .server import Server
 from .cursor import Cursor
-from .inputs.mouse import Click
 
 _TOOLTIP_DELAY = 500 # [ms]
 
