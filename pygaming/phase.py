@@ -305,6 +305,7 @@ class GamePhase(BasePhase, ABC):
                 self.current_tooltip = tooltip
                 self._tooltip_delay = _TOOLTIP_DELAY
                 self._tooltip_x, self._tooltip_y = None, None
+                self.current_tooltip.notify_change() # We force its change because the language might have changed.
                 
             self.current_tooltip.loop(loop_duration)
 

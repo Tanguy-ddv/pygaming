@@ -79,6 +79,7 @@ class TextTooltip(Tooltip):
     def set_text_or_loc(self, new_text_or_loc: str | TextFormatter):
         """Reset the text or loc to a new value."""
         self._text = new_text_or_loc
+        self.notify_change()
     
     def make_surface(self):
         """Make the surface of the tooltip with the text on it."""
