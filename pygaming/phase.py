@@ -187,7 +187,7 @@ class GamePhase(BasePhase, Visual):
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
         # Update the game settings
-        self.background.load()
+        self.background.start(self.settings)
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
         self.game.update_settings()
 
