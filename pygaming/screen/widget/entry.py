@@ -145,13 +145,13 @@ class Entry(Widget):
 
     def _make_disabled_surface(self) -> Surface:
         return self._make_surface(
-            self.disabled_background.get(self.surface if self._continue_animation else None),
+            self.disabled_background.get(self.background if self._continue_animation else None),
             self._disabled_font, self._disabled_font_color, False
         )
 
     def _make_focused_surface(self) -> Surface:
         return self._make_surface(
-            self.focused_background.get(self.surface if self._continue_animation else None),
+            self.focused_background.get(self.background if self._continue_animation else None),
             self._focused_font, self._focused_font_color, self._show_caret, self._text
         )
 

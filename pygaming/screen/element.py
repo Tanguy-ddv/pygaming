@@ -11,14 +11,15 @@ from .anchors import TOP_LEFT
 from ..inputs import Click
 from ..cursor import Cursor
 from .tooltip import Tooltip
+from ._abstract import Visual
 
-class Element(ABC):
+class Element(Visual):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, frames."""
 
     def __init__(
         self,
         master: Union[GamePhase, 'Element', Tooltip], # Frame or phase, no direct typing of frame to avoid circular import
-        surface: Art,
+        background: Art,
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
@@ -47,7 +48,7 @@ class Element(ABC):
         - can_be_focused: Some element can be focused.
         """
 
-        ABC.__init__(self)
+        Visual.__init__(self, background, update_if_invisible)
         self.layer = layer
         self.visible = True
         self.can_be_focused = can_be_focused
@@ -55,12 +56,10 @@ class Element(ABC):
         self.can_be_disabled = can_be_disabled
         self.disabled = False
 
-        self.surface = surface
-        if not active_area is None and active_area.get_size() != self.surface.size:
+        if not active_area is None and active_area.get_size() != self.background.size:
             raise PygamingException("The active area must have the same size than the art.")
         self._active_area = active_area
 
-        self.width, self.height = self.surface.width, self.surface.height
         self._x = x
         self._y = y
         self.anchor = anchor
@@ -70,12 +69,7 @@ class Element(ABC):
         self._cursor = cursor
         self._tooltip = tooltip
 
-        self._last_surface: pygame.Surface = None
-        self._surface_changed: bool = True
-
         self.get_on_master()
-
-        self._update_if_invisible = update_if_invisible
 
     def get_on_master(self):
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
@@ -120,15 +114,8 @@ class Element(ABC):
         return self.master.game
 
     def get_hover(self):
-        """Update the hover cursor and surface."""
+        """Update the hover cursor and tooltip."""
         return self._tooltip, self._cursor
-
-    def get_surface(self) -> pygame.Surface:
-        """Return the surface to his parent."""
-        if self._surface_changed:
-            self._surface_changed = False
-            self._last_surface = self.make_surface()
-        return self._last_surface
 
     @abstractmethod
     def make_surface(self) -> pygame.Surface:
@@ -144,7 +131,7 @@ class Element(ABC):
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
         if (self.on_master and self.is_visible()) or self._update_if_invisible:
-            has_changed = self.surface.update(loop_duration)
+            has_changed = self.background.update(loop_duration)
             if has_changed:
                 self.notify_change()
             self.update(loop_duration)
@@ -152,14 +139,14 @@ class Element(ABC):
     def begin(self):
         """
         Execute this method at the beginning of the phase
-        to load the active area and the surface before running class-specific start method.
+        to load the active area and the background before running class-specific start method.
         """
         if isinstance(self._active_area, Mask):
             self._active_area.load(self.game.settings)
         elif self._active_area is None:
-            self.surface.set_load_on_start()
-            self.surface.start(self.game.settings)
-            self._active_area = pygame.mask.from_surface(self.surface.surfaces[0], 127)
+            self.background.set_load_on_start()
+            self.background.start(self.game.settings)
+            self._active_area = pygame.mask.from_surface(self.background.surfaces[0], 127)
         self.notify_change()
         self.start()
 
@@ -170,7 +157,7 @@ class Element(ABC):
 
     def finish(self):
         """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
-        self.surface.unload()
+        self.background.unload()
         if isinstance(self._active_area, Mask):
             self._active_area.unload()
         self.end()

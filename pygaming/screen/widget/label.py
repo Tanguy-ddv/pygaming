@@ -42,7 +42,6 @@ class Label(Element):
         self.text = str(localization_or_text)
         super().__init__(master, background, x, y, anchor, layer, None, None, False, False, None, False)
         self.justify = justify
-        self._bg_width, self._bg_height = self.surface.width, self.surface.height
         self._blinking_period = blinking_period
         self._time_since_last_blink = 0
         self._show_text = True
@@ -71,12 +70,12 @@ class Label(Element):
 
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the Label."""
-        bg = self.surface.get(self.game.settings)
+        bg = self.background.get(self.game.settings)
         if self._show_text:
             rendered_text = self._render_text()
             text_width, text_height = rendered_text.get_size()
-            just_x = self.justify[0]*(self.surface.width - text_width)
-            just_y = self.justify[1]*(self.surface.height - text_height)
+            just_x = self.justify[0]*(self.background.width - text_width)
+            just_y = self.justify[1]*(self.background.height - text_height)
             bg.blit(rendered_text, (just_x, just_y))
         return bg
 
@@ -90,4 +89,4 @@ class Paragraph(Label):
     """A Paragraph is used to display a piece of a text as a justified paragraph."""
 
     def _render_text(self):
-        return self.game.typewriter.render_paragraphs(self.font, self.text, self.font_color, pygame.Rect(0, 0, *self.surface.size), None)
+        return self.game.typewriter.render_paragraphs(self.font, self.text, self.font_color, pygame.Rect(0, 0, *self.background.size), None)

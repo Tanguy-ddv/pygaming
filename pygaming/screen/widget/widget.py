@@ -50,19 +50,19 @@ class Widget(Element, ABC):
         )
         self._continue_animation = continue_animation
         if focused_background is None:
-            self.focused_background = self.surface
+            self.focused_background = self.background
         else:
             self.focused_background = focused_background
 
         if disabled_background is None:
-            self.disabled_background = self.surface
+            self.disabled_background = self.background
         else:
             self.disabled_background = disabled_background
 
     @property
     def normal_background(self):
         """Alias for the surface."""
-        return self.surface
+        return self.background
 
     @abstractmethod
     def get(self):

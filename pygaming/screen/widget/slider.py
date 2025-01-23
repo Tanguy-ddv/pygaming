@@ -235,7 +235,7 @@ class Slider(Widget):
 
     def _make_surface(self, background: Art, cursor: Art) -> Surface:
         """Make the surface with the cursor and the background."""
-        bg = background.get(self.game.settings, self.surface if self._continue_animation else None)
+        bg = background.get(self.game.settings, self.background if self._continue_animation else None)
         x = self._cursor_position - self.normal_cursor.width//2
         y = (background.height - cursor.height)//2
         bg.blit(cursor.get(self.game.settings), (x,y))

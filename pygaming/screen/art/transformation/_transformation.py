@@ -23,7 +23,7 @@ class Transformation(ABC):
         """Apply the transformation"""
         raise NotImplementedError()
 
-    def get_new_dimension(self, width, height):
+    def get_new_dimension(self, width, height) -> tuple[int, int]:
         """Calculate the new dimensions of the art after transformation."""
         return width, height
 

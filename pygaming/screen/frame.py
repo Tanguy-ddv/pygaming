@@ -89,7 +89,7 @@ class Frame(Element):
         self.focused = False
         self._current_object_focus = None
         if focused_background is None:
-            self.focused_background = self.surface
+            self.focused_background = self.background
         else:
             self.focused_background = focused_background
     
@@ -189,7 +189,7 @@ class Frame(Element):
             if not self.focused:
                 self.focused_background.reset()
             else:
-                self.surface.reset()
+                self.background.reset()
         self.notify_change()
 
     def start(self):
@@ -201,7 +201,7 @@ class Frame(Element):
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
-        self.surface.unload()
+        self.background.unload()
         for child in self.children:
             child.finish()
         self.focused_background.unload()
@@ -211,13 +211,13 @@ class Frame(Element):
         """Update the frame every loop iteration."""
         if not self._continue_animation:
             if not self.focused:
-                has_changed = self.surface.update(loop_duration)
+                has_changed = self.background.update(loop_duration)
             else:
                 has_changed = self.focused_background.update(loop_duration)
             if has_changed:
                 self.notify_change()
         else:
-            has_changed = self.surface.update(loop_duration)
+            has_changed = self.background.update(loop_duration)
             if has_changed:
                 self.notify_change()
         self.window.update(loop_duration)
@@ -255,9 +255,9 @@ class Frame(Element):
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
-            background = self.focused_background.get(self.game.settings, match=self.surface)
+            background = self.focused_background.get(self.game.settings, match=self.background if self._continue_animation else None)
         else:
-            background = self.surface.get(self.game.settings)
+            background = self.background.get(self.game.settings)
         for child in self.visible_children:
             background.blit(child.get_surface(), child.relative_rect.topleft)
 

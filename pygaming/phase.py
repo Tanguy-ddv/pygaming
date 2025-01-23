@@ -7,6 +7,8 @@ from .game import Game
 from ._base import BaseRunnable, STAY
 from .server import Server
 from .cursor import Cursor
+from .screen._abstract import Visual
+from .screen.art import ColoredRectangle
 
 _TOOLTIP_DELAY = 500 # [ms]
 
@@ -138,7 +140,7 @@ class ServerPhase(BasePhase, ABC):
         """Update the phase every loop iteraton."""
         self.update(loop_duration)
 
-class GamePhase(BasePhase, ABC):
+class GamePhase(BasePhase, Visual):
     """
     The GamePhase is a phase to be added to the game only.
     Each SeverPhase must implements the `start`, `update`, `end`, `next` and `apply_transition` emthods.
@@ -160,17 +162,16 @@ class GamePhase(BasePhase, ABC):
     """
 
     def __init__(self, name, game: Game) -> None:
-        ABC.__init__(self)
         BasePhase.__init__(self, name, game)
+        background = ColoredRectangle((0, 0, 0, 0), *self.config.dimension)
+        Visual.__init__(self, background, False)
+
         self.frames = [] # list[Frame]
 
         self.absolute_left = 0
         self.absolute_top = 0
         self.camera = self.window = self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
         self.wc_ratio = (1, 1)
-
-        self._surface_changed = True
-        self._last_surface = None
 
         # Data about the hovering
         self.current_tooltip = None 
@@ -186,6 +187,7 @@ class GamePhase(BasePhase, ABC):
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
         # Update the game settings
+        self.background.load()
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
         self.game.update_settings()
 
@@ -203,6 +205,7 @@ class GamePhase(BasePhase, ABC):
         """This method is called at the end of the phase."""
         for frame in self.frames:
             frame.end() # Unload
+        self.background.unload()
         self.end()
         gc.collect()
 
@@ -331,7 +334,7 @@ class GamePhase(BasePhase, ABC):
 
     def make_surface(self) -> pygame.Surface:
         """Make the new surface to be returned to his parent."""
-        bg = pygame.Surface(self.config.dimension, pygame.SRCALPHA)
+        bg = self.background.get(self.settings)
         for frame in self.visible_frames:
             surf = frame.get_surface()
             bg.blit(surf, (frame.relative_left, frame.relative_top))
@@ -347,9 +350,3 @@ class GamePhase(BasePhase, ABC):
         """Notify the need to remake the last surface."""
         self._surface_changed = True
 
-    def get_surface(self) -> pygame.Surface:
-        """Return the surface to his parent."""
-        if self._surface_changed:
-            self._surface_changed = False
-            self._last_surface = self.make_surface()
-        return self._last_surface
