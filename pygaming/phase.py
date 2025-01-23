@@ -304,7 +304,7 @@ class GamePhase(BasePhase, ABC):
             else: # We have a new tooltip
                 self.current_tooltip = tooltip
                 self._tooltip_delay = _TOOLTIP_DELAY
-                self._tooltip_x, self._tooltip_y = x, y
+                self._tooltip_x, self._tooltip_y = None, None
                 
             self.current_tooltip.loop(loop_duration)
 
@@ -336,6 +336,9 @@ class GamePhase(BasePhase, ABC):
             bg.blit(surf, (frame.relative_left, frame.relative_top))
 
         if not self.current_tooltip is None and self._tooltip_delay < 0:
+            if self._tooltip_x is None:
+                x, y = self.mouse.get_position() # We set the position of the tooltip with the position of the mouse.
+                self._tooltip_x, self._tooltip_y = x, y
             bg.blit(self.current_tooltip.get_surface(), (self._tooltip_x, self._tooltip_y - self.current_tooltip.height))
         return bg
 
