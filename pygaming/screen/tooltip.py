@@ -2,6 +2,9 @@
 import pygame
 from ..phase import GamePhase
 from .art.art import Art
+from ..database import TextFormatter
+from ..color import ColorLike
+from .anchors import CENTER
 
 class Tooltip():
     """Tooltip is a graphical overlay displayed on hover."""
@@ -9,7 +12,7 @@ class Tooltip():
     def __init__(
         self,
         phase: GamePhase,
-        background: Art,
+        background: Art,        
     ) -> None:
         """
         Create an Element.
@@ -22,7 +25,6 @@ class Tooltip():
         """
 
         self.background = background
-        self.children = []
 
         self.width, self.height = self.background.width, self.background.height
         self.phase = phase
@@ -30,27 +32,10 @@ class Tooltip():
         self._last_surface: pygame.Surface = None
         self._surface_changed: bool = True
 
-        self._rect = pygame.Rect(0, 0, self.width, self.height)
-
-        self.absolute_left, self.absolute_top = 0, 0 # use by children, just an artefact.
-        self.camera = self.window = self.absolute_rect = pygame.Rect((0, 0, *self.phase.config.dimension))
-
-        self.wc_ratio = (1, 1)
-
-    
     @property
     def game(self):
         """Return the game."""
         return self.phase.game
-
-    def is_child_on_me(self, child):
-        """Return whether the child is visible on the frame or not."""
-        return self._rect.colliderect(child.relative_rect)
-
-    @property
-    def visible_children(self):
-        """Return the list of visible children sorted by increasing layer."""
-        return sorted(filter(lambda ch: ch.visible and ch.on_master, self.children), key= lambda w: w.layer)
 
     def get_surface(self) -> pygame.Surface:
         """Return the surface to be displayed."""
@@ -60,45 +45,48 @@ class Tooltip():
         return self._last_surface
 
     def make_surface(self) -> pygame.Surface:
-        """c the surface of the tooltip as a pygame.Surface"""
-        background = self.background.get(self.phase.settings)
-        for child in self.visible_children:
-            background.blit(child.get_surface(), child.relative_rect.topleft)
-        return background
-
-    def is_visible(self):
-        """Return True if the tooltip is visible."""
-        # Return always True as this is called only when the tooltip is visible
-        return True
-
-    def add_child(self, elements):
-        """Add a new frame to the phase."""
-        self.children.append(elements)
+        """Make the surface of the tooltip as a pygame.Surface"""
+        return self.background.get(self.phase.settings)
 
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
         has_changed = self.background.update(loop_duration)
         if has_changed:
             self.notify_change()
-        for child in self.children:
-            child.loop(loop_duration)
     
     def notify_change(self):
         """Called by a children if it changes."""
         self._surface_changed = True
 
     def begin(self):
-        """
-        Execute this method at the beginning of the phase
-        to load the active area and the surface before running class-specific start method.
-        """
+        """Execute this method at the beginning of the phase"""
         self.background.start(self.phase.settings)
         self.notify_change()
-        for child in self.children:
-            child.begin()
 
     def finish(self):
         """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
         self.background.unload()
-        for child in self.children:
-            child.finish()
+
+class TextTooltip(Tooltip):
+
+    def __init__(self, phase, background, text_or_loc: str | TextFormatter, font: str, font_color: ColorLike, jusitfy: tuple[float, float] = CENTER):
+        super().__init__(phase, background)
+
+        self._text = text_or_loc
+        self._font = font
+        self._font_color = font_color
+        self._justify = jusitfy
+
+    def set_text_or_loc(self, new_text_or_loc: str | TextFormatter):
+        """Reset the text or loc to a new value."""
+        self._text = new_text_or_loc
+    
+    def make_surface(self):
+        """Make the surface of the tooltip with the text on it."""
+        background = self.background.get(self.phase.settings)
+        rendered_text = self.game.typewriter.render(self._font, self._text, self._font_color, None, self._justify)
+        text_width, text_height = rendered_text.get_size()
+        just_x = self._justify[0]*(background.get_width() - text_width)
+        just_y = self._justify[1]*(background.get_height() - text_height)
+        background.blit(rendered_text, (just_x, just_y))
+        return background
