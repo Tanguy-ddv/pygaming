@@ -21,7 +21,6 @@ class Tooltip():
         ----
         - phase: Frame or Phase, the master of this object.
         - background: The surface. It is an Art
-        frame is hovered by the mouse.
         """
 
         self.background = background

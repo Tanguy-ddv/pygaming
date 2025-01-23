@@ -13,7 +13,7 @@ from ..cursor import Cursor
 from .tooltip import Tooltip
 
 class Element(ABC):
-    """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
+    """Element is the abstract class for everything object displayed on the game window: widgets, actors, frames."""
 
     def __init__(
         self,
