@@ -5,7 +5,7 @@ from .art.art import Art
 from ..database import TextFormatter
 from ..color import ColorLike
 from .anchors import CENTER
-from ._abstract import Visual
+from ._visual import Visual
 
 class Tooltip(Visual):
     """Tooltip is a graphical overlay displayed on hover."""

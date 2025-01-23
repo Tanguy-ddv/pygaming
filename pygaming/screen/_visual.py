@@ -1,5 +1,4 @@
-"""The abstract module contains abstract classes for object displayed on the screen."""
-from typing import Callable
+"""The visual module contains the Visual class, an abstract for all object displayable on the screen."""
 import pygame
 from abc import ABC, abstractmethod
 from .art import Art

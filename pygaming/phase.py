@@ -7,7 +7,7 @@ from .game import Game
 from ._base import BaseRunnable, STAY
 from .server import Server
 from .cursor import Cursor
-from .screen._abstract import Visual
+from .screen._visual import Visual
 from .screen.art import ColoredRectangle
 
 _TOOLTIP_DELAY = 500 # [ms]

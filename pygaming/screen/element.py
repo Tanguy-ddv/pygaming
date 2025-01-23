@@ -11,7 +11,7 @@ from .anchors import TOP_LEFT
 from ..inputs import Click
 from ..cursor import Cursor
 from .tooltip import Tooltip
-from ._abstract import Visual
+from ._visual import Visual
 from .window import Window
 
 class Element(Visual):
@@ -56,7 +56,6 @@ class Element(Visual):
         self.focused = False
         self.can_be_disabled = can_be_disabled
         self.disabled = False
-
 
         if not active_area is None and not isinstance(active_area, Window) and active_area.get_size() != self.background.size:
             raise PygamingException("The active area, when defined as a mask must have the same size than the art.")
@@ -138,11 +137,8 @@ class Element(Visual):
                 self.notify_change()
             self.update(loop_duration)
 
-    def begin(self):
-        """
-        Execute this method at the beginning of the phase
-        to load the active area and the background before running class-specific start method.
-        """
+    def _load_active_area(self):
+        """Load the active area."""
         if isinstance(self._active_area, Mask):
             self._active_area.load(self.game.settings)
         elif self._active_area is None:
@@ -152,6 +148,13 @@ class Element(Visual):
                 self.background.set_load_on_start()
                 self.background.start(self.game.settings)
                 self._active_area = pygame.mask.from_surface(self.background.surfaces[0], 127)
+
+    def begin(self):
+        """
+        Execute this method at the beginning of the phase
+        to load the active area and the background before running class-specific start method.
+        """
+        self._load_active_area()
         Visual.begin(self, self.game.settings)
         self.notify_change()
         self.start()
