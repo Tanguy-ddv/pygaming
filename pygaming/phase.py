@@ -187,7 +187,7 @@ class GamePhase(BasePhase, Visual):
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
         # Update the game settings
-        self.background.start(self.settings)
+        Visual.begin(self, self.settings)
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
         self.game.update_settings()
 
@@ -203,10 +203,10 @@ class GamePhase(BasePhase, Visual):
 
     def finish(self):
         """This method is called at the end of the phase."""
+        self.end()
         for frame in self.frames:
             frame.end() # Unload
-        self.background.unload()
-        self.end()
+        Visual.finish(self, self.settings)
         gc.collect()
 
     def is_child_on_me(self, child):

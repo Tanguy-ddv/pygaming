@@ -1,5 +1,5 @@
 """the element module contains the Element object, which is a base for every object displayed on the game window."""
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Optional, Union
 import pygame
 from ..phase import GamePhase
@@ -12,6 +12,7 @@ from ..inputs import Click
 from ..cursor import Cursor
 from .tooltip import Tooltip
 from ._abstract import Visual
+from .window import Window
 
 class Element(Visual):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, frames."""
@@ -28,7 +29,7 @@ class Element(Visual):
         cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
-        active_area: Optional[Mask | pygame.Mask] = None,
+        active_area: Optional[Mask | pygame.Mask | Window] = None,
         update_if_invisible: bool = False
     ) -> None:
         """
@@ -56,8 +57,9 @@ class Element(Visual):
         self.can_be_disabled = can_be_disabled
         self.disabled = False
 
-        if not active_area is None and active_area.get_size() != self.background.size:
-            raise PygamingException("The active area must have the same size than the art.")
+
+        if not active_area is None and not isinstance(active_area, Window) and active_area.get_size() != self.background.size:
+            raise PygamingException("The active area, when defined as a mask must have the same size than the art.")
         self._active_area = active_area
 
         self._x = x
@@ -144,9 +146,13 @@ class Element(Visual):
         if isinstance(self._active_area, Mask):
             self._active_area.load(self.game.settings)
         elif self._active_area is None:
-            self.background.set_load_on_start()
-            self.background.start(self.game.settings)
-            self._active_area = pygame.mask.from_surface(self.background.surfaces[0], 127)
+            if self.game.config.get("default_active_area_rectangle"):
+                self._active_area = Window(0, 0, self.width, self.height)
+            else: 
+                self.background.set_load_on_start()
+                self.background.start(self.game.settings)
+                self._active_area = pygame.mask.from_surface(self.background.surfaces[0], 127)
+        Visual.begin(self, self.game.settings)
         self.notify_change()
         self.start()
 
@@ -157,10 +163,10 @@ class Element(Visual):
 
     def finish(self):
         """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
-        self.background.unload()
+        self.end()
+        Visual.finish(self)
         if isinstance(self._active_area, Mask):
             self._active_area.unload()
-        self.end()
 
     @abstractmethod
     def end(self):

@@ -90,7 +90,10 @@ class Window(pygame.Rect):
         self.anchor = anchor
         self.masks = mask
 
-        super().__init__(self._x, self._y, width, height)
+        super().__init__(self._x, self._y, width, height)    
+    def get_at(self, pos: tuple[int, int]):
+        """Return True if the point is inside the window."""
+        return self.collidepoint(*pos)
 
     def get_surface(self, surface: pygame.Surface):
         """Return the surface extracted by the window."""
