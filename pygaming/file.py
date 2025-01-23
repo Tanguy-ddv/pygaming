@@ -27,7 +27,7 @@ def _get_base_path():
     config_path = os.path.join(os.path.abspath("."), 'data', 'config.json')
     return _open_json_file(config_path)[0]['path']
 
-def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fonts'], file: str):
+def get_file(folder: Literal['data', 'musics', 'sounds', 'images', 'videos', 'fonts', 'cursors'], file: str):
     """
     Return the full path of the file.
     
