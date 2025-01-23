@@ -3,6 +3,7 @@ from typing import Callable
 import pygame
 from abc import ABC, abstractmethod
 from .art import Art
+from ..settings import Settings
 
 class Visual(ABC):
     """The Visuals are object that can be seen on a screen."""
@@ -22,6 +23,14 @@ class Visual(ABC):
             self._surface_changed = False
             self._last_surface = self.make_surface()
         return self._last_surface
+
+    def begin(self, settings: Settings):
+        """Call self method at the beginning of the phase."""
+        self.background.start(settings)
+    
+    def finish(self):
+        """Call self method at the end of the phase."""
+        self.background.unload()
 
     @abstractmethod
     def make_surface(self) -> pygame.Surface:
