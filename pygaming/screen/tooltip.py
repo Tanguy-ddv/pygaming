@@ -5,8 +5,9 @@ from .art.art import Art
 from ..database import TextFormatter
 from ..color import ColorLike
 from .anchors import CENTER
+from ._abstract import Visual
 
-class Tooltip():
+class Tooltip(Visual):
     """Tooltip is a graphical overlay displayed on hover."""
 
     def __init__(
@@ -23,25 +24,14 @@ class Tooltip():
         - background: The surface. It is an Art
         """
 
-        self.background = background
-
-        self.width, self.height = self.background.width, self.background.height
         self.phase = phase
-
-        self._last_surface: pygame.Surface = None
-        self._surface_changed: bool = True
+        Visual.__init__(self, background, False)
 
     @property
     def game(self):
         """Return the game."""
         return self.phase.game
 
-    def get_surface(self) -> pygame.Surface:
-        """Return the surface to be displayed."""
-        if self._surface_changed:
-            self._surface_changed = False
-            self._last_surface = self.make_surface()
-        return self._last_surface
 
     def make_surface(self) -> pygame.Surface:
         """Make the surface of the tooltip as a pygame.Surface"""
