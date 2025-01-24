@@ -33,6 +33,10 @@ class SetAlpha(Transformation):
                 alpha_array[:] = (1 - self.mask.matrix)*255
 
         return surfaces, durations, introduction, index, width, height
+    
+    def require_parallelization(self, settings):
+        # If the mask is None, setting alpha is straight_forward. Otherwise, it required copying data.
+        return not self.mask is None
 
 class GrayScale(Transformation):
     """
@@ -43,7 +47,13 @@ class GrayScale(Transformation):
         graysurfeaces = tuple(tf.grayscale(surf) for surf in surfaces)
         return graysurfeaces, durations, introduction, index, width, height
 
-class RBGMap(Transformation):
+class _MatrixTransformation(Transformation):
+    """Matrix transformations are bases for all transformation transforming the matrix with an effect."""
+
+    def require_parallelization(self, settings):
+        return True
+
+class RBGMap(_MatrixTransformation):
     """
     An RGBMap is a transformation applied directly on the pixel of the surfaces. The alpha value is not taken into account.
     the function must be vectorized. (check numpy.vectorize)
@@ -67,7 +77,7 @@ class RBGMap(Transformation):
 
         return surfaces, durations, introduction, index, width, height
     
-class RGBAMap(Transformation):
+class RGBAMap(_MatrixTransformation):
     """
     An RGBAMap is a transformation applied directly on the pixel of the surfaces. The alpha value is taken into account.
     the function must be vectorized. (check numpy.vectorize)
@@ -103,7 +113,7 @@ class RGBAMap(Transformation):
 
         return surfaces, durations, introduction, index, width, height
 
-class Saturate(Transformation):
+class Saturate(_MatrixTransformation):
     """Saturate the art by a given factor."""
 
     def __init__(self, factor: float, mask: Mask = None, mask_threshold: float = 0.99) -> None:
@@ -126,7 +136,7 @@ class Saturate(Transformation):
 
         return surfaces, durations, introduction, index, width, height
 
-class Desaturate(Transformation):
+class Desaturate(_MatrixTransformation):
     """Desaturate the art by a given factor."""
 
     def __init__(self, factor: float, mask: Mask = None, mask_threshold: float = 0.99) -> None:
@@ -148,7 +158,7 @@ class Desaturate(Transformation):
                 rgb_array[self.mask.matrix > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[self.mask.matrix > self.mask_threshold]
         return surfaces, durations, introduction, index, width, height
 
-class Darken(Transformation):
+class Darken(_MatrixTransformation):
     """Darken the art by a given factor."""
 
     def __init__(self, factor: float, mask: Mask = None, mask_threshold: float = 0.99) -> None:
@@ -170,7 +180,7 @@ class Darken(Transformation):
                 rgb_array[self.mask.matrix > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[self.mask.matrix > self.mask_threshold]
         return surfaces, durations, introduction, index, width, height
 
-class Lighten(Transformation):
+class Lighten(_MatrixTransformation):
     """Lighten the art by a given factor."""
 
     def __init__(self, factor: float, mask: Mask = None, mask_threshold: float = 0.99) -> None:
@@ -192,7 +202,7 @@ class Lighten(Transformation):
                 rgb_array[self.mask.matrix > self.mask_threshold] = cv2.cvtColor(hls_array, cv2.COLOR_HLS2RGB)[self.mask.matrix > self.mask_threshold]
         return surfaces, durations, introduction, index, width, height
 
-class Invert(Transformation):
+class Invert(_MatrixTransformation):
     """Invert the color of the art."""
 
     def __init__(self, mask: Mask = None, mask_threshold: float = 0.99):
@@ -211,7 +221,7 @@ class Invert(Transformation):
                 rgb_array[self.mask.matrix > self.mask_threshold] = 255 - rgb_array[self.mask.matrix > self.mask_threshold]
         return surfaces, durations, introduction, index, width, height
 
-class AdjustContrast(Transformation):
+class AdjustContrast(_MatrixTransformation):
     """Change the contrast of an art. The constrast is a value between -255 and +255."""
 
     def __init__(self, contrast: int, mask: Mask = None, mask_threshold: float = 0.99) -> None:
@@ -234,7 +244,7 @@ class AdjustContrast(Transformation):
 
         return surfaces, durations, introduction, index, width, height
 
-class AdjustBrightness(Transformation):
+class AdjustBrightness(_MatrixTransformation):
     """Change the brightness of an art. The brightness is a value between -255 and +255."""
 
     def __init__(self, brightness: int, mask: Mask = None, mask_threshold: float = 0.99) -> None:
@@ -254,7 +264,7 @@ class AdjustBrightness(Transformation):
                 rgb_array[self.mask.matrix > self.mask_threshold] = np.clip(rgb_array + self.brightness, 0, 255)[self.mask.matrix > self.mask_threshold]
         return surfaces, durations, introduction, index, width, height
 
-class Gamma(Transformation):
+class Gamma(_MatrixTransformation):
     """
     The gamma transformation is used to modify the brightness of the image.
     For 0 < gamma < 1, the dark pixels will be brighter and the bright pixels will not change

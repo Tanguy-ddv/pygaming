@@ -279,7 +279,7 @@ class SlowDown(Transformation):
         new_durations = tuple(d*self.scale for d in durations)
         return surfaces, new_durations, introduction, index, width, height
 
-class ResetDurations(Transformation):
+class ResetDuration(Transformation):
     """
     Reset the duration of every image in the art to a new value.
     """
@@ -290,6 +290,18 @@ class ResetDurations(Transformation):
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
         return surfaces, tuple(self.new_duration for _ in durations), introduction, index, width, height
+
+class ResetDurations(Transformation):
+    """
+    Reset the durations of every image in the art to new values.
+    """
+
+    def __init__(self, new_durations: tuple[int]) -> None:
+        super().__init__()
+        self.new_durations = new_durations
+
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
+        return surfaces, tuple(self.new_durations[i%len(self.new_durations)] for i, _ in enumerate(durations)), introduction, index, width, height
 
 class SetIntroductionIndex(Transformation):
     """
