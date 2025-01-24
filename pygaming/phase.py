@@ -12,7 +12,7 @@ from .screen.art import ColoredRectangle
 
 _TOOLTIP_DELAY = 500 # [ms]
 
-class BasePhase(ABC):
+class _BasePhase(ABC):
     """
     A Phase is a step in the game. Each game should have a few phases.
     Exemple of phases: menus, lobby, stages, ...
@@ -104,7 +104,7 @@ class BasePhase(ABC):
         """Action to do when the phase is ended."""
         return
 
-class ServerPhase(BasePhase, ABC):
+class ServerPhase(_BasePhase, ABC):
     """
     The ServerPhase is a phase to be added to the server only.
     Each SeverPhase must implements the `start`, `update`, `end`, `next` and `apply_transition` emthods.
@@ -124,7 +124,7 @@ class ServerPhase(BasePhase, ABC):
 
     def __init__(self, name, server: Server) -> None:
         ABC.__init__(self)
-        BasePhase.__init__(self, name, server)
+        _BasePhase.__init__(self, name, server)
 
     @property
     def server(self) -> Server:
@@ -140,7 +140,7 @@ class ServerPhase(BasePhase, ABC):
         """Update the phase every loop iteraton."""
         self.update(loop_duration)
 
-class GamePhase(BasePhase, Visual):
+class GamePhase(_BasePhase, Visual):
     """
     The GamePhase is a phase to be added to the game only.
     Each SeverPhase must implements the `start`, `update`, `end`, `next` and `apply_transition` emthods.
@@ -148,7 +148,7 @@ class GamePhase(BasePhase, Visual):
     - The `update` method is called every loop iteration and contains the game's logic.
     - The `end` method is called at the end of the game and is used to save results and free resources.
     - The `next` method is called every loop iteration and is used to know if the phase is over.
-    It should return pygaming.NO_NEXT if the whole game is over, pygaming.STAY if the phase is not over
+    It should return pygaming.LEAVE if the whole game is over, pygaming.STAY if the phase is not over
     or the name of another phase if we have to switch phase.
     - The `apply_transition` method is called if the `next` method returns a phase name. It return the argument
     for the start method of the next phase as a dict. 
@@ -162,7 +162,7 @@ class GamePhase(BasePhase, Visual):
     """
 
     def __init__(self, name, game: Game) -> None:
-        BasePhase.__init__(self, name, game)
+        _BasePhase.__init__(self, name, game)
         background = ColoredRectangle((0, 0, 0, 0), *self.config.dimension)
         Visual.__init__(self, background, False)
 
