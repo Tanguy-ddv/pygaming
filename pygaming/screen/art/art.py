@@ -1,5 +1,6 @@
 """The art class is the base for all the surfaces and animated surfaces of the game."""
 from abc import ABC, abstractmethod
+from threading import Thread
 from pygame import Surface, image, surfarray as sa
 from PIL import Image
 from ...error import PygamingException
@@ -7,7 +8,7 @@ from ..window import Window
 from ..anchors import TOP_LEFT
 from ...settings import Settings
 from ...file import get_file
-from .transformation import Transformation
+from .transformation import Transformation, Pipeline
 
 class Art(ABC):
     """The art class is the base for all the surfaces and animated surfaces of the game."""
@@ -26,8 +27,12 @@ class Art(ABC):
         self._width = -1
         self._on_loading_transformation = transformation
 
+        self._buffer_transfo_pipeline = Pipeline()
+
         self._force_load_on_start = force_load_on_start
         self._permanent = permanent
+        self._transfo_thread = None
+        self._has_changed = False
         self._copies: list[Art] = []
 
     def set_load_on_start(self):
@@ -90,10 +95,15 @@ class Art(ABC):
 
     def unload(self):
         """Unload the surfaces."""
+        self.reset() # Reset the index.
         if not self._permanent:
+            if not self._transfo_thread is None:
+                # Wait for the transformation thread to stop to not get surfaces still loaded in memory.
+                self._transfo_thread.join()
             self.surfaces = ()
             self.durations = ()
             self._loaded = False
+
 
     def load(self, settings: Settings):
         """Load the art at the beginning of the phase"""
@@ -104,7 +114,7 @@ class Art(ABC):
             self._verify_sizes()
             self._loaded = True
             if not self._on_loading_transformation is None:
-                self.transform(self._on_loading_transformation, settings)
+                self._transform(self._on_loading_transformation, settings)
 
         for copy in self._copies:
             if not copy.is_loaded:
@@ -123,8 +133,10 @@ class Art(ABC):
                 self._index += 1
                 if self._index == len(self.surfaces):
                     self._index = self.introduction
-                return True
-        return False
+                self._has_changed = True
+        has_changed = self._has_changed
+        self._has_changed = False
+        return has_changed # This can be set to True if the a transformation has been a applied recently.
 
     def reset(self):
         """Reset the animation."""
@@ -137,12 +149,25 @@ class Art(ABC):
         
         - match: Art, if not None, the index will match the index of the other art to match, otherwise, use its own index
         """
-        index = self._index if match is None else match.index
-        if not self._loaded:
+        
+        if not self._loaded: # Load the art
             self.load(settings)
-        return self.surfaces[index].copy()
 
-    def transform(self, transformation: Transformation, settings: Settings = None):
+        if not self._buffer_transfo_pipeline.is_empty(): # Apply a transformation
+            if self._buffer_transfo_pipeline.require_parallelization():
+                self._transfo_thread = Thread(target=self._transform, args=(self._buffer_transfo_pipeline, settings))
+                self._transfo_thread.start()
+            else:
+                self._transform(self._buffer_transfo_pipeline, settings) # Or directly on the main thread.
+
+        index = self._index if match is None else match.index
+        return self.surfaces[index].copy() # The current surface
+    
+    def transform(self, transformation: Transformation):
+        """Apply a transformation to an Art."""
+        self._buffer_transfo_pipeline.add_transformation(transformation)
+
+    def _transform(self, transformation: Transformation, settings: Settings):
         """Apply a transformation"""
         if self._loaded:
             (   self.surfaces,
@@ -160,6 +185,8 @@ class Art(ABC):
                 self._height,
                 settings
             )
+            self._buffer_transfo_pipeline.clear()
+            self._has_changed = True
         else:
             raise PygamingException("A transformation have be called on an unloaded Art, please use the art's constructor to transform the initial art.")
 
@@ -190,8 +217,8 @@ class Art(ABC):
 
 class _ArtFromCopy(Art):
 
-    def __init__(self, original: Art, additional_transformation: Transformation, permanent: bool = False):
-        super().__init__(additional_transformation, original._force_load_on_start, permanent)
+    def __init__(self, original: Art, additional_transformation: Transformation, permanent: bool = False, parallelize_transformations: bool = False):
+        super().__init__(additional_transformation, original._force_load_on_start, permanent, parallelize_transformations)
         # The on load transformation has been removed because the transformation are executed during the loading of the original
         self._original = original
         self._height = self._original.height

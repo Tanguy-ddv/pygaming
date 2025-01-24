@@ -1,5 +1,5 @@
 """the element module contains the Element object, which is a base for every object displayed on the game window."""
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Optional, Union
 import pygame
 from ..phase import GamePhase
@@ -11,14 +11,16 @@ from .anchors import TOP_LEFT
 from ..inputs import Click
 from ..cursor import Cursor
 from .tooltip import Tooltip
+from ._visual import Visual
+from .window import Window
 
-class Element(ABC):
-    """Element is the abstract class for everything object displayed on the game window: widgets, actors, decors, frames."""
+class Element(Visual):
+    """Element is the abstract class for everything object displayed on the game window: widgets, actors, frames."""
 
     def __init__(
         self,
         master: Union[GamePhase, 'Element', Tooltip], # Frame or phase, no direct typing of frame to avoid circular import
-        surface: Art,
+        background: Art,
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
@@ -27,7 +29,7 @@ class Element(ABC):
         cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
-        active_area: Optional[Mask | pygame.Mask] = None,
+        active_area: Optional[Mask | pygame.Mask | Window] = None,
         update_if_invisible: bool = False
     ) -> None:
         """
@@ -47,7 +49,7 @@ class Element(ABC):
         - can_be_focused: Some element can be focused.
         """
 
-        ABC.__init__(self)
+        Visual.__init__(self, background, update_if_invisible)
         self.layer = layer
         self.visible = True
         self.can_be_focused = can_be_focused
@@ -55,12 +57,10 @@ class Element(ABC):
         self.can_be_disabled = can_be_disabled
         self.disabled = False
 
-        self.surface = surface
-        if not active_area is None and active_area.get_size() != self.surface.size:
-            raise PygamingException("The active area must have the same size than the art.")
+        if not active_area is None and not isinstance(active_area, Window) and active_area.get_size() != self.background.size:
+            raise PygamingException("The active area, when defined as a mask must have the same size than the art.")
         self._active_area = active_area
 
-        self.width, self.height = self.surface.width, self.surface.height
         self._x = x
         self._y = y
         self.anchor = anchor
@@ -70,12 +70,7 @@ class Element(ABC):
         self._cursor = cursor
         self._tooltip = tooltip
 
-        self._last_surface: pygame.Surface = None
-        self._surface_changed: bool = True
-
         self.get_on_master()
-
-        self._update_if_invisible = update_if_invisible
 
     def get_on_master(self):
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
@@ -120,15 +115,8 @@ class Element(ABC):
         return self.master.game
 
     def get_hover(self):
-        """Update the hover cursor and surface."""
+        """Update the hover cursor and tooltip."""
         return self._tooltip, self._cursor
-
-    def get_surface(self) -> pygame.Surface:
-        """Return the surface to his parent."""
-        if self._surface_changed:
-            self._surface_changed = False
-            self._last_surface = self.make_surface()
-        return self._last_surface
 
     @abstractmethod
     def make_surface(self) -> pygame.Surface:
@@ -144,23 +132,28 @@ class Element(ABC):
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
         if (self.on_master and self.is_visible()) or self._update_if_invisible:
-            has_changed = self.surface.update(loop_duration)
-            if has_changed:
-                self.notify_change()
+            Visual.loop(self, loop_duration)
             self.update(loop_duration)
+
+    def _load_active_area(self):
+        """Load the active area."""
+        if isinstance(self._active_area, Mask):
+            self._active_area.load(self.game.settings)
+        elif self._active_area is None:
+            if self.game.config.get("default_active_area_rectangle"):
+                self._active_area = Window(0, 0, self.width, self.height)
+            else: 
+                self.background.set_load_on_start()
+                self.background.start(self.game.settings)
+                self._active_area = pygame.mask.from_surface(self.background.surfaces[0], 127)
 
     def begin(self):
         """
         Execute this method at the beginning of the phase
-        to load the active area and the surface before running class-specific start method.
+        to load the active area and the background before running class-specific start method.
         """
-        if isinstance(self._active_area, Mask):
-            self._active_area.load(self.game.settings)
-        elif self._active_area is None:
-            self.surface.set_load_on_start()
-            self.surface.start(self.game.settings)
-            self._active_area = pygame.mask.from_surface(self.surface.surfaces[0], 127)
-        self.notify_change()
+        self._load_active_area()
+        Visual.begin(self, self.game.settings)
         self.start()
 
     @abstractmethod
@@ -170,10 +163,10 @@ class Element(ABC):
 
     def finish(self):
         """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
-        self.surface.unload()
+        self.end()
+        Visual.finish(self)
         if isinstance(self._active_area, Mask):
             self._active_area.unload()
-        self.end()
 
     @abstractmethod
     def end(self):
@@ -289,7 +282,7 @@ class Element(ABC):
     @property
     def absolute_bottom(self):
         """Return the bottom coordinate of the element in the game window."""
-        return self.absolute_top + self.height**self.master.wc_ratio[1]
+        return self.absolute_top + self.height*self.master.wc_ratio[1]
 
     @property
     def relative_left(self):

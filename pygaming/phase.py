@@ -2,17 +2,17 @@
 from abc import ABC, abstractmethod
 import gc
 import pygame
-from .base import STAY
 from .error import PygamingException
 from .game import Game
-from .base import BaseRunnable
+from ._base import BaseRunnable, STAY
 from .server import Server
 from .cursor import Cursor
-from .inputs.mouse import Click
+from .screen._visual import Visual
+from .screen.art import ColoredRectangle
 
 _TOOLTIP_DELAY = 500 # [ms]
 
-class BasePhase(ABC):
+class _BasePhase(ABC):
     """
     A Phase is a step in the game. Each game should have a few phases.
     Exemple of phases: menus, lobby, stages, ...
@@ -104,7 +104,7 @@ class BasePhase(ABC):
         """Action to do when the phase is ended."""
         return
 
-class ServerPhase(BasePhase, ABC):
+class ServerPhase(_BasePhase, ABC):
     """
     The ServerPhase is a phase to be added to the server only.
     Each SeverPhase must implements the `start`, `update`, `end`, `next` and `apply_transition` emthods.
@@ -124,7 +124,7 @@ class ServerPhase(BasePhase, ABC):
 
     def __init__(self, name, server: Server) -> None:
         ABC.__init__(self)
-        BasePhase.__init__(self, name, server)
+        _BasePhase.__init__(self, name, server)
 
     @property
     def server(self) -> Server:
@@ -140,7 +140,7 @@ class ServerPhase(BasePhase, ABC):
         """Update the phase every loop iteraton."""
         self.update(loop_duration)
 
-class GamePhase(BasePhase, ABC):
+class GamePhase(_BasePhase, Visual):
     """
     The GamePhase is a phase to be added to the game only.
     Each SeverPhase must implements the `start`, `update`, `end`, `next` and `apply_transition` emthods.
@@ -148,7 +148,7 @@ class GamePhase(BasePhase, ABC):
     - The `update` method is called every loop iteration and contains the game's logic.
     - The `end` method is called at the end of the game and is used to save results and free resources.
     - The `next` method is called every loop iteration and is used to know if the phase is over.
-    It should return pygaming.NO_NEXT if the whole game is over, pygaming.STAY if the phase is not over
+    It should return pygaming.LEAVE if the whole game is over, pygaming.STAY if the phase is not over
     or the name of another phase if we have to switch phase.
     - The `apply_transition` method is called if the `next` method returns a phase name. It return the argument
     for the start method of the next phase as a dict. 
@@ -162,17 +162,16 @@ class GamePhase(BasePhase, ABC):
     """
 
     def __init__(self, name, game: Game) -> None:
-        ABC.__init__(self)
-        BasePhase.__init__(self, name, game)
+        _BasePhase.__init__(self, name, game)
+        background = ColoredRectangle((0, 0, 0, 0), *self.config.dimension)
+        Visual.__init__(self, background, False)
+
         self.frames = [] # list[Frame]
 
         self.absolute_left = 0
         self.absolute_top = 0
         self.camera = self.window = self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
         self.wc_ratio = (1, 1)
-
-        self._surface_changed = True
-        self._last_surface = None
 
         # Data about the hovering
         self.current_tooltip = None 
@@ -188,6 +187,7 @@ class GamePhase(BasePhase, ABC):
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
         # Update the game settings
+        Visual.begin(self, self.settings)
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
         self.game.update_settings()
 
@@ -203,9 +203,10 @@ class GamePhase(BasePhase, ABC):
 
     def finish(self):
         """This method is called at the end of the phase."""
+        self.end()
         for frame in self.frames:
             frame.end() # Unload
-        self.end()
+        Visual.finish(self, self.settings)
         gc.collect()
 
     def is_child_on_me(self, child):
@@ -266,6 +267,7 @@ class GamePhase(BasePhase, ABC):
 
     def loop(self, loop_duration: int):
         """Update the phase."""
+        Visual.loop(self, loop_duration)
         self._update_focus()
         self.update(loop_duration)
         for frame in self.frames:
@@ -306,7 +308,8 @@ class GamePhase(BasePhase, ABC):
             else: # We have a new tooltip
                 self.current_tooltip = tooltip
                 self._tooltip_delay = _TOOLTIP_DELAY
-                self._tooltip_x, self._tooltip_y = x, y
+                self._tooltip_x, self._tooltip_y = None, None
+                self.current_tooltip.notify_change() # We force its change because the language might have changed.
                 
             self.current_tooltip.loop(loop_duration)
 
@@ -317,8 +320,7 @@ class GamePhase(BasePhase, ABC):
             has_changed = self.current_cursor.update(loop_duration)
             if has_changed:
                 pygame.mouse.set_cursor(self.current_cursor.get(self.settings))
-                # Manually slightly move the mouse to trigger the update of the cursor.
-                pygame.mouse.set_pos(x + 1, y)
+                # Trigger the update of the cursor.
                 pygame.mouse.set_pos(x, y)
         else:
             self.current_cursor.reset()
@@ -332,22 +334,14 @@ class GamePhase(BasePhase, ABC):
 
     def make_surface(self) -> pygame.Surface:
         """Make the new surface to be returned to his parent."""
-        bg = pygame.Surface(self.config.dimension, pygame.SRCALPHA)
+        bg = self.background.get(self.settings)
         for frame in self.visible_frames:
             surf = frame.get_surface()
             bg.blit(surf, (frame.relative_left, frame.relative_top))
 
         if not self.current_tooltip is None and self._tooltip_delay < 0:
+            if self._tooltip_x is None:
+                x, y = self.mouse.get_position() # We set the position of the tooltip with the position of the mouse.
+                self._tooltip_x, self._tooltip_y = x, y
             bg.blit(self.current_tooltip.get_surface(), (self._tooltip_x, self._tooltip_y - self.current_tooltip.height))
         return bg
-
-    def notify_change(self):
-        """Notify the need to remake the last surface."""
-        self._surface_changed = True
-
-    def get_surface(self) -> pygame.Surface:
-        """Return the surface to his parent."""
-        if self._surface_changed:
-            self._surface_changed = False
-            self._last_surface = self.make_surface()
-        return self._last_surface

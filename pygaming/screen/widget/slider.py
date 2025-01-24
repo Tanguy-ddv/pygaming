@@ -1,5 +1,5 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
-from typing import Optional, Iterable, Callable, Any
+from typing import Optional, Iterable, Any
 import numpy as np
 from pygame import Surface, surfarray as sa
 from ...error import PygamingException
@@ -11,6 +11,7 @@ from ..mask import Mask
 from ...cursor import Cursor
 from ...ZOcallable import ZOCallable, linear, verify_ZOCallable
 from ..tooltip import Tooltip
+from ..window import Window
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -130,8 +131,12 @@ class Slider(Widget):
                 raise PygamingException("The active area cannot be empty.")
             x_min = self._active_area.not_null_columns[0] + self.normal_cursor.width//2
             x_max = self._active_area.not_null_columns[-1] - self.normal_cursor.width//2
-        else:
-            # For pygame masks
+
+        elif isinstance(self._active_area, Window):
+            # For window_based masks
+                x_min = self._active_area.left + self.normal_cursor.width//2
+                x_max = self._active_area.right - self.normal_cursor.width//2
+        else:  # For pygame masks 
             temp_surf = self._active_area.to_surface(setcolor=(0, 0, 0, 1), unsetcolor=(0, 0, 0, 0))
             matrix = sa.array_alpha(temp_surf)
             not_null_columns = np.where(matrix.any(axis=1))[0]
@@ -235,7 +240,7 @@ class Slider(Widget):
 
     def _make_surface(self, background: Art, cursor: Art) -> Surface:
         """Make the surface with the cursor and the background."""
-        bg = background.get(self.game.settings, self.surface if self._continue_animation else None)
+        bg = background.get(self.game.settings, self.background if self._continue_animation else None)
         x = self._cursor_position - self.normal_cursor.width//2
         y = (background.height - cursor.height)//2
         bg.blit(cursor.get(self.game.settings), (x,y))

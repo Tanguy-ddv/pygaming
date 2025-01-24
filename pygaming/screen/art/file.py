@@ -54,7 +54,7 @@ class ImageFolder(Art):
         introduction: int = 0,
         transformation: Transformation = None,
         force_load_on_start: bool = False,
-        permanent: bool = False
+        permanent: bool = False,
     ) -> None:
         super().__init__(transformation, force_load_on_start, permanent)
         self.full_path = get_file('images', folder)

@@ -1,7 +1,7 @@
 """The server module contains the class Server."""
 from .connexion import Server as Network, EXIT, NEW_PHASE
 from .database.database import SERVER
-from .base import BaseRunnable
+from ._base import BaseRunnable
 
 class Server(BaseRunnable):
     """The Server is the instance to be run as a server for online game."""

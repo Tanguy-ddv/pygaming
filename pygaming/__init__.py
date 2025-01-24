@@ -10,7 +10,7 @@ actors and dynamic sprites, masks
 """
 from .config import Config
 from .game import Game
-from .base import LEAVE, STAY
+from ._base import LEAVE, STAY
 from .logger import Logger
 from .phase import ServerPhase, GamePhase
 from .server import Server
@@ -20,7 +20,7 @@ from .cursor import Cursor
 
 from .screen.frame import Frame
 from .screen.element import Element
-from .screen.tooltip import Tooltip
+from .screen.tooltip import Tooltip, TextTooltip
 
 from .screen import anchors, widget, art, mask
 
@@ -36,7 +36,7 @@ from .database import Database, TypeWriter, SoundBox, TextFormatter
 from . import commands
 from . import ZOcallable
 
-__all__ = ['Config', 'Game', 'LEAVE', 'STAY', 'Logger', 'ServerPhase', 'GamePhase', 'Tooltip',
+__all__ = ['Config', 'Game', 'LEAVE', 'STAY', 'Logger', 'ServerPhase', 'GamePhase', 'Tooltip', 'TextTooltip',
            'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter', 'Cursor', 'ZOcallable',
            'Element', 'Controls', 'Click', 'widget', 'get_file', 'Client', 'Keyboard', 'Mouse', 'mask', 'art',
            'Network', 'HEADER', 'ID', 'PAYLOAD', 'TIMESTAMP', 'Database', 'anchors',

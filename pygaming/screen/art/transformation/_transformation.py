@@ -23,16 +23,32 @@ class Transformation(ABC):
         """Apply the transformation"""
         raise NotImplementedError()
 
-    def get_new_dimension(self, width, height):
+    def get_new_dimension(self, width, height) -> tuple[int, int]:
         """Calculate the new dimensions of the art after transformation."""
         return width, height
+
+    def require_parallelization(self, settings: Settings):
+        """Return whether the transformation requires to parallelize the calculations."""
+        return False
 
 class Pipeline(Transformation):
     """A Transformation pipeline is a list of successive transformations."""
 
     def __init__(self, *transfos) -> None:
         super().__init__()
-        self._transformations: tuple[Transformation] = transfos
+        self._transformations: list[Transformation] = list(transfos)
+    
+    def add_transformation(self, transfo: Transformation) -> None:
+        """Add a new transformation in the pipeline."""
+        self._transformations.append(transfo)
+    
+    def clear(self):
+        """Clear the Pipeline from all transformations."""
+        self._transformations.clear()
+    
+    def is_empty(self) -> bool:
+        """Return True if the Pipeline is empty of transformations."""
+        return not bool(self._transformations)
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
         for transfo in self._transformations:
@@ -43,6 +59,10 @@ class Pipeline(Transformation):
         for transfo in self._transformations:
             width, height = transfo.get_new_dimension(width, height)
         return width, height
+
+    def require_parallelization(self, settings: Settings):
+        """Return whether the transformation requires to parallelize the calculations."""
+        return any(transfo.require_parallelization(settings) for transfo in self._transformations)
 
 class Rotate(Transformation):
     """The rotate transformation will rotate the art by a given angle."""
@@ -259,7 +279,7 @@ class SlowDown(Transformation):
         new_durations = tuple(d*self.scale for d in durations)
         return surfaces, new_durations, introduction, index, width, height
 
-class ResetDurations(Transformation):
+class ResetDuration(Transformation):
     """
     Reset the duration of every image in the art to a new value.
     """
@@ -270,6 +290,18 @@ class ResetDurations(Transformation):
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
         return surfaces, tuple(self.new_duration for _ in durations), introduction, index, width, height
+
+class ResetDurations(Transformation):
+    """
+    Reset the durations of every image in the art to new values.
+    """
+
+    def __init__(self, new_durations: tuple[int]) -> None:
+        super().__init__()
+        self.new_durations = new_durations
+
+    def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
+        return surfaces, tuple(self.new_durations[i%len(self.new_durations)] for i, _ in enumerate(durations)), introduction, index, width, height
 
 class SetIntroductionIndex(Transformation):
     """
