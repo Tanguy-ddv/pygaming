@@ -131,12 +131,17 @@ class Art(ABC):
             if self._time_since_last_change >= self.durations[self._index]:
                 self._time_since_last_change -= self.durations[self._index]
                 self._index += 1
+                # Loop
                 if self._index == len(self.surfaces):
                     self._index = self.introduction
+                # If the loop_duration is too long, we reset the time to 0.
+                if self._time_since_last_change >= self.durations[self._index]:
+                    self._time_since_last_change = 0
+
                 self._has_changed = True
-        has_changed = self._has_changed
+        has_changed = self._has_changed # This can be set to True if the a transformation has been a applied recently, or if the index changed.
         self._has_changed = False
-        return has_changed # This can be set to True if the a transformation has been a applied recently.
+        return has_changed 
 
     def reset(self):
         """Reset the animation."""
@@ -154,7 +159,7 @@ class Art(ABC):
             self.load(settings)
 
         if not self._buffer_transfo_pipeline.is_empty(): # Apply a transformation
-            if self._buffer_transfo_pipeline.require_parallelization():
+            if self._buffer_transfo_pipeline.require_parallelization(): # On a separate thread, in this case the transformation may be visible later.
                 self._transfo_thread = Thread(target=self._transform, args=(self._buffer_transfo_pipeline, settings))
                 self._transfo_thread.start()
             else:
