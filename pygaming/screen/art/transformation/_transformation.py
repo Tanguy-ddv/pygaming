@@ -32,7 +32,19 @@ class Pipeline(Transformation):
 
     def __init__(self, *transfos) -> None:
         super().__init__()
-        self._transformations: tuple[Transformation] = transfos
+        self._transformations: list[Transformation] = list(transfos)
+    
+    def add_transformation(self, transfo: Transformation) -> None:
+        """Add a new transformation in the pipeline."""
+        self._transformations.append(transfo)
+    
+    def clear(self):
+        """Clear the Pipeline from all transformations."""
+        self._transformations.clear()
+    
+    def is_empty(self) -> bool:
+        """Return True if the Pipeline is empty of transformations."""
+        return not bool(self._transformations)
 
     def apply(self, surfaces: tuple[Surface], durations: tuple[int], introduction: int, index: int, width: int, height: int, settings: Settings):
         for transfo in self._transformations:
