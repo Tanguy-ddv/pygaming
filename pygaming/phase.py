@@ -267,6 +267,7 @@ class GamePhase(BasePhase, Visual):
 
     def loop(self, loop_duration: int):
         """Update the phase."""
+        Visual.loop(self, loop_duration)
         self._update_focus()
         self.update(loop_duration)
         for frame in self.frames:
@@ -345,8 +346,3 @@ class GamePhase(BasePhase, Visual):
                 self._tooltip_x, self._tooltip_y = x, y
             bg.blit(self.current_tooltip.get_surface(), (self._tooltip_x, self._tooltip_y - self.current_tooltip.height))
         return bg
-
-    def notify_change(self):
-        """Notify the need to remake the last surface."""
-        self._surface_changed = True
-

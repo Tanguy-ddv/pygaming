@@ -37,25 +37,6 @@ class Tooltip(Visual):
         """Make the surface of the tooltip as a pygame.Surface"""
         return self.background.get(self.phase.settings)
 
-    def loop(self, loop_duration: int):
-        """Update the element every loop iteration."""
-        has_changed = self.background.update(loop_duration)
-        if has_changed:
-            self.notify_change()
-    
-    def notify_change(self):
-        """Called by a children if it changes."""
-        self._surface_changed = True
-
-    def begin(self):
-        """Execute this method at the beginning of the phase"""
-        self.background.start(self.phase.settings)
-        self.notify_change()
-
-    def finish(self):
-        """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
-        self.background.unload()
-
 class TextTooltip(Tooltip):
 
     def __init__(self, phase, background, text_or_loc: str | TextFormatter, font: str, font_color: ColorLike, jusitfy: tuple[float, float] = CENTER):

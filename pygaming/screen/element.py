@@ -132,9 +132,7 @@ class Element(Visual):
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
         if (self.on_master and self.is_visible()) or self._update_if_invisible:
-            has_changed = self.background.update(loop_duration)
-            if has_changed:
-                self.notify_change()
+            Visual.loop(self, loop_duration)
             self.update(loop_duration)
 
     def _load_active_area(self):
@@ -156,7 +154,6 @@ class Element(Visual):
         """
         self._load_active_area()
         Visual.begin(self, self.game.settings)
-        self.notify_change()
         self.start()
 
     @abstractmethod

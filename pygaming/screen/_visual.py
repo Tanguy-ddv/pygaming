@@ -26,10 +26,22 @@ class Visual(ABC):
     def begin(self, settings: Settings):
         """Call self method at the beginning of the phase."""
         self.background.start(settings)
+        self.notify_change()
     
     def finish(self):
         """Call self method at the end of the phase."""
         self.background.unload()
+    
+    def loop(self, loop_duration):
+        """Call this method at every loop iteration."""
+        has_changed = self.background.update(loop_duration)
+        if has_changed:
+            self.notify_change()
+
+    def notify_change(self):
+        """Notify the chage in the background."""
+        self._surface_changed = True
+
 
     @abstractmethod
     def make_surface(self) -> pygame.Surface:
