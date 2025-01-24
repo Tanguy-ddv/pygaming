@@ -24,10 +24,9 @@ class ColoredRectangle(Art):
         transformation: Transformation = None,
         force_load_on_start: bool = False,
         permanent: bool = False,
-        parallelize_transformations: bool = False
     ):
         """Create a rectangle"""
-        super().__init__(transformation, force_load_on_start, permanent, parallelize_transformations)
+        super().__init__(transformation, force_load_on_start, permanent)
 
         self.color = color
         self._width = width
@@ -63,10 +62,8 @@ class ColoredCircle(Art):
         transformation: Transformation = None,
         force_load_on_start: bool = False,
         permanent: bool = False,
-        parallelize_transformations: bool = False
-
     ):
-        super().__init__(transformation, force_load_on_start, permanent, parallelize_transformations)
+        super().__init__(transformation, force_load_on_start, permanent)
         self.radius = radius
         self.color = color
         self.thickness = thickness
@@ -91,11 +88,11 @@ class ColoredEllipse(Art):
 
     def __init__(self, color: ColorLike, horizontal_radius: int, vertical_radius: int,
             thickness: int = 0, transformation: Transformation = None, force_load_on_start: bool = False, permanent: bool = False,
-            parallelize_transformations: bool = False) -> None:
+            ) -> None:
         self.color = color
         self.rect = (0, 0, horizontal_radius*2, vertical_radius*2)
         self.thickness = thickness
-        super().__init__(transformation, force_load_on_start, permanent, parallelize_transformations)
+        super().__init__(transformation, force_load_on_start, permanent)
         self._height = vertical_radius*2
         self._width = horizontal_radius*2
         self._find_initial_dimension()
@@ -117,8 +114,6 @@ class ColoredPolygon(Art):
         transformation: Transformation = None,
         force_load_on_start: bool = False,
         permanent: bool = False,
-        parallelize_transformations: bool = False
-
     ):
         for p in points:
             if p[0] < 0 or p[1] < 0:
@@ -127,7 +122,7 @@ class ColoredPolygon(Art):
         self.points = points
         self.thickness = thickness
         self.color = color
-        super().__init__(transformation, force_load_on_start, permanent, parallelize_transformations)
+        super().__init__(transformation, force_load_on_start, permanent)
 
         self._height = max(p[1] for p in self.points) + max(0, (thickness-1)//2)
         self._width = max(p[0] for p in self.points) + max(0, (thickness-1)//2)
@@ -152,15 +147,13 @@ class TexturedPolygon(Art):
         transformation: Transformation = None,
         force_load_on_start: bool = False,
         permanent: bool = False,
-        parallelize_transformations: bool = False
-
     ):
         for p in points:
             if p[0] < 0 or p[1] < 0:
                 raise ValueError(f"All points coordinates of a polygon must have a positive value, got {p}")
 
         self.points = points
-        super().__init__(transformation, force_load_on_start, permanent, parallelize_transformations)
+        super().__init__(transformation, force_load_on_start, permanent)
 
         self._height = max(p[1] for p in self.points)
         self._width = max(p[0] for p in self.points)
@@ -205,10 +198,8 @@ class TexturedCircle(Art):
         transformation: Transformation = None,
         force_load_on_start: bool = False,
         permanent: bool = False,
-        parallelize_transformations: bool = False
-
     ):
-        super().__init__(transformation, force_load_on_start, permanent, parallelize_transformations)
+        super().__init__(transformation, force_load_on_start, permanent)
         self.radius = radius
         self.draw_top_right = draw_top_right
         self.draw_top_left = draw_top_left
@@ -252,10 +243,8 @@ class TexturedEllipse(Art):
         transformation: Transformation = None,
         force_load_on_start: bool = False,
         permanent: bool = False,
-        parallelize_transformations: bool = False
-
     ) -> None:
-        super().__init__(transformation, force_load_on_start, permanent, parallelize_transformations)
+        super().__init__(transformation, force_load_on_start, permanent)
         if center is None:
             center = texture.width//2, texture.height//2
         self.center = center
@@ -295,10 +284,8 @@ class TexturedRoundedRectangle(Art):
         transformation: Transformation = None,
         force_load_on_start: bool = False,
         permanent: bool = False,
-        parallelize_transformations: bool = False
-
     ):
-        super().__init__(transformation, force_load_on_start, permanent, parallelize_transformations)
+        super().__init__(transformation, force_load_on_start, permanent)
         self.border_radius = border_radius
         self.border_top_left_radius = border_top_left_radius
         self.border_top_right_radius = border_top_right_radius

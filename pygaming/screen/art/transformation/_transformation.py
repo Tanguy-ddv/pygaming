@@ -27,6 +27,10 @@ class Transformation(ABC):
         """Calculate the new dimensions of the art after transformation."""
         return width, height
 
+    def require_parallelization(self, settings: Settings):
+        """Return whether the transformation requires to parallelize the calculations."""
+        return False
+
 class Pipeline(Transformation):
     """A Transformation pipeline is a list of successive transformations."""
 
@@ -55,6 +59,10 @@ class Pipeline(Transformation):
         for transfo in self._transformations:
             width, height = transfo.get_new_dimension(width, height)
         return width, height
+
+    def require_parallelization(self, settings: Settings):
+        """Return whether the transformation requires to parallelize the calculations."""
+        return any(transfo.require_parallelization(settings) for transfo in self._transformations)
 
 class Rotate(Transformation):
     """The rotate transformation will rotate the art by a given angle."""

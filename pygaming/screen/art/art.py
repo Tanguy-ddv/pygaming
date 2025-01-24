@@ -13,7 +13,7 @@ from .transformation import Transformation, Pipeline
 class Art(ABC):
     """The art class is the base for all the surfaces and animated surfaces of the game."""
 
-    def __init__(self, transformation: Transformation = None, force_load_on_start: bool = False, permanent: bool = False, parallelize_transformations: bool = False) -> None:
+    def __init__(self, transformation: Transformation = None, force_load_on_start: bool = False, permanent: bool = False) -> None:
         super().__init__()
         self.surfaces: tuple[Surface] = ()
         self.durations: tuple[int] = ()
@@ -31,7 +31,6 @@ class Art(ABC):
 
         self._force_load_on_start = force_load_on_start
         self._permanent = permanent
-        self._parallelize_transformations = parallelize_transformations
         self._transfo_thread = None
         self._has_changed = False
         self._copies: list[Art] = []
@@ -155,7 +154,7 @@ class Art(ABC):
             self.load(settings)
 
         if not self._buffer_transfo_pipeline.is_empty(): # Apply a transformation
-            if self._parallelize_transformations: # Either as a thread if parallelization is requested.
+            if self._buffer_transfo_pipeline.require_parallelization():
                 self._transfo_thread = Thread(target=self._transform, args=(self._buffer_transfo_pipeline, settings))
                 self._transfo_thread.start()
             else:
