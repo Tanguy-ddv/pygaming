@@ -320,8 +320,7 @@ class GamePhase(_BasePhase, Visual):
             has_changed = self.current_cursor.update(loop_duration)
             if has_changed:
                 pygame.mouse.set_cursor(self.current_cursor.get(self.settings))
-                # Manually slightly move the mouse to trigger the update of the cursor.
-                pygame.mouse.set_pos(x + 1, y)
+                # Trigger the update of the cursor.
                 pygame.mouse.set_pos(x, y)
         else:
             self.current_cursor.reset()
