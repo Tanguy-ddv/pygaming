@@ -5,6 +5,9 @@ from ..anchors import TOP_LEFT, CENTER
 from ...color import Color
 from ..art.art import Art
 from ...database import TextFormatter
+from ..window import Window
+from ..tooltip import Tooltip
+from ...cursor import Cursor
 
 
 class Label(Element):
@@ -20,6 +23,8 @@ class Label(Element):
         x: int,
         y: int,
         anchor = TOP_LEFT,
+        tooltip: Tooltip = None,
+        cursor: Cursor = None,
         layer: int = 0,
         justify = CENTER,
         blinking_period: int = None,
@@ -40,7 +45,7 @@ class Label(Element):
         """
         self.font = font
         self.text = str(localization_or_text)
-        super().__init__(master, background, x, y, anchor, layer, None, None, False, False, None, False)
+        super().__init__(master, background, x, y, anchor, layer, tooltip, cursor, False, False, Window(0, 0, *background.size), False)
         self.justify = justify
         self._blinking_period = blinking_period
         self._time_since_last_blink = 0
