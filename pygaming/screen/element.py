@@ -12,7 +12,7 @@ from ..inputs import Click
 from ..cursor import Cursor
 from .tooltip import Tooltip
 from ._visual import Visual
-from .window import Window
+from .camera import Camera
 
 class Element(Visual):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, frames."""
@@ -29,7 +29,7 @@ class Element(Visual):
         cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
-        active_area: Optional[mask.Mask | pygame.Mask | Window] = None,
+        active_area: Optional[mask.Mask | pygame.Mask | pygame.Rect] = None,
         update_if_invisible: bool = False
     ) -> None:
         """
@@ -57,8 +57,10 @@ class Element(Visual):
         self.can_be_disabled = can_be_disabled
         self.disabled = False
 
-        if not active_area is None and not isinstance(active_area, Window) and active_area.get_size() != self.background.size:
-            raise PygamingException("The active area, when defined as a mask must have the same size than the art.")
+        if isinstance(active_area, pygame.Mask) and active_area.get_size() != self.background.size:
+            raise PygamingException("The active area, when defined as a pygame mask must have the same size than the art.")
+        if active_area is None:
+            active_area = self.background.get_rect()
         self._active_area = active_area
 
         self._x = x
@@ -135,25 +137,14 @@ class Element(Visual):
             Visual.loop(self, loop_duration)
             self.update(loop_duration)
 
-    def _load_active_area(self):
-        """Load the active area."""
-        if isinstance(self._active_area, mask.Mask):
-            self._active_area.load(self.game.settings)
-        elif self._active_area is None:
-            if self.game.config.get("default_active_area_rectangle"):
-                self._active_area = Window(0, 0, self.width, self.height)
-            else: 
-                self.background.set_load_on_start()
-                self.background.start(self.game.settings)
-                self._active_area = pygame.mask.from_surface(self.background.surfaces[0], 127)
-
     def begin(self):
         """
         Execute this method at the beginning of the phase
         to load the active area and the background before running class-specific start method.
         """
-        self._load_active_area()
-        Visual.begin(self, self.game.settings)
+        if isinstance(self._active_area, mask.Mask):
+            self._active_area.load(self.background.width, self.background.height, **self.game.settings)
+        Visual.begin(self)
         self.start()
 
     @abstractmethod

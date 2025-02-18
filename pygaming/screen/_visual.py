@@ -23,9 +23,8 @@ class Visual(ABC):
             self._last_surface = self.make_surface()
         return self._last_surface
 
-    def begin(self, settings: Settings):
+    def begin(self):
         """Call self method at the beginning of the phase."""
-        self.background.start(settings)
         self.notify_change()
     
     def finish(self):
@@ -42,8 +41,6 @@ class Visual(ABC):
         """Notify the chage in the background."""
         self._surface_changed = True
 
-
     @abstractmethod
     def make_surface(self) -> pygame.Surface:
         """Create the image of the visual as a pygame surface."""
-

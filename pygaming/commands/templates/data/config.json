@@ -27,5 +27,6 @@
     "stop_game_on_server_killed" : false,
     "in_memory_game_db" : true,
     "in_memory_server_db" : true,
-    "default_active_area_rectangle" : true
+    "default_active_area_rectangle" : true,
+    "loading_kwargs" : ["antialias", "cost_threshold"]
 }

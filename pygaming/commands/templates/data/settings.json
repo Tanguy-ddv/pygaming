@@ -18,5 +18,6 @@
             "not classic": 0.8
         }
     },
-    "antialias": true
+    "antialias": true,
+    "cost_threshold": 200000
 }
