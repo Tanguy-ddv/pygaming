@@ -2,14 +2,15 @@
 from typing import Optional, Iterable, Any
 import numpy as np
 from pygame import Surface, surfarray as sa
+from ZOCallable import ZOCallable, verify_ZOCallable
+from ZOCallable.functions import linear
 from ...error import PygamingException
 from .widget import Widget
-from..anchors import TOP_LEFT
+from ..anchors import TOP_LEFT
 from ..frame import Frame
 from ..art.art import Art
-from ..mask import Mask
+from ..art import mask
 from ...cursor import Cursor
-from ...ZOcallable import ZOCallable, linear, verify_ZOCallable
 from ..tooltip import Tooltip
 from ..window import Window
 
@@ -30,7 +31,7 @@ class Slider(Widget):
         disabled_background:  Optional[Art] = None,
         disabled_cursor:  Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[Mask] = None,
+        active_area: Optional[mask.Mask] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
@@ -125,7 +126,7 @@ class Slider(Widget):
         else:
             raise PygamingException(f"{self._initial_value} is not a valid initial value as it is not in the values list {self._values}.")
 
-        if isinstance(self._active_area, Mask):
+        if isinstance(self._active_area, mask.Mask):
             # For pygaming masks
             if self._active_area.is_empty():
                 raise PygamingException("The active area cannot be empty.")

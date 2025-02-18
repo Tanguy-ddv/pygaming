@@ -2,12 +2,9 @@
 from typing import Union, Sequence
 import pygame
 from .anchors import TOP_LEFT
-from .mask import Mask, ALPHA, DARKEN, LIGHTEN, DESATURATE, SATURATE
+from .art import mask
 from ..error import PygamingException
-from ..color import ColorLike, Color
 from ..settings import Settings
-
-_EFFECT_LIST = [ALPHA, DARKEN, LIGHTEN, SATURATE, DESATURATE]
 
 class Window(pygame.Rect):
     """
@@ -26,7 +23,7 @@ class Window(pygame.Rect):
         width: int,
         height: int,
         anchor: tuple[float, float] = TOP_LEFT,
-        mask: Mask | Sequence[Mask] = None,
+        mask: mask.Mask | Sequence[mask.Mask] = None,
         mask_effects: dict[str, float] | Sequence[dict[str, float]] = {ALPHA : 100},
     ):
         """

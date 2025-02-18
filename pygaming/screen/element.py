@@ -6,7 +6,7 @@ from ..phase import GamePhase
 from .tooltip import Tooltip
 from .art.art import Art
 from ..error import PygamingException
-from .mask import Mask
+from .art import mask
 from .anchors import TOP_LEFT
 from ..inputs import Click
 from ..cursor import Cursor
@@ -29,7 +29,7 @@ class Element(Visual):
         cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
-        active_area: Optional[Mask | pygame.Mask | Window] = None,
+        active_area: Optional[mask.Mask | pygame.Mask | Window] = None,
         update_if_invisible: bool = False
     ) -> None:
         """
@@ -137,7 +137,7 @@ class Element(Visual):
 
     def _load_active_area(self):
         """Load the active area."""
-        if isinstance(self._active_area, Mask):
+        if isinstance(self._active_area, mask.Mask):
             self._active_area.load(self.game.settings)
         elif self._active_area is None:
             if self.game.config.get("default_active_area_rectangle"):
@@ -165,7 +165,7 @@ class Element(Visual):
         """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
         self.end()
         Visual.finish(self)
-        if isinstance(self._active_area, Mask):
+        if isinstance(self._active_area, mask.Mask):
             self._active_area.unload()
 
     @abstractmethod

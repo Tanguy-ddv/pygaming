@@ -102,3 +102,7 @@ class Settings:
             raise PygamingException(f"Please set {attribute} with it dedecated setter.")
         self._data[attribute] = value
         self.save()
+
+    def data(self):
+        """Return all the data."""
+        return self._data

@@ -1,5 +1,18 @@
-"""The art module contains all the available arts for your game. You should look to arts based on geometries or on files."""
+from typing import Callable
+from gamarts import mask
+from gamarts import transform
 from .art import *
-from .file import *
-from .geometry import *
-from . import transformation
+
+# Update the FromImageColor mask.
+__fic_init = mask.FromImageColor.__init__
+def __new_fic_init(self, path: str, function: Callable[[int, int, int], float]):
+    """
+    Create a mask from an image.
+    
+    Params:
+    ---
+    - path: str, the path of the image inside the assets/images folder.
+    - function: r,g,b -> float, a function mapping a color into a value for the mask.
+    """
+    __fic_init(self, get_file('image', path), function)
+mask.FromImageColor.__init__ = __new_fic_init

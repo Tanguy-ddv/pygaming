@@ -271,7 +271,6 @@ class Frame(Element):
         dx, dy = int(dx), int(dy)
         dx = np.clip(dx, - self.camera.left, self.width - self.camera.right)
         dy = np.clip(dy, - self.camera.top, self.height - self.camera.bottom)
-        print(dx, dy)
 
         if dx != 0 or dy != 0:
             self.camera.move_ip(dx, dy)
