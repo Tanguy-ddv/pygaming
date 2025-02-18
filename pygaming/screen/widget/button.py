@@ -1,16 +1,17 @@
 """The button module contains buttons. They are widgets used to get a user click."""
 
 from typing import Optional, Callable, Any
-from pygame import Rect, Surface
+from pygame import Surface
 from ..frame import Frame
 from ..anchors import TOP_LEFT, CENTER
 from .widget import Widget
 from ..art import Art
 from ...color import Color
-from ..mask import Mask
+from ..art import mask
 from ...database import TextFormatter
 from ...cursor import Cursor
 from ..tooltip import Tooltip
+from ..hitbox import Hitbox
 
 
 class Button(Widget):
@@ -26,7 +27,7 @@ class Button(Widget):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[Mask] = None,
+        active_area: Optional[mask.Mask | Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
@@ -149,7 +150,7 @@ class TextButton(Button):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Rect | None = None,
+        active_area: Optional[mask.Mask | Hitbox] = None,
         layer: int = 0,
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,

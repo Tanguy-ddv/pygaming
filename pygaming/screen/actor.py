@@ -3,7 +3,7 @@ import math
 from ..phase import GamePhase
 from .element import Element, TOP_LEFT
 from .art.art import Art
-from .art.transformation._transformation import Rotate
+from .art import transform
 
 class Actor(Element):
     """
@@ -69,7 +69,7 @@ class Actor(Element):
         w, h = self.main_surface.width, self.main_surface.height
         # rotate all frames
         for surface in self.surfaces:
-            surface.transform(Rotate(angle))
+            surface.transform(transform.Rotate(angle))
         # determine the new anchor
         new_w, new_h = self.main_surface.width, self.main_surface.height
         center_x, center_y = w / 2, h / 2

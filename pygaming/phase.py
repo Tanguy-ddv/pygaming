@@ -8,7 +8,7 @@ from ._base import BaseRunnable, STAY
 from .server import Server
 from .cursor import Cursor
 from .screen._visual import Visual
-from .screen.art import ColoredRectangle
+from .screen.art import Rectangle
 
 _TOOLTIP_DELAY = 500 # [ms]
 
@@ -163,7 +163,7 @@ class GamePhase(_BasePhase, Visual):
 
     def __init__(self, name, game: Game) -> None:
         _BasePhase.__init__(self, name, game)
-        background = ColoredRectangle((0, 0, 0, 0), *self.config.dimension)
+        background = Rectangle((0, 0, 0, 0), *self.config.dimension)
         Visual.__init__(self, background, False)
 
         self.frames = [] # list[Frame]

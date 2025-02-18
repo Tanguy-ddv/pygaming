@@ -1,7 +1,7 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
 from typing import Optional, Iterable, Any
 import numpy as np
-from pygame import Surface, surfarray as sa
+from pygame import Surface, surfarray as sa, Rect
 from ZOCallable import ZOCallable, verify_ZOCallable
 from ZOCallable.functions import linear
 from ...error import PygamingException
@@ -12,7 +12,7 @@ from ..art.art import Art
 from ..art import mask
 from ...cursor import Cursor
 from ..tooltip import Tooltip
-from ..window import Window
+from ..hitbox import Hitbox
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -31,7 +31,7 @@ class Slider(Widget):
         disabled_background:  Optional[Art] = None,
         disabled_cursor:  Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[mask.Mask] = None,
+        active_area: Optional[mask.Mask | Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
@@ -133,7 +133,7 @@ class Slider(Widget):
             x_min = self._active_area.not_null_columns[0] + self.normal_cursor.width//2
             x_max = self._active_area.not_null_columns[-1] - self.normal_cursor.width//2
 
-        elif isinstance(self._active_area, Window):
+        elif isinstance(self._active_area, Rect):
             # For window_based masks
                 x_min = self._active_area.left + self.normal_cursor.width//2
                 x_max = self._active_area.right - self.normal_cursor.width//2

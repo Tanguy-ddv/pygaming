@@ -6,10 +6,11 @@ from .widget import Widget
 from ..anchors import TOP_LEFT, CENTER
 from ..frame import Frame
 from ...color import Color
-from ..art.art import Art
-from ..mask import Mask
+from ..art import Art
+from ..art import mask
 from ...cursor import Cursor
 from ..tooltip import Tooltip
+from ..hitbox import Hitbox
 
 class Entry(Widget):
     """The Entry widget is used to allow the user to add a textual input."""
@@ -32,7 +33,7 @@ class Entry(Widget):
         extra_characters: str = '',
         forbid_characters: str = '',
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[Mask] = None,
+        active_area: Optional[mask.Mask | Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,

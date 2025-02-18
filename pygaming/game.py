@@ -23,7 +23,7 @@ class Game(BaseRunnable):
         BaseRunnable.__init__(self, debug, GAME, first_phase)
         pygame.init()
 
-        self.settings = Settings()
+        self.settings = Settings(self.config)
 
         self.soundbox = SoundBox(self.settings, first_phase, self.database)
         self.jukebox = Jukebox(self.settings)

@@ -12,7 +12,7 @@ from ..inputs import Click
 from ..cursor import Cursor
 from .tooltip import Tooltip
 from ._visual import Visual
-from .camera import Camera
+from .hitbox import Hitbox
 
 class Element(Visual):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, frames."""
@@ -29,7 +29,7 @@ class Element(Visual):
         cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
-        active_area: Optional[mask.Mask | pygame.Mask | pygame.Rect] = None,
+        active_area: Optional[mask.Mask | pygame.Mask | Hitbox] = None,
         update_if_invisible: bool = False
     ) -> None:
         """
@@ -60,7 +60,7 @@ class Element(Visual):
         if isinstance(active_area, pygame.Mask) and active_area.get_size() != self.background.size:
             raise PygamingException("The active area, when defined as a pygame mask must have the same size than the art.")
         if active_area is None:
-            active_area = self.background.get_rect()
+            active_area = Hitbox(0, 0, *self.background.size)
         self._active_area = active_area
 
         self._x = x

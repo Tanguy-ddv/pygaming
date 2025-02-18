@@ -16,3 +16,7 @@ def __new_fic_init(self, path: str, function: Callable[[int, int, int], float]):
     """
     __fic_init(self, get_file('image', path), function)
 mask.FromImageColor.__init__ = __new_fic_init
+
+mask.Mask.get_at = lambda self, x, y: self.matrix.shape[0] >= x >= 0 and self.matrix.shape[1] >= y >= 0 and bool(self.matrix[x, y])
+
+del Callable
