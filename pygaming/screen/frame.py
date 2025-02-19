@@ -242,16 +242,16 @@ class Frame(Element):
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
-            background = self.focused_background.get(self.game.settings, match=self.background if self._continue_animation else None)
+            background = self.focused_background.get(match=self.background if self._continue_animation else None, **self.game.settings)
         else:
-            background = self.background.get(self.game.settings)
+            background = self.background.get(None, **self.game.settings)
         for child in self.visible_children:
             background.blit(child.get_surface(), child.relative_rect.topleft)
 
         surf = background.subsurface(self.camera)
         if self.window.size != self.camera.size:
             surf = pygame.transform.scale(surf, self.window.size)
-        return self.window.get_surface(surf)
+        return self.camera.get_surface(surf, self.game.settings)
 
     def move_camera(self, dx, dy):
         """Move the camera on the frame."""
@@ -273,7 +273,7 @@ class Frame(Element):
         new_x = np.clip(int(new_x - anchor[0]*self.camera.width), 0, self.width - self.camera.width)
         if (new_x, new_y) != self.window.topleft:
 
-            self.camera.move_ip(new_x, new_y)
+            self.camera.move_ip(self.camera.left - new_x, self.camera.top - new_y)
             self._compute_wc_ratio()
             for child in self.children:
                 child.get_on_master()
