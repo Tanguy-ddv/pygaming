@@ -1,10 +1,21 @@
 """This module contains the hitbox class."""
-
+import math
 from pygame import Rect
 from .art import mask
 from gamarts._common import LoadingError
 from ..settings import Settings
 from ..error import PygamingException
+
+def __recover_original_size(new_width: int, new_height: int, sin_a: float, cos_a: float):
+    cos_a, sin_a = abs(cos_a), abs(sin_a)
+    
+    th1 = (new_width + new_height) / 2 / (cos_a + sin_a)
+    th2 = (new_width - new_height) / 2 / (cos_a - sin_a)
+   
+    w = th1 - th2
+    h = th1 + th2
+
+    return int(round(w)), int(round(h))
 
 class Hitbox:
     """
@@ -23,7 +34,37 @@ class Hitbox:
         self._rect = Rect(left, top, width, height)
         self._mask = mask
         self._minimal_rect = self._rect
- 
+        self._angle = 0
+        self._zoom = 0
+        self._initial_size = None
+    
+    def set_initial_size(self, size):
+        """Set the initial size of the element this hitbox is refering to."""
+        self._initial_size = size
+
+    def is_contact(self, pos: tuple[int, int], element_size: tuple[int, int]):
+        if self._zoom:
+            # modify the position to take the zoom into account.
+            x,y = pos
+            x/= self._zoom
+            y/= self._zoom
+            pos = x,y
+        if self._angle:
+            # modify the position to take the angle into account.
+            x,y = pos # relative to the top left of the element this is the hitbox
+            width, height = element_size
+            rel_x = x - width/2 # relative to the center of the element.
+            rel_y = y - height/2
+
+            rad = math.radians(-self._angle)
+            cos_a, sin_a = math.cos(rad), math.sin(rad)
+
+            orig_x = cos_a * rel_x - sin_a * rel_y # relative to the center of the element, before rotation
+            orig_y = sin_a * rel_x + cos_a * rel_y
+
+            pos = orig_x - self._initial_size[0]/2, orig_y - self._initial_size[1]/2
+        return self.get_at(pos)
+
     def get_at(self, pos: tuple[int, int]):
         """Return whether the object having this hitbox is in contact with a point with the same relative position."""
         if self._mask is None:
@@ -59,6 +100,14 @@ class Hitbox:
     def get_mask(self):
         """Get the mask of the hitbox."""
         return self._mask
+
+    def rotate(self, angle: int):
+        """Rotate the hitbox."""
+        self._angle += angle
+    
+    def zoom(self, zoom: float):
+        """Zoom on the hitbox."""
+        self._zoom *= zoom
 
     @property
     def left(self):

@@ -60,6 +60,7 @@ class Element(Visual):
         if active_area is None:
             active_area = Hitbox(0, 0, *self.background.size)
         self._active_area = active_area
+        self._active_area.set_initial_size(self.background.size)
 
         self._x = x
         self._y = y
