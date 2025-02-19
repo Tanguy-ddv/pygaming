@@ -28,7 +28,7 @@ Art.__init__ =  __new_init
 
 # Add a copy at get time.
 __art_get = Art.get
-Art.get = lambda self, match, **kwargs: __art_get(self, match, **kwargs).copy()
+Art.get = lambda self, match, copy = True, **kwargs: __art_get(self, match, **kwargs).copy() if copy else __art_get(self, match, **kwargs)
 
 # Add load on start and permanent, with start and end.
 def __set_load_on_start(self):

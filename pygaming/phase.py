@@ -206,7 +206,7 @@ class GamePhase(_BasePhase, Visual):
         self.end()
         for frame in self.frames:
             frame.end() # Unload
-        Visual.finish(self, self.settings)
+        Visual.finish(self)
         gc.collect()
 
     def is_child_on_me(self, child):

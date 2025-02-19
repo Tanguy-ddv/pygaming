@@ -34,29 +34,27 @@ class Hitbox:
         self._rect = Rect(left, top, width, height)
         self._mask = mask
         self._minimal_rect = self._rect
-        self._angle = 0
-        self._zoom = 0
         self._initial_size = None
     
     def set_initial_size(self, size):
         """Set the initial size of the element this hitbox is refering to."""
         self._initial_size = size
 
-    def is_contact(self, pos: tuple[int, int], element_size: tuple[int, int]):
-        if self._zoom:
+    def is_contact(self, pos: tuple[int, int], element_size: tuple[int, int], angle: float = 0, zoom: float = 1):
+        if zoom != 1:
             # modify the position to take the zoom into account.
             x,y = pos
-            x/= self._zoom
-            y/= self._zoom
+            x/= zoom
+            y/= zoom
             pos = x,y
-        if self._angle:
+        if angle:
             # modify the position to take the angle into account.
             x,y = pos # relative to the top left of the element this is the hitbox
             width, height = element_size
             rel_x = x - width/2 # relative to the center of the element.
             rel_y = y - height/2
 
-            rad = math.radians(-self._angle)
+            rad = math.radians(-angle)
             cos_a, sin_a = math.cos(rad), math.sin(rad)
 
             orig_x = cos_a * rel_x - sin_a * rel_y # relative to the center of the element, before rotation
@@ -91,7 +89,8 @@ class Hitbox:
 
     def unload(self):
         """Unload the mask of the hitbox."""
-        self._mask.unload()
+        if self._mask is not None:
+            self._mask.unload()
     
     def get_rect(self):
         """Get the rect of the hitbox."""
@@ -100,14 +99,6 @@ class Hitbox:
     def get_mask(self):
         """Get the mask of the hitbox."""
         return self._mask
-
-    def rotate(self, angle: int):
-        """Rotate the hitbox."""
-        self._angle += angle
-    
-    def zoom(self, zoom: float):
-        """Zoom on the hitbox."""
-        self._zoom *= zoom
 
     @property
     def left(self):

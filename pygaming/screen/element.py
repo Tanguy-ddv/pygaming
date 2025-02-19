@@ -5,8 +5,6 @@ import pygame
 from ..phase import GamePhase
 from .tooltip import Tooltip
 from .art.art import Art
-from ..error import PygamingException
-from .art import mask
 from .anchors import TOP_LEFT
 from ..inputs import Click
 from ..cursor import Cursor
@@ -106,7 +104,7 @@ class Element(Visual):
         if isinstance(click, tuple):
             click = Click(*click)
         ck = click.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
-        return self._active_area.get_at((ck.x, ck.y))
+        return self._active_area.is_contact((ck.x, ck.y), self.background.size, 0, 1)
 
     @property
     def game(self):
@@ -116,11 +114,6 @@ class Element(Visual):
     def get_hover(self):
         """Update the hover cursor and tooltip."""
         return self._tooltip, self._cursor
-
-    @abstractmethod
-    def make_surface(self) -> pygame.Surface:
-        """Make the new surface to be returned to his parent."""
-        raise NotImplementedError()
 
     def notify_change(self):
         """Notify the need to remake the last surface."""
