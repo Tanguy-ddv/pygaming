@@ -8,6 +8,7 @@ phases, settings, controls, language, sounds,
 screens, frames and widgets,
 actors and dynamic sprites, masks
 """
+from pygame import Rect
 from .config import Config
 from .game import Game
 from ._base import LEAVE, STAY
@@ -21,23 +22,24 @@ from .cursor import Cursor
 from .screen.frame import Frame
 from .screen.element import Element
 from .screen.tooltip import Tooltip, TextTooltip
+from .screen.hitbox import Hitbox
 
-from .screen import anchors, widget, art, mask
+from .screen import anchors, widget, art
+from .screen.art import mask, transform
 
 from .file import get_file
 from .screen.actor import Actor
 
-from .screen.window import Window, WindowLike
+from .screen.camera import Camera
 
 from .inputs import Controls, Click, Keyboard, Mouse
 from .connexion import Client, Server as Network, HEADER, ID, PAYLOAD, TIMESTAMP
 
 from .database import Database, TypeWriter, SoundBox, TextFormatter
 from . import commands
-from . import ZOcallable
 
 __all__ = ['Config', 'Game', 'LEAVE', 'STAY', 'Logger', 'ServerPhase', 'GamePhase', 'Tooltip', 'TextTooltip',
-           'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter', 'Cursor', 'ZOcallable',
-           'Element', 'Controls', 'Click', 'widget', 'get_file', 'Client', 'Keyboard', 'Mouse', 'mask', 'art',
-           'Network', 'HEADER', 'ID', 'PAYLOAD', 'TIMESTAMP', 'Database', 'anchors',
-           'commands', 'Window', 'WindowLike', 'TypeWriter', 'SoundBox', 'Color']
+           'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter', 'Cursor', 'mask', 'transform',
+           'Element', 'Controls', 'Click', 'widget', 'get_file', 'Client', 'Keyboard', 'Mouse', 'art',
+           'Network', 'HEADER', 'ID', 'PAYLOAD', 'TIMESTAMP', 'Database', 'anchors', 'Rect', 'Hitbox',
+           'commands', 'Camera', 'TypeWriter', 'SoundBox', 'Color']

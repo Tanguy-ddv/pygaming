@@ -100,7 +100,7 @@ class Client:
         """Close the client at the end of the process."""
         self._reception_buffer = [{HEADER : EXIT}]
         self._running = False
-        if not self.client_socket is None:
+        if self.client_socket is not None:
             self.client_socket.close()
         self.is_connected = False
 

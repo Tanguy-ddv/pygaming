@@ -6,10 +6,9 @@ import pygame
 from ..phase import GamePhase
 from .element import Element
 from .art.art import Art
-from .window import Window, WindowLike
+from .camera import Camera
 from .anchors import CENTER, TOP_LEFT
 from ..inputs import Click
-
 class Frame(Element):
     """
     The Frame represent a fraction of the screen.
@@ -19,10 +18,10 @@ class Frame(Element):
     def __init__(
         self,
         master: GamePhase | Frame, # Frame or phase, no direct typing to avoid circular import
-        window: WindowLike,
+        window: pygame.Rect,
         background: Art,
         focused_background: Optional[Art] = None,
-        camera: Optional[WindowLike] = None,
+        camera: Optional[Camera] = None,
         layer: int = 0,
         continue_animation: bool = False,
         update_if_invisible: bool = False
@@ -48,26 +47,14 @@ class Frame(Element):
         - continue_animation: bool. If set to False, switching from focused to unfocused will reset the animations.
         """
         self.children: list[Element] = []
-
-
-        if isinstance(window, Window):
-            self.window = window
-        elif len(window) in [4, 5]:
-            self.window = Window(*window)
-        else:
-            raise ValueError("window must be either a Window, or a tuple (x,y, width, height) or a tuple (x,y, width, height, anchor)")
+        self.window = window
 
         self.has_a_widget_focused = False
 
         if camera is None:
-            camera = Window(0, 0, *self.window.size)
+            camera = Camera(0, 0, *self.window.size)
 
-        if isinstance(camera, Window):
-            self.camera = camera
-        elif len(camera) in [4, 5]:
-            self.camera = Window(*camera)
-        else:
-            raise ValueError("window must be either a Window, or a tuple (x,y, width, height) or a tuple (x,y, width, height, anchor)")
+        self.camera = camera
 
         self._compute_wc_ratio(master=master)
         Element.__init__(
@@ -75,7 +62,7 @@ class Frame(Element):
             master,
             background,
             *window.topleft,
-            window.anchor,
+            TOP_LEFT,
             layer,
             None,
             None,
@@ -196,16 +183,13 @@ class Frame(Element):
         """Execute this method at the beginning of the phase."""
         for child in self.children:
             child.begin()
-        self.focused_background.start(self.game.settings)
-        self.window.load(self.game.settings)
+        self.focused_background.start(**self.game.settings)
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
-        self.background.unload()
         for child in self.children:
             child.finish()
-        self.focused_background.unload()
-        self.window.unload()
+        self.focused_background.end()
 
     def loop(self, loop_duration: int):
         """Update the frame every loop iteration."""
@@ -220,7 +204,6 @@ class Frame(Element):
             has_changed = self.background.update(loop_duration)
             if has_changed:
                 self.notify_change()
-        self.window.update(loop_duration)
         self.update(loop_duration)
 
     def update(self, loop_duration: int):
@@ -255,23 +238,22 @@ class Frame(Element):
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
-            background = self.focused_background.get(self.game.settings, match=self.background if self._continue_animation else None)
+            background = self.focused_background.get(match=self.background if self._continue_animation else None, **self.game.settings)
         else:
-            background = self.background.get(self.game.settings)
+            background = self.background.get(None, **self.game.settings)
         for child in self.visible_children:
             background.blit(child.get_surface(), child.relative_rect.topleft)
 
-        surf = background.subsurface(self.camera)
+        surf = self.camera.get_surface(background, self.game.settings)
         if self.window.size != self.camera.size:
             surf = pygame.transform.scale(surf, self.window.size)
-        return self.window.get_surface(surf)
+        return surf
 
     def move_camera(self, dx, dy):
         """Move the camera on the frame."""
         dx, dy = int(dx), int(dy)
         dx = np.clip(dx, - self.camera.left, self.width - self.camera.right)
         dy = np.clip(dy, - self.camera.top, self.height - self.camera.bottom)
-        print(dx, dy)
 
         if dx != 0 or dy != 0:
             self.camera.move_ip(dx, dy)
@@ -287,12 +269,11 @@ class Frame(Element):
         new_x = np.clip(int(new_x - anchor[0]*self.camera.width), 0, self.width - self.camera.width)
         if (new_x, new_y) != self.window.topleft:
 
-            self.camera = Window(new_x, new_y, *self.camera.size)
+            self.camera.move_ip(self.camera.left - new_x, self.camera.top - new_y)
             self._compute_wc_ratio()
             for child in self.children:
                 child.get_on_master()
             self.notify_change()
-            
 
     
     def zoom_camera(self, ratio_x: float, target: tuple[float, float] = CENTER, ratio_y = None):
@@ -316,7 +297,8 @@ class Frame(Element):
             left = np.clip(left, 0, self.width - new_width)
             top = np.clip(top, 0, self.height - new_height)
 
-            self.camera = Window(left, top, new_width, new_height)
+            self.camera.inflate_ip(ratio_x, ratio_y)
+            self.camera.topleft = (top, left)
             self._compute_wc_ratio()
             for child in self.children:
                 child.get_on_master() # All children recompute whether they are on the master (this frame) or out.

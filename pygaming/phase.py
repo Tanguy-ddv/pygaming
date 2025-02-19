@@ -8,7 +8,7 @@ from ._base import BaseRunnable, STAY
 from .server import Server
 from .cursor import Cursor
 from .screen._visual import Visual
-from .screen.art import ColoredRectangle
+from .screen.art import Rectangle
 
 _TOOLTIP_DELAY = 500 # [ms]
 
@@ -163,7 +163,7 @@ class GamePhase(_BasePhase, Visual):
 
     def __init__(self, name, game: Game) -> None:
         _BasePhase.__init__(self, name, game)
-        background = ColoredRectangle((0, 0, 0, 0), *self.config.dimension)
+        background = Rectangle((0, 0, 0, 0), *self.config.dimension)
         Visual.__init__(self, background, False)
 
         self.frames = [] # list[Frame]
@@ -297,7 +297,7 @@ class GamePhase(_BasePhase, Visual):
                 tooltip, cursor = frame.get_hover()
 
         if tooltip is None: # We are not on a widget requiring a tooltip
-            if not self.current_tooltip is None:
+            if self.current_tooltip is not None:
                 self.current_tooltip = None
                 self.notify_change()
         else: # We are on a widget requiring a tooltip
@@ -334,12 +334,12 @@ class GamePhase(_BasePhase, Visual):
 
     def make_surface(self) -> pygame.Surface:
         """Make the new surface to be returned to his parent."""
-        bg = self.background.get(self.settings)
+        bg = self.background.get(None, **self.settings)
         for frame in self.visible_frames:
             surf = frame.get_surface()
             bg.blit(surf, (frame.relative_left, frame.relative_top))
 
-        if not self.current_tooltip is None and self._tooltip_delay < 0:
+        if self.current_tooltip is not None and self._tooltip_delay < 0:
             if self._tooltip_x is None:
                 x, y = self.mouse.get_position() # We set the position of the tooltip with the position of the mouse.
                 self._tooltip_x, self._tooltip_y = x, y

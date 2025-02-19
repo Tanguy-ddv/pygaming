@@ -132,7 +132,7 @@ class Cursor:
         """Return the current image to show as a cursor."""
         if not self.is_loaded:
             art, anchor = self._future_cursors # pylint: disable=unbalanced-tuple-unpacking
-            art.load(settings)
+            art.load(**settings)
             hotspot = int(anchor[0]*art.width), int(anchor[1]*art.height)
             self._cursors = tuple(_Cs(hotspot, surf) for surf in art.surfaces)
             self._durations = art.durations

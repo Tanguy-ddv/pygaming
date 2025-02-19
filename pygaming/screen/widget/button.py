@@ -1,16 +1,17 @@
 """The button module contains buttons. They are widgets used to get a user click."""
 
 from typing import Optional, Callable, Any
-from pygame import Rect, Surface
+from pygame import Surface
 from ..frame import Frame
 from ..anchors import TOP_LEFT, CENTER
 from .widget import Widget
 from ..art import Art
 from ...color import Color
-from ..mask import Mask
+from ..art import mask
 from ...database import TextFormatter
 from ...cursor import Cursor
 from ..tooltip import Tooltip
+from ..hitbox import Hitbox
 
 
 class Button(Widget):
@@ -26,7 +27,7 @@ class Button(Widget):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[Mask] = None,
+        active_area: Optional[mask.Mask | Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
@@ -83,15 +84,15 @@ class Button(Widget):
         return self._is_clicked
 
     def _make_disabled_surface(self) -> Surface:
-        return self.disabled_background.get(self.game.settings, self.background if self._continue_animation else None)
+        return self.disabled_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
     def _make_normal_surface(self) -> Surface:
-        return self.normal_background.get(self.game.settings, self.background if self._continue_animation else None)
+        return self.normal_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
     def _make_focused_surface(self) -> Surface:
         if self._is_clicked:
-            return self.active_background.get(self.game.settings, self.background if self._continue_animation else None)
-        return self.focused_background.get(self.game.settings, self.background if self._continue_animation else None)
+            return self.active_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
+        return self.focused_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
     def start(self):
         """Nothing to do at the start of the phase for this widget."""
@@ -116,7 +117,7 @@ class Button(Widget):
                 # We verify if the user just clicked or if it is a long click.
                 if not self._is_clicked:
                     self.notify_change()
-                    if not self._on_click_command is None:
+                    if self._on_click_command is not None:
                         self._on_click_command()
                 else:
                     self.notify_change()
@@ -126,7 +127,7 @@ class Button(Widget):
             else:
                 if self._is_clicked:
                     self.notify_change()
-                    if not self._on_unclick_command is None:
+                    if self._on_unclick_command is not None:
                         self._on_unclick_command()
                 self._is_clicked = False
 
@@ -149,7 +150,7 @@ class TextButton(Button):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Rect | None = None,
+        active_area: Optional[mask.Mask | Hitbox] = None,
         layer: int = 0,
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,

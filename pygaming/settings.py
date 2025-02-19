@@ -2,6 +2,7 @@
 from typing import Any
 from .file import load_json_file, save_json_file
 from .error import PygamingException
+from .config import Config
 
 class Settings:
     """
@@ -12,8 +13,9 @@ class Settings:
     For instance, difficulty, rendering etc.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, config: Config) -> None:
         self._data, self._encoding = load_json_file('settings.json')
+        self._ld_kwargs_keys = config.get("loading_kwargs", ["antilias", "cost_threshold"])
 
     def get(self, attribute: str):
         """Get the value of the settings attribute"""
@@ -102,3 +104,10 @@ class Settings:
             raise PygamingException(f"Please set {attribute} with it dedecated setter.")
         self._data[attribute] = value
         self.save()
+    
+    def keys(self):
+        """This method is used to return the name of the loading kwargs for arts and masks."""
+        return self._ld_kwargs_keys
+
+    def __getitem__(self, name):
+        return self._data.get(name)

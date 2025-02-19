@@ -6,13 +6,13 @@ from ..phase import GamePhase
 from .tooltip import Tooltip
 from .art.art import Art
 from ..error import PygamingException
-from .mask import Mask
+from .art import mask
 from .anchors import TOP_LEFT
 from ..inputs import Click
 from ..cursor import Cursor
 from .tooltip import Tooltip
 from ._visual import Visual
-from .window import Window
+from .hitbox import Hitbox
 
 class Element(Visual):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, frames."""
@@ -29,7 +29,7 @@ class Element(Visual):
         cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
-        active_area: Optional[Mask | pygame.Mask | Window] = None,
+        active_area: Optional[mask.Mask | pygame.Mask | Hitbox] = None,
         update_if_invisible: bool = False
     ) -> None:
         """
@@ -57,8 +57,10 @@ class Element(Visual):
         self.can_be_disabled = can_be_disabled
         self.disabled = False
 
-        if not active_area is None and not isinstance(active_area, Window) and active_area.get_size() != self.background.size:
-            raise PygamingException("The active area, when defined as a mask must have the same size than the art.")
+        if isinstance(active_area, pygame.Mask) and active_area.get_size() != self.background.size:
+            raise PygamingException("The active area, when defined as a pygame mask must have the same size than the art.")
+        if active_area is None:
+            active_area = Hitbox(0, 0, *self.background.size)
         self._active_area = active_area
 
         self._x = x
@@ -87,11 +89,11 @@ class Element(Visual):
         - new_y: int = None. If specified, change the current y of the element. Otherwise do not change it.
         - new_anchore: tuple[float, float] = None. If specified, change the current anchor of the element. Otherwise do not change it.
         """
-        if not new_anchor is None:
+        if new_anchor is not None:
             self.anchor = new_anchor
-        if not new_y is None:
+        if new_y is not None:
             self._y = new_y
-        if not new_x is None:
+        if new_x is not None:
             self._x = new_x
 
         self.get_on_master()
@@ -135,24 +137,13 @@ class Element(Visual):
             Visual.loop(self, loop_duration)
             self.update(loop_duration)
 
-    def _load_active_area(self):
-        """Load the active area."""
-        if isinstance(self._active_area, Mask):
-            self._active_area.load(self.game.settings)
-        elif self._active_area is None:
-            if self.game.config.get("default_active_area_rectangle"):
-                self._active_area = Window(0, 0, self.width, self.height)
-            else: 
-                self.background.set_load_on_start()
-                self.background.start(self.game.settings)
-                self._active_area = pygame.mask.from_surface(self.background.surfaces[0], 127)
-
     def begin(self):
         """
         Execute this method at the beginning of the phase
         to load the active area and the background before running class-specific start method.
         """
-        self._load_active_area()
+        if isinstance(self._active_area, mask.Mask):
+            self._active_area.load(self.background.width, self.background.height, **self.game.settings)
         Visual.begin(self, self.game.settings)
         self.start()
 
@@ -165,7 +156,7 @@ class Element(Visual):
         """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
         self.end()
         Visual.finish(self)
-        if isinstance(self._active_area, Mask):
+        if isinstance(self._active_area, mask.Mask):
             self._active_area.unload()
 
     @abstractmethod

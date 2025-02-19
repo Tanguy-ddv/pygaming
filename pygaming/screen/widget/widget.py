@@ -6,10 +6,11 @@ from pygame import Surface, Mask as mk
 from ..frame import Frame
 from ..element import Element
 from ..anchors import TOP_LEFT
-from ..art.art import Art
-from ..mask import Mask
+from ..art import Art
+from ..art import mask
 from ...cursor import Cursor
 from ..tooltip import Tooltip
+from ..hitbox import Hitbox
 
 class Widget(Element, ABC):
     """
@@ -27,7 +28,7 @@ class Widget(Element, ABC):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[Mask | mk] = None,
+        active_area: Optional[mask.Mask | mk | Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
@@ -128,12 +129,12 @@ class Widget(Element, ABC):
 
     def start(self):
         """Execute this method at the beginning of the phase, load the arts that are set to force_load."""
-        self.normal_background.start(self.game.settings)
-        self.focused_background.start(self.game.settings)
-        self.disabled_background.start(self.game.settings)
+        self.normal_background.start(**self.game.settings)
+        self.focused_background.start(**self.game.settings)
+        self.disabled_background.start(**self.game.settings)
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
-        self.normal_background.unload()
-        self.focused_background.unload()
-        self.disabled_background.unload()
+        self.normal_background.end()
+        self.focused_background.end()
+        self.disabled_background.end()
