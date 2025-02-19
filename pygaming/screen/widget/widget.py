@@ -28,7 +28,7 @@ class Widget(Element, ABC):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[mask.Mask | mk | Hitbox] = None,
+        active_area: Optional[Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
