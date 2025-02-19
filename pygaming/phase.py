@@ -297,7 +297,7 @@ class GamePhase(_BasePhase, Visual):
                 tooltip, cursor = frame.get_hover()
 
         if tooltip is None: # We are not on a widget requiring a tooltip
-            if not self.current_tooltip is None:
+            if self.current_tooltip is not None:
                 self.current_tooltip = None
                 self.notify_change()
         else: # We are on a widget requiring a tooltip
@@ -339,7 +339,7 @@ class GamePhase(_BasePhase, Visual):
             surf = frame.get_surface()
             bg.blit(surf, (frame.relative_left, frame.relative_top))
 
-        if not self.current_tooltip is None and self._tooltip_delay < 0:
+        if self.current_tooltip is not None and self._tooltip_delay < 0:
             if self._tooltip_x is None:
                 x, y = self.mouse.get_position() # We set the position of the tooltip with the position of the mouse.
                 self._tooltip_x, self._tooltip_y = x, y
