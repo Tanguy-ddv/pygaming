@@ -14,12 +14,7 @@ def _set_alpha(surface: pygame.Surface, matrix: np.ndarray):
 
 class Camera(pygame.Rect):
     """
-    A window represent a portion of the screen, or of another frame.
-    it is used to define the position of a Frame.
-    The most basic windows are rectangles, windows can also have masks
-    to apply effects on the image shown on the screen.
-
-    If the mask is bigger than the frame itself, the remaining is filled with a given color.
+    Camera are used to to define the part of the frame that will be shown on the screen. They can also apply some effects on the render, through masks.
     """
 
     def __init__(
@@ -37,7 +32,7 @@ class Camera(pygame.Rect):
         shift_hue_mask: mask.Mask = None
     ):
         """
-        Create a new mask.
+        Create a new camera.
 
         Params:
         ----
@@ -63,22 +58,19 @@ class Camera(pygame.Rect):
         self.saturate_mask = saturate_mask
         self.shift_hue_mask = shift_hue_mask
 
-    def get_at(self, pos: tuple[int, int]):
-        """Return True if the point is inside the window."""
-        return self.collidepoint(*pos)
-
     def get_surface(self, surface: pygame.Surface, settings: Settings):
-        """Return the surface extracted by the window."""
+        """Return the surface extracted by the camera."""
+        surface = surface.subsurface(self)
         for mask, func in zip([
             self.darken_mask, self.lighten_mask, self.desaturate_mask, self.saturate_mask, self.shift_hue_mask
         ], [
             darken, lighten, desaturate, saturate, shift_hue
         ]):
             if mask is not None:
-                mask.load(*surface.get_size(), **settings.data())
+                mask.load(*surface.get_size(), **settings)
                 func(surface, mask.matrix)
         if self.hide_mask is not None:
-            self.hide_mask.load(*surface.get_size(), **settings.data())
+            self.hide_mask.load(*surface.get_size(), **settings)
             return _set_alpha(surface, self.hide_mask.matrix)
         else:
             return surface
