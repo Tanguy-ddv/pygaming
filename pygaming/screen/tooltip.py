@@ -35,7 +35,7 @@ class Tooltip(Visual):
 
     def make_surface(self) -> pygame.Surface:
         """Make the surface of the tooltip as a pygame.Surface"""
-        return self.background.get(self.phase.settings)
+        return self.background.get(None, **self.phase.settings)
 
 class TextTooltip(Tooltip):
 
@@ -54,7 +54,7 @@ class TextTooltip(Tooltip):
     
     def make_surface(self):
         """Make the surface of the tooltip with the text on it."""
-        background = self.background.get(self.phase.settings)
+        background = self.background.get(None, **self.phase.settings)
         rendered_text = self.game.typewriter.render(self._font, self._text, self._font_color, None, self._justify)
         text_width, text_height = rendered_text.get_size()
         just_x = self._justify[0]*(background.get_width() - text_width)

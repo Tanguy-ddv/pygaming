@@ -144,7 +144,7 @@ class Element(Visual):
         """
         if isinstance(self._active_area, mask.Mask):
             self._active_area.load(self.background.width, self.background.height, **self.game.settings)
-        Visual.begin(self)
+        Visual.begin(self, self.game.settings)
         self.start()
 
     @abstractmethod

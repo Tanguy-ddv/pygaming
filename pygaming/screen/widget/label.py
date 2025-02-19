@@ -74,7 +74,7 @@ class Label(Element):
 
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the Label."""
-        bg = self.background.get(self.game.settings)
+        bg = self.background.get(None, **self.game.settings)
         if self._show_text:
             rendered_text = self._render_text()
             text_width, text_height = rendered_text.get_size()

@@ -15,20 +15,54 @@ def __new_save(self, path: str, index: int | slice = None):
     if a slice is provided, the frames in the slice are saved as a gif
     if nothing is provided, all frames are saved as gif (or as an image, if there is only one.)
     """
-    __art_save(self, get_file('image', path), index)
-
+    __art_save(self, get_file('images', path), index)
 Art.save = __new_save
+
+# Update the init to add the permanent and load_on_start arguments.
+__art_init = Art.__init__
+def __new_init(self, transformation):
+    __art_init(self, transformation)
+    self._permanent = False
+    self._load_on_start = False
+Art.__init__ =  __new_init
+
+# Add a copy at get time.
+__art_get = Art.get
+Art.get = lambda self, match, **kwargs: __art_get(self, match, **kwargs).copy()
+
+# Add load on start and permanent, with start and end.
+def __set_load_on_start(self):
+    self._load_on_start = True
+    return self
+
+def __set_permanent(self):
+    self._permanent = True
+    return self
+
+Art.set_load_on_start = __set_load_on_start
+Art.set_permanent = __set_permanent
+
+def __start(self, **ld_kwargs):
+    if self._load_on_start:
+        self.load(**ld_kwargs)
+
+def __end(self):
+    if not self._permanent:
+        self.unload()
+
+Art.start = __start
+Art.end = __end
 
 class ImageFile(ImageFile):
 
     def __init__(self, path, transparency = True, transformation = None):
-        file = get_file('image', path)
+        file = get_file('images', path)
         super().__init__(file, transparency, transformation)
 
 class ImageFolder(ImageFolder):
 
     def __init__(self, path, durations, introduction = 0, transformation = None):
-        folder = get_file('image', path)
+        folder = get_file('images', path)
         super().__init__(folder, durations, introduction, transformation)
 
 class GIFFile(GIFFile):

@@ -183,16 +183,13 @@ class Frame(Element):
         """Execute this method at the beginning of the phase."""
         for child in self.children:
             child.begin()
-        self.focused_background.start(self.game.settings)
-        self.window.load(self.game.settings)
+        self.focused_background.start(**self.game.settings)
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
-        self.background.unload()
         for child in self.children:
             child.finish()
-        self.focused_background.unload()
-        self.window.unload()
+        self.focused_background.end()
 
     def loop(self, loop_duration: int):
         """Update the frame every loop iteration."""
@@ -207,7 +204,6 @@ class Frame(Element):
             has_changed = self.background.update(loop_duration)
             if has_changed:
                 self.notify_change()
-        self.window.update(loop_duration)
         self.update(loop_duration)
 
     def update(self, loop_duration: int):
@@ -242,9 +238,9 @@ class Frame(Element):
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the frame as a pygame.Surface"""
         if self.focused:
-            background = self.focused_background.get(match=self.background if self._continue_animation else None, **self.game.settings).copy()
+            background = self.focused_background.get(match=self.background if self._continue_animation else None, **self.game.settings)
         else:
-            background = self.background.get(None, **self.game.settings).copy()
+            background = self.background.get(None, **self.game.settings)
         for child in self.visible_children:
             background.blit(child.get_surface(), child.relative_rect.topleft)
 

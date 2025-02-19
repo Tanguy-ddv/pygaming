@@ -23,13 +23,14 @@ class Visual(ABC):
             self._last_surface = self.make_surface()
         return self._last_surface
 
-    def begin(self):
+    def begin(self, settings):
         """Call self method at the beginning of the phase."""
+        self.background.start(**settings)
         self.notify_change()
     
     def finish(self):
         """Call self method at the end of the phase."""
-        self.background.unload()
+        self.background.end()
     
     def loop(self, loop_duration):
         """Call this method at every loop iteration."""

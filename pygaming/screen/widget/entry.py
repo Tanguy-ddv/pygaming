@@ -159,11 +159,11 @@ class Entry(Widget):
     def _make_normal_surface(self) -> Surface:
         if self._text: # if the current text is not empty
             return self._make_surface(
-                self.normal_background.get(self.game.settings),
+                self.normal_background.get(None, **self.game.settings),
                 self._normal_font, self._normal_font_color, False, self._text
             )
         return self._make_surface(
-            self.normal_background.get(self.game.settings),
+            self.normal_background.get(None, **self.game.settings),
             self._empty_font, self._empty_font_color, False, self._empty_text_or_loc
         )
 

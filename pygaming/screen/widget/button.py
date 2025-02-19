@@ -84,15 +84,15 @@ class Button(Widget):
         return self._is_clicked
 
     def _make_disabled_surface(self) -> Surface:
-        return self.disabled_background.get(self.game.settings, self.background if self._continue_animation else None)
+        return self.disabled_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
     def _make_normal_surface(self) -> Surface:
-        return self.normal_background.get(self.game.settings, self.background if self._continue_animation else None)
+        return self.normal_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
     def _make_focused_surface(self) -> Surface:
         if self._is_clicked:
-            return self.active_background.get(self.game.settings, self.background if self._continue_animation else None)
-        return self.focused_background.get(self.game.settings, self.background if self._continue_animation else None)
+            return self.active_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
+        return self.focused_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
     def start(self):
         """Nothing to do at the start of the phase for this widget."""
