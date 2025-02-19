@@ -126,8 +126,8 @@ class Entry(Widget):
         self._caret_delta = 0
 
         self._empty_text_or_loc = empty_text_or_loc
-        self._empty_font = empty_font if not empty_font is None else self._normal_font
-        self._empty_font_color = empty_font_color if not empty_font_color is None else self._normal_font_color
+        self._empty_font = empty_font if empty_font is not None else self._normal_font
+        self._empty_font_color = empty_font_color if empty_font_color is not None else self._normal_font_color
 
     def set_text(self, new_text: str):
         """Set a new value for the entry."""

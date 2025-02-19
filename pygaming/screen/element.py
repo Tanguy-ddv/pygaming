@@ -89,11 +89,11 @@ class Element(Visual):
         - new_y: int = None. If specified, change the current y of the element. Otherwise do not change it.
         - new_anchore: tuple[float, float] = None. If specified, change the current anchor of the element. Otherwise do not change it.
         """
-        if not new_anchor is None:
+        if new_anchor is not None:
             self.anchor = new_anchor
-        if not new_y is None:
+        if new_y is not None:
             self._y = new_y
-        if not new_x is None:
+        if new_x is not None:
             self._x = new_x
 
         self.get_on_master()

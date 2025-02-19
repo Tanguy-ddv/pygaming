@@ -117,7 +117,7 @@ class Button(Widget):
                 # We verify if the user just clicked or if it is a long click.
                 if not self._is_clicked:
                     self.notify_change()
-                    if not self._on_click_command is None:
+                    if self._on_click_command is not None:
                         self._on_click_command()
                 else:
                     self.notify_change()
@@ -127,7 +127,7 @@ class Button(Widget):
             else:
                 if self._is_clicked:
                     self.notify_change()
-                    if not self._on_unclick_command is None:
+                    if self._on_unclick_command is not None:
                         self._on_unclick_command()
                 self._is_clicked = False
 
