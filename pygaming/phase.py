@@ -334,7 +334,7 @@ class GamePhase(_BasePhase, Visual):
 
     def make_surface(self) -> pygame.Surface:
         """Make the new surface to be returned to his parent."""
-        bg = self.background.get(self.settings)
+        bg = self.background.get(**self.settings).copy()
         for frame in self.visible_frames:
             surf = frame.get_surface()
             bg.blit(surf, (frame.relative_left, frame.relative_top))
