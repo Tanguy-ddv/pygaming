@@ -53,6 +53,7 @@ class Actor(Element):
         self._angle = 0
         self._zoom = 1
         self._initial_anchor = anchor
+        self._initial_size = self.width, self.height
 
     @property
     def main_art(self):
@@ -91,7 +92,27 @@ class Actor(Element):
         if isinstance(pos, tuple):
             click = Click(*pos)
         ck = click.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
-        return self._active_area.is_contact((ck.x, ck.y), (self.width, self.height), self._angle, self._zoom)
+        pos = ck.x, ck.y
+        if self._zoom != 1:
+            # modify the position to take the zoom into account.
+            x,y = pos
+            x/= self._zoom
+            y/= self._zoom
+            pos = x,y
+        if self._angle:
+            # modify the position to take the angle into account.
+            x,y = pos # relative to the top left of the element this is the hitbox
+            rel_x = x - self.width/2 # relative to the center of the element.
+            rel_y = y - self.height/2
+
+            rad = math.radians(self._angle)
+            cos_a, sin_a = math.cos(rad), math.sin(rad)
+
+            orig_x = cos_a * rel_x - sin_a * rel_y # relative to the center of the element, before rotation
+            orig_y = sin_a * rel_x + cos_a * rel_y
+
+            pos = orig_x + self._initial_size[0]/2, orig_y + self._initial_size[1]/2
+        return self._active_area.is_contact(pos)
 
     def _find_new_anchor(self):
         w, h = self.main_art.width, self.main_art.height # the size before any rotation

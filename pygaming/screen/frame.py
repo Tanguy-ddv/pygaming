@@ -71,7 +71,6 @@ class Frame(Element):
             active_area=None,
             update_if_invisible=update_if_invisible
         )
-        self._active_area.set_initial_size(self.window.size)
         self._continue_animation = continue_animation
 
         self.focused = False

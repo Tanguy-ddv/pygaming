@@ -58,7 +58,6 @@ class Element(Visual):
         if active_area is None:
             active_area = Hitbox(0, 0, *self.background.size)
         self._active_area = active_area
-        self._active_area.set_initial_size(self.background.size)
 
         self._x = x
         self._y = y
@@ -104,7 +103,7 @@ class Element(Visual):
         if isinstance(click, tuple):
             click = Click(*click)
         ck = click.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
-        return self._active_area.is_contact((ck.x, ck.y), self.background.size, 0, 1)
+        return self._active_area.is_contact((ck.x, ck.y))
 
     @property
     def game(self):

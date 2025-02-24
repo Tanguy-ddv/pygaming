@@ -34,36 +34,8 @@ class Hitbox:
         self._rect = Rect(left, top, width, height)
         self._mask = mask
         self._minimal_rect = self._rect
-        self._initial_size = None
-    
-    def set_initial_size(self, size):
-        """Set the initial size of the element this hitbox is refering to."""
-        self._initial_size = size
 
-    def is_contact(self, pos: tuple[int, int], element_size: tuple[int, int], angle: float = 0, zoom: float = 1):
-        if zoom != 1:
-            # modify the position to take the zoom into account.
-            x,y = pos
-            x/= zoom
-            y/= zoom
-            pos = x,y
-        if angle:
-            # modify the position to take the angle into account.
-            x,y = pos # relative to the top left of the element this is the hitbox
-            width, height = element_size
-            rel_x = x - width/2 # relative to the center of the element.
-            rel_y = y - height/2
-
-            rad = math.radians(angle)
-            cos_a, sin_a = math.cos(rad), math.sin(rad)
-
-            orig_x = cos_a * rel_x - sin_a * rel_y # relative to the center of the element, before rotation
-            orig_y = sin_a * rel_x + cos_a * rel_y
-
-            pos = orig_x + self._initial_size[0]/2, orig_y + self._initial_size[1]/2
-        return self.get_at(pos)
-
-    def get_at(self, pos: tuple[int, int]):
+    def is_contact(self, pos: tuple[int, int]):
         """Return whether the object having this hitbox is in contact with a point with the same relative position."""
         if self._mask is None:
             return self._rect.collidepoint(pos)
