@@ -60,7 +60,7 @@ class Hitbox:
             orig_x = cos_a * rel_x - sin_a * rel_y # relative to the center of the element, before rotation
             orig_y = sin_a * rel_x + cos_a * rel_y
 
-            pos = orig_x - self._initial_size[0]/2, orig_y - self._initial_size[1]/2
+            pos = orig_x + self._initial_size[0]/2, orig_y + self._initial_size[1]/2
         return self.get_at(pos)
 
     def get_at(self, pos: tuple[int, int]):

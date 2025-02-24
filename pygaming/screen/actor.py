@@ -7,6 +7,8 @@ from .element import Element, TOP_LEFT
 from .art import Art
 from .hitbox import Hitbox
 from ..inputs.mouse import Click
+from .tooltip import Tooltip
+from ..cursor import Cursor
 
 class Actor(Element):
     """
@@ -27,6 +29,8 @@ class Actor(Element):
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
         hitbox: Hitbox = None,
+        tooltip: Tooltip = None,
+        cursor: Cursor = None,
         update_if_invisible: bool = False
     ) -> None:
         super().__init__(
@@ -36,8 +40,8 @@ class Actor(Element):
             y,
             anchor,
             layer,
-            None,
-            None,
+            tooltip,
+            cursor,
             False,
             False,
             hitbox,
@@ -92,7 +96,7 @@ class Actor(Element):
     def _find_new_anchor(self):
         w, h = self.main_art.width, self.main_art.height # the size before any rotation
 
-        theta = math.radians(self._angle)
+        theta = math.radians(-self._angle)
         self.width, self.height = int(w * abs(math.cos(theta)) + h * abs(math.sin(theta))), int(h * abs(math.cos(theta)) + w * abs(math.sin(theta)))
 
         point = self._initial_anchor[0]*w, self._initial_anchor[1]*h # the point of anchor before rotation
