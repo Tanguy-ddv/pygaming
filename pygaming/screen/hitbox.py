@@ -11,8 +11,12 @@ class _BooleanMask(mask.Mask):
         self.other = other
     
     def _load(self, width, height, **ld_kwargs):
-        self.other.load(width, height, **ld_kwargs)
+        if not self.other.is_loaded():
+            self.other.load(width, height, **ld_kwargs)
+            need_to_unload = True
         self.matrix = self.other.matrix.astype(bool)
+        if need_to_unload:
+            self.other.unload()
 class Hitbox:
     """
     A Hitbox represent the pixel of contact. They can be a simple rectangle or have a mask.
