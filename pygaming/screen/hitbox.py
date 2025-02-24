@@ -54,7 +54,7 @@ class Hitbox:
             rel_x = x - width/2 # relative to the center of the element.
             rel_y = y - height/2
 
-            rad = math.radians(-angle)
+            rad = math.radians(angle)
             cos_a, sin_a = math.cos(rad), math.sin(rad)
 
             orig_x = cos_a * rel_x - sin_a * rel_y # relative to the center of the element, before rotation
