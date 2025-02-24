@@ -5,8 +5,6 @@ import pygame
 from ..phase import GamePhase
 from .tooltip import Tooltip
 from .art.art import Art
-from ..error import PygamingException
-from .art import mask
 from .anchors import TOP_LEFT
 from ..inputs import Click
 from ..cursor import Cursor
@@ -29,7 +27,7 @@ class Element(Visual):
         cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
         can_be_focused: bool = True,
-        active_area: Optional[mask.Mask | pygame.Mask | Hitbox] = None,
+        active_area: Optional[Hitbox] = None,
         update_if_invisible: bool = False
     ) -> None:
         """
@@ -57,8 +55,6 @@ class Element(Visual):
         self.can_be_disabled = can_be_disabled
         self.disabled = False
 
-        if isinstance(active_area, pygame.Mask) and active_area.get_size() != self.background.size:
-            raise PygamingException("The active area, when defined as a pygame mask must have the same size than the art.")
         if active_area is None:
             active_area = Hitbox(0, 0, *self.background.size)
         self._active_area = active_area
@@ -102,14 +98,13 @@ class Element(Visual):
 
     def is_contact(self, click: Optional[Click | tuple[int, int]]):
         """Return True if the mouse is hovering the element."""
-        if click is None or not self.on_master or self._active_area is None:
+        if click is None or not self.on_master:
             return False
         if isinstance(click, tuple):
             click = Click(*click)
         ck = click.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
-        if ck.x < 0 or ck.x >= self.width or ck.y < 0 or ck.y >= self.height:
-            return False
-        return bool(self._active_area.get_at((ck.x, ck.y)))
+        self._active_area.load(self.game.settings)
+        return self._active_area.is_contact((ck.x, ck.y))
 
     @property
     def game(self):
@@ -119,11 +114,6 @@ class Element(Visual):
     def get_hover(self):
         """Update the hover cursor and tooltip."""
         return self._tooltip, self._cursor
-
-    @abstractmethod
-    def make_surface(self) -> pygame.Surface:
-        """Make the new surface to be returned to his parent."""
-        raise NotImplementedError()
 
     def notify_change(self):
         """Notify the need to remake the last surface."""
@@ -142,8 +132,7 @@ class Element(Visual):
         Execute this method at the beginning of the phase
         to load the active area and the background before running class-specific start method.
         """
-        if isinstance(self._active_area, mask.Mask):
-            self._active_area.load(self.background.width, self.background.height, **self.game.settings)
+        self._active_area.load(self.game.settings)
         Visual.begin(self, self.game.settings)
         self.start()
 
@@ -156,8 +145,7 @@ class Element(Visual):
         """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
         self.end()
         Visual.finish(self)
-        if isinstance(self._active_area, mask.Mask):
-            self._active_area.unload()
+        self._active_area.unload()
 
     @abstractmethod
     def end(self):

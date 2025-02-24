@@ -126,27 +126,9 @@ class Slider(Widget):
         else:
             raise PygamingException(f"{self._initial_value} is not a valid initial value as it is not in the values list {self._values}.")
 
-        if isinstance(self._active_area, mask.Mask):
-            # For pygaming masks
-            if self._active_area.is_empty():
-                raise PygamingException("The active area cannot be empty.")
-            x_min = self._active_area.not_null_columns[0] + self.normal_cursor.width//2
-            x_max = self._active_area.not_null_columns[-1] - self.normal_cursor.width//2
-
-        elif isinstance(self._active_area, Rect):
-            # For window_based masks
-                x_min = self._active_area.left + self.normal_cursor.width//2
-                x_max = self._active_area.right - self.normal_cursor.width//2
-        else:  # For pygame masks 
-            temp_surf = self._active_area.to_surface(setcolor=(0, 0, 0, 1), unsetcolor=(0, 0, 0, 0))
-            matrix = sa.array_alpha(temp_surf)
-            not_null_columns = np.where(matrix.any(axis=1))[0]
-            if len(not_null_columns):
-                x_min = not_null_columns[0] + self.normal_cursor.width//2
-                x_max = not_null_columns[-1] - self.normal_cursor.width//2
-            else:
-                raise PygamingException("The active area cannot be empty.")
-
+        x_min = self._active_area.left + self.normal_cursor.width//2
+        x_max = self._active_area.right - self.normal_cursor.width//2
+ 
         self._positions = [
               x_max*(t/(len(self._values)-1))
             + x_min*(1 - t/(len(self._values)-1))

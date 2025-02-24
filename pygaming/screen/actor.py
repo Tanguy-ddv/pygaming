@@ -1,9 +1,14 @@
 """The actor module contain the actor."""
 import math
+from typing import Optional
+from pygame import transform as tf
 from ..phase import GamePhase
 from .element import Element, TOP_LEFT
-from .art.art import Art
-from .art import transform
+from .art import Art
+from .hitbox import Hitbox
+from ..inputs.mouse import Click
+from .tooltip import Tooltip
+from ..cursor import Cursor
 
 class Actor(Element):
     """
@@ -18,37 +23,46 @@ class Actor(Element):
     def __init__(
         self,
         master: GamePhase | Element,
-        main_surface: Art,
+        main_art: Art,
         x: int,
         y: int,
         anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
+        hitbox: Hitbox = None,
+        tooltip: Tooltip = None,
+        cursor: Cursor = None,
         update_if_invisible: bool = False
     ) -> None:
         super().__init__(
             master,
-            main_surface,
+            main_art,
             x,
             y,
             anchor,
             layer,
-            None,
-            None,
+            tooltip,
+            cursor,
             False,
             False,
+            hitbox,
             update_if_invisible=update_if_invisible
         )
 
-        self.surfaces = [self.surface]
+        self._arts = {"main" : self.background}
+        self._current_art = "main"
+        self._angle = 0
+        self._zoom = 1
+        self._initial_anchor = anchor
+        self._initial_size = self.width, self.height
 
     @property
-    def main_surface(self):
-        """Alias for the surface. Represent the main surface of the object."""
-        return self.surface
+    def main_art(self):
+        """Alias for the main art. Represent the main art of the object."""
+        return self.background
 
     def update_animation(self, loop_duration):
-        """Update the animation of the main surface. Override this method if you have more surfaces."""
-        self.main_surface.update(loop_duration)
+        """Update the animation of the main surface."""
+        self._arts[self._current_art].update(loop_duration)
 
     def loop(self, loop_duration):
         """Update the frame at every loop."""
@@ -63,23 +77,66 @@ class Actor(Element):
         self.get_on_master()
         if self.on_master:
             self.master.notify_change()
+    
+    def make_surface(self):
+        """Create the current surface."""
+        surface = self._arts[self._current_art].get(None, **self.game.settings, copy=False)
+        if self._angle or self._zoom != 1:
+            surface = tf.rotozoom(surface, self._angle, self._zoom)
+        return surface
+
+    def is_contact(self, pos: Optional[Click | tuple[int, int]]):
+        """Return True if the mouse is hovering the element."""
+        if pos is None or (not self.on_master and isinstance(pos, Click)):
+            return False
+        if isinstance(pos, tuple):
+            click = Click(*pos)
+        ck = click.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
+        pos = ck.x, ck.y
+        if self._zoom != 1:
+            # modify the position to take the zoom into account.
+            x,y = pos
+            x/= self._zoom
+            y/= self._zoom
+            pos = x,y
+        if self._angle:
+            # modify the position to take the angle into account.
+            x,y = pos # relative to the top left of the element this is the hitbox
+            rel_x = x - self.width/2 # relative to the center of the element.
+            rel_y = y - self.height/2
+
+            rad = math.radians(self._angle)
+            cos_a, sin_a = math.cos(rad), math.sin(rad)
+
+            orig_x = cos_a * rel_x - sin_a * rel_y # relative to the center of the element, before rotation
+            orig_y = sin_a * rel_x + cos_a * rel_y
+
+            pos = orig_x + self._initial_size[0]/2, orig_y + self._initial_size[1]/2
+        return self._active_area.is_contact(pos)
+
+    def _find_new_anchor(self):
+        w, h = self.main_art.width, self.main_art.height # the size before any rotation
+
+        theta = math.radians(-self._angle)
+        self.width, self.height = int(w * abs(math.cos(theta)) + h * abs(math.sin(theta))), int(h * abs(math.cos(theta)) + w * abs(math.sin(theta)))
+
+        point = self._initial_anchor[0]*w, self._initial_anchor[1]*h # the point of anchor before rotation
+        rel_x, rel_y = point[0] - w / 2, point[1] - h / 2 # relative to the old center
+        new_rel_x = (rel_x * math.cos(theta) - rel_y * math.sin(theta)) # relative to the new center
+        new_rel_y = (rel_x * math.sin(theta) + rel_y * math.cos(theta))
+        self.anchor = (new_rel_x + self.width / 2)/self.width, (new_rel_y + self.height / 2)/self.height
 
     def rotate(self, angle):
         """Rotate the actor."""
-        w, h = self.main_surface.width, self.main_surface.height
-        # rotate all frames
-        for surface in self.surfaces:
-            surface.transform(transform.Rotate(angle))
-        # determine the new anchor
-        new_w, new_h = self.main_surface.width, self.main_surface.height
-        center_x, center_y = w / 2, h / 2
-        point = self._x*self.surface.width, self._y*self.surface.height
-        rel_x, rel_y = point[0] - center_x, point[1] - center_y
-        rad_angle = math.radians(-angle)
-        new_rel_x = rel_x * math.cos(rad_angle) - rel_y * math.sin(rad_angle)
-        new_rel_y = rel_x * math.sin(rad_angle) + rel_y * math.cos(rad_angle)
-        self.anchor = (new_rel_x + new_w / 2)/new_w, (new_rel_y + new_h / 2)/new_h
-        # notify the master for a change
+        self._angle += angle
+        self._find_new_anchor()
         self.get_on_master()
-        if self.on_master:
-            self.master.notify_change()
+        self.notify_change()
+
+    def zoom(self, zoom):
+        """Zoom the actor."""
+        self._zoom *= zoom
+        self.width *= zoom
+        self.height *= zoom
+        self.get_on_master()
+        self.notify_change()

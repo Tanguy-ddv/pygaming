@@ -206,7 +206,7 @@ class GamePhase(_BasePhase, Visual):
         self.end()
         for frame in self.frames:
             frame.end() # Unload
-        Visual.finish(self, self.settings)
+        Visual.finish(self)
         gc.collect()
 
     def is_child_on_me(self, child):
@@ -326,6 +326,8 @@ class GamePhase(_BasePhase, Visual):
             self.current_cursor.reset()
             self.current_cursor = cursor
             pygame.mouse.set_cursor(self.current_cursor.get(self.settings))
+            # Trigger the update of the cursor.
+            pygame.mouse.set_pos(x, y)
 
     @property
     def visible_frames(self):
