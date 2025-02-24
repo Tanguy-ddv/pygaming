@@ -1,22 +1,18 @@
 """This module contains the hitbox class."""
-import math
 from pygame import Rect
 from .art import mask
 from gamarts._common import LoadingError
 from ..settings import Settings
 from ..error import PygamingException
+class _BooleanMask(mask.Mask):
 
-def __recover_original_size(new_width: int, new_height: int, sin_a: float, cos_a: float):
-    cos_a, sin_a = abs(cos_a), abs(sin_a)
+    def __init__(self, other: mask.Mask):
+        super().__init__()
+        self.other = other
     
-    th1 = (new_width + new_height) / 2 / (cos_a + sin_a)
-    th2 = (new_width - new_height) / 2 / (cos_a - sin_a)
-   
-    w = th1 - th2
-    h = th1 + th2
-
-    return int(round(w)), int(round(h))
-
+    def _load(self, width, height, **ld_kwargs):
+        self.other.load(width, height, **ld_kwargs)
+        self.matrix = self.other.matrix.astype(bool)
 class Hitbox:
     """
     A Hitbox represent the pixel of contact. They can be a simple rectangle or have a mask.
@@ -32,7 +28,7 @@ class Hitbox:
         - mask: mask.Mask, if provided, a mask can be used to define more precisely the hitbox.
         """
         self._rect = Rect(left, top, width, height)
-        self._mask = mask
+        self._mask = _BooleanMask(mask)
         self._minimal_rect = self._rect
 
     def is_contact(self, pos: tuple[int, int]):
@@ -40,7 +36,7 @@ class Hitbox:
         if self._mask is None:
             return self._rect.collidepoint(pos)
         elif self._mask.is_loaded():
-            return self._rect.collidepoint(pos) and self._mask.matrix[pos[0] - self._rect.left, pos[1] - self._rect.top] > 0
+            return self._rect.collidepoint(pos) and self._mask.matrix[pos[0] - self._rect.left, pos[1] - self._rect.top]
         else:
             raise LoadingError("The hitbox's mask isn't loaded.")
 
