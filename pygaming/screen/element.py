@@ -103,6 +103,7 @@ class Element(Visual):
         if isinstance(click, tuple):
             click = Click(*click)
         ck = click.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
+        self._active_area.load(self.game.settings)
         return self._active_area.is_contact((ck.x, ck.y))
 
     @property

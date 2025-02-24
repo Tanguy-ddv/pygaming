@@ -46,7 +46,7 @@ class Hitbox:
 
     def load(self, settings: Settings):
         """Load the hitbox."""
-        if self._mask is not None:
+        if self._mask is not None and not self._mask.is_loaded():
             self._mask.load(*self._rect.size, **settings)
             not_null_columns = self._mask.not_null_columns()
             not_null_rows = self._mask.not_null_rows()
