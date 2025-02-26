@@ -1,7 +1,7 @@
 """The label module contains the Label Element used to display text."""
 import pygame
 from ..element import Element
-from ..anchors import TOP_LEFT, CENTER
+from ..anchors import TOP_LEFT, CENTER, Anchor
 from ...color import Color
 from ..art.art import Art
 from ...database import TextFormatter
@@ -21,11 +21,11 @@ class Label(Element):
         localization_or_text: str | TextFormatter,
         x: int,
         y: int,
-        anchor = TOP_LEFT,
+        anchor: Anchor = TOP_LEFT,
         tooltip: Tooltip = None,
         cursor: Cursor = None,
         layer: int = 0,
-        justify = CENTER,
+        justify: Anchor = CENTER,
         blinking_period: int = None,
     ) -> None:
         """

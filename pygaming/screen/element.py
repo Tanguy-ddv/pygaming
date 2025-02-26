@@ -5,7 +5,7 @@ import pygame
 from ..phase import GamePhase
 from .tooltip import Tooltip
 from .art.art import Art
-from .anchors import TOP_LEFT
+from .anchors import TOP_LEFT, Anchor
 from ..inputs import Click
 from ..cursor import Cursor
 from .tooltip import Tooltip
@@ -21,7 +21,7 @@ class Element(Visual):
         background: Art,
         x: int,
         y: int,
-        anchor: tuple[float | int, float | int] = TOP_LEFT,
+        anchor: Anchor = TOP_LEFT,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Optional[Cursor] = None,
@@ -75,7 +75,7 @@ class Element(Visual):
         on_screen = self.absolute_rect.colliderect((0, 0, *self.game.config.dimension))
         self.on_master = self.master.is_child_on_me(self) and on_screen
 
-    def move(self, new_x: int = None, new_y: int = None, new_anchor: tuple[float, float] = None):
+    def move(self, new_x: int = None, new_y: int = None, new_anchor: Anchor = None):
         """
         Move the element in the master frame.
         
@@ -83,7 +83,7 @@ class Element(Visual):
         ---
         - new_x: int = None. If specified, change the current x of the element. Otherwise do not change it.
         - new_y: int = None. If specified, change the current y of the element. Otherwise do not change it.
-        - new_anchore: tuple[float, float] = None. If specified, change the current anchor of the element. Otherwise do not change it.
+        - new_anchor: Anchor = None. If specified, change the current anchor of the element. Otherwise do not change it.
         """
         if new_anchor is not None:
             self.anchor = new_anchor

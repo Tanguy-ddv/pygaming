@@ -7,7 +7,7 @@ from ..phase import GamePhase
 from .element import Element
 from .art.art import Art
 from .camera import Camera
-from .anchors import CENTER, TOP_LEFT
+from .anchors import CENTER, TOP_LEFT, Anchor
 from ..inputs import Click
 class Frame(Element):
     """
@@ -17,7 +17,7 @@ class Frame(Element):
 
     def __init__(
         self,
-        master: GamePhase | Frame, # Frame or phase, no direct typing to avoid circular import
+        master: GamePhase | Frame,
         window: pygame.Rect,
         background: Art,
         focused_background: Optional[Art] = None,
@@ -263,7 +263,7 @@ class Frame(Element):
             self.notify_change()
             
 
-    def set_camera_position(self, new_x, new_y, anchor: tuple[float, float] = TOP_LEFT):
+    def set_camera_position(self, new_x, new_y, anchor: Anchor = TOP_LEFT):
         """Reset the camera position on the frame with a new value."""
         new_y = np.clip(int(new_y - anchor[1]*self.camera.height), 0, self.height - self.camera.height)
         new_x = np.clip(int(new_x - anchor[0]*self.camera.width), 0, self.width - self.camera.width)
@@ -276,7 +276,7 @@ class Frame(Element):
             self.notify_change()
 
     
-    def zoom_camera(self, ratio_x: float, target: tuple[float, float] = CENTER, ratio_y = None):
+    def zoom_camera(self, ratio_x: float, target: Anchor = CENTER, ratio_y = None):
         """
         Zoom by a given factor on the target point.
 

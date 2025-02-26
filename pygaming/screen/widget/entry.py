@@ -3,7 +3,7 @@
 from typing import Optional
 from pygame import Surface, draw
 from .widget import Widget
-from ..anchors import TOP_LEFT, CENTER
+from ..anchors import TOP_LEFT, CENTER, Anchor
 from ..frame import Frame
 from ...color import Color
 from ..art import Art
@@ -32,13 +32,13 @@ class Entry(Widget):
         initial_value: str = '',
         extra_characters: str = '',
         forbid_characters: str = '',
-        anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[mask.Mask | Hitbox] = None,
+        anchor: Anchor = TOP_LEFT,
+        active_area: Optional[Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
         continue_animation: bool = False,
-        justify = CENTER,
+        justify: Anchor = CENTER,
         caret_frequency: int = 500,
         caret_width: int = 2,
         max_length: int = 10,

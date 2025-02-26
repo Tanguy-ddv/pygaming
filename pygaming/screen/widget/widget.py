@@ -2,12 +2,11 @@
 
 from abc import ABC, abstractmethod
 from typing import Optional
-from pygame import Surface, Mask as mk
+from pygame import Surface
 from ..frame import Frame
 from ..element import Element
-from ..anchors import TOP_LEFT
+from ..anchors import TOP_LEFT, Anchor
 from ..art import Art
-from ..art import mask
 from ...cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox
@@ -27,7 +26,7 @@ class Widget(Element, ABC):
         normal_background: Art,
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
-        anchor: tuple[float | int, float | int] = TOP_LEFT,
+        anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
