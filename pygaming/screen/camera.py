@@ -2,7 +2,7 @@
 import pygame
 import numpy as np
 from pygamecv.effect import saturate, desaturate, darken, lighten, shift_hue
-from .anchors import TOP_LEFT
+from .anchors import TOP_LEFT, Anchor
 from .art import mask
 from ..settings import Settings
 
@@ -23,7 +23,7 @@ class Camera(pygame.Rect):
         y: int,
         width: int,
         height: int,
-        anchor: tuple[float, float] = TOP_LEFT,
+        anchor: Anchor = TOP_LEFT,
         darken_mask: mask.Mask = None,
         lighten_mask: mask.Mask = None,
         saturate_mask: mask.Mask = None,

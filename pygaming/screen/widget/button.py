@@ -3,7 +3,7 @@
 from typing import Optional, Callable, Any
 from pygame import Surface
 from ..frame import Frame
-from ..anchors import TOP_LEFT, CENTER
+from ..anchors import TOP_LEFT, CENTER, Anchor
 from .widget import Widget
 from ..art import Art
 from ...color import Color
@@ -26,8 +26,8 @@ class Button(Widget):
         active_background: Optional[Art] = None,
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
-        anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[mask.Mask | Hitbox] = None,
+        anchor: Anchor = TOP_LEFT,
+        active_area: Optional[Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
@@ -149,7 +149,7 @@ class TextButton(Button):
         active_background: Optional[Art] = None,
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
-        anchor: tuple[float | int, float | int] = TOP_LEFT,
+        anchor: Anchor = TOP_LEFT,
         active_area: Optional[mask.Mask | Hitbox] = None,
         layer: int = 0,
         hover_surface: Surface | None = None,
@@ -157,7 +157,7 @@ class TextButton(Button):
         continue_animation: bool = False,
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
-        jusitfy = CENTER,
+        jusitfy: Anchor = CENTER,
         update_if_invisible: bool = False
     ) -> None:
         super().__init__(

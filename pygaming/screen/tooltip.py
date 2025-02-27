@@ -4,7 +4,7 @@ from ..phase import GamePhase
 from .art.art import Art
 from ..database import TextFormatter
 from ..color import ColorLike
-from .anchors import CENTER
+from .anchors import CENTER, Anchor
 from ._visual import Visual
 
 class Tooltip(Visual):
@@ -39,7 +39,7 @@ class Tooltip(Visual):
 
 class TextTooltip(Tooltip):
 
-    def __init__(self, phase, background, text_or_loc: str | TextFormatter, font: str, font_color: ColorLike, jusitfy: tuple[float, float] = CENTER):
+    def __init__(self, phase, background, text_or_loc: str | TextFormatter, font: str, font_color: ColorLike, jusitfy: Anchor = CENTER):
         super().__init__(phase, background)
 
         self._text = text_or_loc

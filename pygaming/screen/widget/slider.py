@@ -6,7 +6,7 @@ from ZOCallable import ZOCallable, verify_ZOCallable
 from ZOCallable.functions import linear
 from ...error import PygamingException
 from .widget import Widget
-from ..anchors import TOP_LEFT
+from ..anchors import TOP_LEFT, Anchor
 from ..frame import Frame
 from ..art.art import Art
 from ..art import mask
@@ -30,8 +30,8 @@ class Slider(Widget):
         focused_cursor: Optional[Art] = None,
         disabled_background:  Optional[Art] = None,
         disabled_cursor:  Optional[Art] = None,
-        anchor: tuple[float | int, float | int] = TOP_LEFT,
-        active_area: Optional[mask.Mask | Hitbox] = None,
+        anchor: Anchor = TOP_LEFT,
+        active_area: Optional[Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,

@@ -31,6 +31,7 @@ from .file import get_file
 from .screen.actor import Actor
 
 from .screen.camera import Camera
+from .screen.geometry_manager import Grid, Column, Row
 
 from .inputs import Controls, Click, Keyboard, Mouse
 from .connexion import Client, Server as Network, HEADER, ID, PAYLOAD, TIMESTAMP
@@ -42,4 +43,4 @@ __all__ = ['Config', 'Game', 'LEAVE', 'STAY', 'Logger', 'ServerPhase', 'GamePhas
            'Server', 'Settings', 'Frame', 'Actor', 'TextFormatter', 'Cursor', 'mask', 'transform',
            'Element', 'Controls', 'Click', 'widget', 'get_file', 'Client', 'Keyboard', 'Mouse', 'art',
            'Network', 'HEADER', 'ID', 'PAYLOAD', 'TIMESTAMP', 'Database', 'anchors', 'Rect', 'Hitbox',
-           'commands', 'Camera', 'TypeWriter', 'SoundBox', 'Color']
+           'commands', 'Camera', 'TypeWriter', 'SoundBox', 'Color', 'Grid', 'Column', 'Row']
