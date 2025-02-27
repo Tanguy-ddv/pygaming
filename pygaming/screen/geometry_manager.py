@@ -14,7 +14,7 @@ class _GridObject:
 
 class Grid:
 
-    def __init__(self, x: int, y: int, anchor: int = TOP_LEFT):
+    def __init__(self, x: int, y: int, anchor: Anchor = TOP_LEFT):
         self._x = x
         self._y = y
         self._anchor = anchor
@@ -81,13 +81,13 @@ class Grid:
         self._update(row, column, obj.rowspan, obj.columnspan)
 class Column(Grid):
 
-    def __init__(self, x: int, y: int, anchor: int):
+    def __init__(self, x: int, y: int, anchor: Anchor):
         super().__init__(x, y, anchor)
     
     def add(self, row, width, height):
         return super().add(row, 0, width, height, 1, 1)
 
-    def get(self, row, anchor, justify):
+    def get(self, row, anchor: Anchor = TOP_LEFT, justify: Anchor = CENTER):
         return super().get(row, 0, anchor, justify)
     
     def remove(self, row):
@@ -95,13 +95,13 @@ class Column(Grid):
 
 class Row(Grid):
 
-    def __init__(self, x: int, y: int, anchor: int):
+    def __init__(self, x: int, y: int, anchor: Anchor):
         super().__init__(x, y, anchor)
     
     def add(self, column, width, height):
         return super().add(0, column, width, height, 1, 1)
 
-    def get(self, column, anchor, justify):
+    def get(self, column, anchor: Anchor = TOP_LEFT, justify: Anchor = CENTER):
         return super().get(0, column, anchor, justify)
     
     def remove(self, column):
