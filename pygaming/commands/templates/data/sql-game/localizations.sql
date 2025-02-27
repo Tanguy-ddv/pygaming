@@ -1,8 +1,8 @@
 INSERT INTO localizations (position, phase_name_or_tag, language_code, text_value) VALUES 
 ('LOC_SELECT_COLOR', 'lobby', 'en_US', 'SELECT A COLOR'),
 ('LOC_SELECT_COLOR', 'lobby', 'fr_FR', 'SELECTIONNER UNE COULEUR'),
-('LOC_SELECT_NAME' , 'lobby', 'en_US', 'SELECT A NAME:'),
-('LOC_SELECT_NAME' , 'lobby', 'fr_FR', 'SELECTIONNER UN NOM:'),
+('LOC_SELECT_NAME' , 'lobby', 'en_US', 'SELECT A NAME'),
+('LOC_SELECT_NAME' , 'lobby', 'fr_FR', 'SELECTIONNER UN NOM'),
 ('LOC_LETS_PLAY'   , 'lobby', 'en_US', 'LET''S PLAY!'),
 ('LOC_LETS_PLAY'   , 'lobby', 'fr_FR', 'C''EST PARTI!'),
 ('LOC_RETURN',  'playground', 'en_US', 'RETURN TO MENU'),
