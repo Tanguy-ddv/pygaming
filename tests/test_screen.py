@@ -43,5 +43,11 @@ class TestScreen(unittest.TestCase):
         self.assertEqual(grid.get(1, 0, BOTTOM_RIGHT, BOTTOM_RIGHT), (120, 74))
         self.assertRaises(ValueError, lambda : grid.get(1, 1))
 
+        grid = Grid(100, 50, CENTER)
+        grid.add(0, 0, 10, 12)
+        grid.add(0, 1, 10, 12)
+        grid.add(1, 0, 10, 12)
+        self.assertEqual(grid.get(0, 0, TOP_LEFT, TOP_LEFT), (90, 38), "The top left object should be in (0, 0)")
+
 if __name__ == '__main__':
     unittest.main()

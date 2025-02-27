@@ -34,8 +34,8 @@ class Grid:
         # Find the new top-left of the grid.
         max_col = max(col for (_, col) in self._dupl_objects)
         max_row = max(row for (row, _) in self._dupl_objects)
-        grid_width = sum(self._widths.get(col, 0) for col in range(0, max_col))
-        grid_height = sum(self._heights.get(row, 0) for row in range(0, max_row))
+        grid_width = sum(self._widths.get(col, 0) for col in range(0, max_col + 1))
+        grid_height = sum(self._heights.get(row, 0) for row in range(0, max_row + 1))
         
         self._left = self._x - self._anchor[0]*grid_width
         self._top = self._y - self._anchor[1]*grid_height 
