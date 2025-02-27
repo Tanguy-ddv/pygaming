@@ -32,7 +32,7 @@ class Hitbox:
         - mask: mask.Mask, if provided, a mask can be used to define more precisely the hitbox.
         """
         self._rect = Rect(left, top, width, height)
-        self._mask = _BooleanMask(mask)
+        self._mask = _BooleanMask(mask) if mask is not None else None
         self._minimal_rect = self._rect
 
     def is_contact(self, pos: tuple[int, int]):
