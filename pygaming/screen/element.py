@@ -8,7 +8,6 @@ from .art.art import Art
 from .anchors import TOP_LEFT, Anchor
 from ..inputs import Click
 from ..cursor import Cursor
-from .tooltip import Tooltip
 from ._visual import Visual
 from .hitbox import Hitbox
 
@@ -96,13 +95,13 @@ class Element(Visual):
         if self.on_master:
             self.master.notify_change()
 
-    def is_contact(self, click: Optional[Click | tuple[int, int]]):
+    def is_contact(self, pos: Optional[Click | tuple[int, int]]):
         """Return True if the mouse is hovering the element."""
-        if click is None or not self.on_master:
+        if pos is None or not self.on_master:
             return False
-        if isinstance(click, tuple):
-            click = Click(*click)
-        ck = click.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
+        if isinstance(pos, tuple):
+            pos = Click(*pos)
+        ck = pos.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
         self._active_area.load(self.game.settings)
         return self._active_area.is_contact((ck.x, ck.y))
 

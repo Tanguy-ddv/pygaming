@@ -22,7 +22,7 @@ class Config:
     @property
     def timeout(self):
         """Return the time before timeout on connexion."""
-        return self.get("timeout", self.get("broadcast_period", 500)/100)
+        return self.get("timeout", self.get("broadcast_period", 500)/1000)
 
     @property
     def default_language(self):

@@ -1,7 +1,6 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
 from typing import Optional, Iterable, Any
-import numpy as np
-from pygame import Surface, surfarray as sa, Rect
+from pygame import Surface
 from ZOCallable import ZOCallable, verify_ZOCallable
 from ZOCallable.functions import linear
 from ...error import PygamingException
@@ -9,7 +8,6 @@ from .widget import Widget
 from ..anchors import TOP_LEFT, Anchor
 from ..frame import Frame
 from ..art.art import Art
-from ..art import mask
 from ...cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox

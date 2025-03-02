@@ -76,18 +76,21 @@ class Color(_Cl):
         """Shift the hue of the color."""
         h, s, l, _a = self.hsla
         return _from_hsla((h+value)%360, s, l, self.a)
-    
+
     @staticmethod
     def from_hlsa(h: int, s: int, l: int, a: int = 255) -> 'Color':
+        """Create a color from the hue-saturation-luminosity format."""
         return _from_hsla(h, s, l, a)
 
     @staticmethod
     def from_hlsv(h: int, s:int, v:int, a: int = 255) -> 'Color':
+        """Create a color from the hue-saturation-value format."""
         r, g, b = colorsys.hsv_to_rgb(h/360, s/100, v/100)
         return Color(int(r*255), int(g*255), int(b*255), a)
-    
+
     @staticmethod
     def from_cmyk(c: int, y:int, m:int, k:int, a:int = 255) -> 'Color':
+        """Create a color from the cyan-yellow-magenta-black format."""
         r = int(255*(100 - c)*(100 - k)/10000)
         g = int(255*(100 - m)*(100 - k)/10000)
         b = int(255*(100 - y)*(100 - k)/10000)

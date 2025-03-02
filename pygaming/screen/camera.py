@@ -3,7 +3,7 @@ import pygame
 import numpy as np
 from pygamecv.effect import saturate, desaturate, darken, lighten, shift_hue
 from .anchors import TOP_LEFT, Anchor
-from .art import mask
+from .art import mask as mask_
 from ..settings import Settings
 
 def _set_alpha(surface: pygame.Surface, matrix: np.ndarray):
@@ -14,7 +14,8 @@ def _set_alpha(surface: pygame.Surface, matrix: np.ndarray):
 
 class Camera(pygame.Rect):
     """
-    Camera are used to to define the part of the frame that will be shown on the screen. They can also apply some effects on the render, through masks.
+    Camera are used to to define the part of the frame that will be shown on the screen.
+    They can also apply some effects on the render, through masks.
     """
 
     def __init__(
@@ -24,12 +25,12 @@ class Camera(pygame.Rect):
         width: int,
         height: int,
         anchor: Anchor = TOP_LEFT,
-        darken_mask: mask.Mask = None,
-        lighten_mask: mask.Mask = None,
-        saturate_mask: mask.Mask = None,
-        desaturate_mask: mask.Mask = None,
-        hide_mask: mask.Mask = None,
-        shift_hue_mask: mask.Mask = None
+        darken_mask: mask_.Mask = None,
+        lighten_mask: mask_.Mask = None,
+        saturate_mask: mask_.Mask = None,
+        desaturate_mask: mask_.Mask = None,
+        hide_mask: mask_.Mask = None,
+        shift_hue_mask: mask_.Mask = None
     ):
         """
         Create a new camera.
@@ -42,10 +43,10 @@ class Camera(pygame.Rect):
         - height: int, the height of the window.
         - anchor: the anchor point in % of the width and height. 
         """
-        
+
         self._x = x
         self._y = y
- 
+
         self.anchor = anchor
 
         super().__init__(self._x, self._y, width, height)

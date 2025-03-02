@@ -79,7 +79,7 @@ class Frame(Element):
             self.focused_background = self.background
         else:
             self.focused_background = focused_background
-    
+
     def _compute_wc_ratio(self, master = None):
         """Recompute the ratio between the window and the camera dimensions."""
         if master is None:
@@ -261,7 +261,6 @@ class Frame(Element):
             for child in self.children:
                 child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
             self.notify_change()
-            
 
     def set_camera_position(self, new_x, new_y, anchor: Anchor = TOP_LEFT):
         """Reset the camera position on the frame with a new value."""
@@ -275,7 +274,6 @@ class Frame(Element):
                 child.get_on_master()
             self.notify_change()
 
-    
     def zoom_camera(self, ratio_x: float, target: Anchor = CENTER, ratio_y = None):
         """
         Zoom by a given factor on the target point.
@@ -286,7 +284,7 @@ class Frame(Element):
 
         if ratio_y is None:
             ratio_y = ratio_x
-        
+
         new_width = np.minimum(self.camera.width/ratio_x, self.width)
         new_height = np.minimum(self.camera.height/ratio_y, self.height)
 
@@ -303,13 +301,12 @@ class Frame(Element):
             for child in self.children:
                 child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
             self.notify_change()
-            
 
     @property
     def absolute_left(self):
         """The absolute coordinates of the frame depends on the camera."""
         return int(self.master.absolute_left + self.relative_left - self.camera.left*self.wc_ratio[0])
-    
+
     @property
     def absolute_top(self):
         """The absolute coordinates of the frame depends on the camera."""
