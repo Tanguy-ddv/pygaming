@@ -110,3 +110,9 @@ class GIFFile(_GIFFile):
     def __init__(self, path, introduction = 0, transformation = None):
         file = get_file('image', path)
         super().__init__(file, introduction, transformation)
+
+__all__ = [
+    'GIFFile', 'ImageFile', 'ImageFolder', 'Rectangle', 'RoundedRectangle', 'Art',
+    'Circle', 'Ellipse', 'Polygon', 'TexturedCircle', 'TexturedEllipse', 'TexturedPolygon',
+    'TexturedRoundedRectangle'
+]
