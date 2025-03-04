@@ -4,7 +4,7 @@ setup(
     name='pygaming',
     author="Tanguy Dugas du Villard",
     author_mail="tanguy.dugas01@gmail.com",
-    version='0.8.0',
+    version='0.9.0',
     description="Pygaming is a python library based on pygame used to create game more easily by providing several tools.",
     packages=find_packages(),
     install_requires=[
