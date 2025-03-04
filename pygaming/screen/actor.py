@@ -77,7 +77,7 @@ class Actor(Element):
         self.get_on_master()
         if self.on_master:
             self.master.notify_change()
-    
+
     def make_surface(self):
         """Create the current surface."""
         surface = self._arts[self._current_art].get(None, **self.game.settings, copy=False)
@@ -90,8 +90,8 @@ class Actor(Element):
         if pos is None or (not self.on_master and isinstance(pos, Click)):
             return False
         if isinstance(pos, tuple):
-            click = Click(*pos)
-        ck = click.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
+            pos = Click(*pos)
+        ck = pos.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
         pos = ck.x, ck.y
         if self._zoom != 1:
             # modify the position to take the zoom into account.
@@ -118,7 +118,8 @@ class Actor(Element):
         w, h = self.main_art.width, self.main_art.height # the size before any rotation
 
         theta = math.radians(-self._angle)
-        self.width, self.height = int(w * abs(math.cos(theta)) + h * abs(math.sin(theta))), int(h * abs(math.cos(theta)) + w * abs(math.sin(theta)))
+        self.width = int(w * abs(math.cos(theta)) + h * abs(math.sin(theta)))
+        self.height = int(h * abs(math.cos(theta)) + w * abs(math.sin(theta)))
 
         point = self._initial_anchor[0]*w, self._initial_anchor[1]*h # the point of anchor before rotation
         rel_x, rel_y = point[0] - w / 2, point[1] - h / 2 # relative to the old center

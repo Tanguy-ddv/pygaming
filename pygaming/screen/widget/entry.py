@@ -1,5 +1,4 @@
 """Then entry module contains the entry widget."""
-
 from typing import Optional
 from pygame import Surface, draw
 from .widget import Widget
@@ -7,7 +6,6 @@ from ..anchors import TOP_LEFT, CENTER, Anchor
 from ..frame import Frame
 from ...color import Color
 from ..art import Art
-from ..art import mask
 from ...cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox
@@ -147,7 +145,7 @@ class Entry(Widget):
     def _make_disabled_surface(self) -> Surface:
         return self._make_surface(
             self.disabled_background.get(self.background if self._continue_animation else None),
-            self._disabled_font, self._disabled_font_color, False
+            self._disabled_font, self._disabled_font_color, False, self._text
         )
 
     def _make_focused_surface(self) -> Surface:
@@ -171,7 +169,7 @@ class Entry(Widget):
         rendered_text = self.game.typewriter.render(font, text, color)
         text_width, text_height = rendered_text.get_size()
         just_y = self._justify[1]*(background.get_height() - text_height)
-        # if the text is too long, we center on the charet, if the charet is too much on the right or left, we let the first/last 
+        # if the text is too long, we center on the charet, if the charet is too much on the right or left, we let the first/last
         # character be on the left/right.
         if text_width > background.get_width():
             just_x = min(0, -self.game.typewriter.size(font, self._text[:self._caret_index])[0] + background.get_width()//2)

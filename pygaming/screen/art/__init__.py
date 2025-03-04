@@ -1,3 +1,4 @@
+"""The art module contains the arts, masks and transformations. Arts are used to represent any image, animated or not, on the screen."""
 from typing import Callable
 from gamarts import mask
 from gamarts import transform

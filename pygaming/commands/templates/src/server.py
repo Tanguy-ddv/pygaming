@@ -24,9 +24,9 @@ class Player:
 
     def turn(self, loop_duration, left: bool, right: bool):
         if left:
-            self.angle += loop_duration/180*math.pi
+            self.angle += loop_duration/180*math.pi/2
         if right:
-            self.angle -= loop_duration/180*math.pi
+            self.angle -= loop_duration/180*math.pi/2
     
     def update(self, loop_duration):
 
@@ -35,9 +35,9 @@ class Player:
 
         self.score += loop_duration
 
-        if self.y < 0 or self.y > 560 and sign(math.sin(self.angle)) == sign(self.y):
+        if (self.y < 0 or self.y > 560) and sign(math.sin(self.angle)) == sign(self.y):
             self.angle = -self.angle % (2*math.pi)
-        if self.x < 20 or self.x > 780 and sign(math.cos(self.angle)) == sign(self.x - 20):
+        if (self.x < 20 or self.x > 780) and sign(math.cos(self.angle)) == sign(self.x - 20):
             self.angle = (math.pi - self.angle) % (2*math.pi)
 
 class ServerPhase(pgg.ServerPhase):

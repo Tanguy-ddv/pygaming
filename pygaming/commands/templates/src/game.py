@@ -9,70 +9,74 @@ class SettingsFrame(pgg.Frame):
 
     def __init__(self, master: pgg.GamePhase):
 
-        bg = pgg.art.ColoredRectangle(pgg.Color("#fff"), 400, 600, border_radius=10,
-                transformation=pgg.art.transformation.DrawRectangle(
-                    pgg.Color('black'),
-                    (200, 300), 400, 600, 8, 0, 10
+        bg = pgg.art.RoundedRectangle(pgg.Color("#fff"), 400, 600, 50,
+            transformation=pgg.transform.DrawRoundedRectangle(
+               pgg.Color('black'),
+               pgg.Rect(5, 5, 390, 590),
+               40,
+               thickness=10
             )
         )
+        rect =  bg.get_rect()
+        rect.center = master.config.dimension[0]//2, master.config.dimension[1]//2
+        super().__init__(master, rect, bg)
 
-        super().__init__(master, bg.to_window(master.config.dimension[0]//2, master.config.dimension[1]//2, pgg.anchors.CENTER), bg)
 
-        cursor_art = pgg.art.ColoredCircle((135, 100, 200, 255), 10, transformation=pgg.art.transformation.Pipeline(
-            pgg.art.transformation.Concatenate(
-                pgg.art.ColoredCircle((205, 100, 200, 255), 10)),
-            pgg.art.transformation.ResetDurations(1000),
+        cursor_art = pgg.art.Circle((135, 100, 200, 255), 10, transformation=pgg.transform.Pipeline(
+            pgg.transform.Concatenate(
+                pgg.art.Circle((205, 100, 200, 255), 10)),
+            pgg.art.transform.SetDurations(1000),
         ))
-        cursor = pgg.Cursor(cursor_art, pgg.anchors.CENTER)
+        self.cursor = pgg.Cursor(cursor_art, pgg.anchors.CENTER)
 
         self.validate_button = pgg.widget.TextButton(
             self,
             self.width//2, 5*self.height//6,
-            pgg.art.ColoredRectangle(pgg.Color('#444'), 3*self.width//4, self.master.typewriter.get_linesize("default_bold") + 8),
+            pgg.art.Rectangle(pgg.Color('#444'), 3*self.width//4, self.master.typewriter.get_linesize("default_bold") + 8),
             "default_bold",
             pgg.Color("white"),
             'LOC_VALIDATE_SETTINGS',
             on_unclick_command=self.update_settings,
             anchor=pgg.anchors.CENTER,
-            hover_cursor=cursor
+            hover_cursor=self.cursor
         )
         self.fullscreen = master.settings.fullscreen
         self.fullscreen_button = pgg.widget.TextButton(
             self,
             self.width//2, 1*self.height//6,
-            pgg.art.ColoredRectangle(pgg.Color('#444'), 8*self.width//9, self.master.typewriter.get_linesize("default_bold") + 8),
+            pgg.art.Rectangle(pgg.Color('#444'), 8*self.width//9, self.master.typewriter.get_linesize("default_bold") + 8),
             "default_bold",
             pgg.Color("white"),
             'LOC_FULLSCREEN_ON' if self.fullscreen else 'LOC_FULLSCREEN_OFF',
             on_unclick_command=self.toggle_fullscreen,
             anchor=pgg.anchors.CENTER,
-            hover_cursor=cursor
+            hover_cursor=self.cursor
         )
 
         self.language = master.settings.language
         self.language_button = pgg.widget.TextButton(
             self,
             self.width//2, 2*self.height//6,
-            pgg.art.ColoredRectangle(pgg.Color('#444'), 8*self.width//9, self.master.typewriter.get_linesize("default_bold") + 8),
+            pgg.art.Rectangle(pgg.Color('#444'), 8*self.width//9, self.master.typewriter.get_linesize("default_bold") + 8),
             "default_bold",
             pgg.Color("white"),
             'LOC_LANGUAGE_EN' if self.language == 'en_US' else 'LOC_LANGUAGE_FR',
             on_unclick_command=self.toggle_language,
             anchor=pgg.anchors.CENTER,
-            hover_cursor=cursor
+            hover_cursor=self.cursor
         )
         
         self.controls = master.settings.controls['playground']['K_RIGHT'] == 'right' # True if normal, False is inverted
         self.controls_button = pgg.widget.TextButton(
             self,
             self.width//2, 3*self.height//6,
-            pgg.art.ColoredRectangle(pgg.Color('#444'), 8*self.width//9, self.master.typewriter.get_linesize("default_bold") + 8),
+            pgg.art.Rectangle(pgg.Color('#444'), 8*self.width//9, self.master.typewriter.get_linesize("default_bold") + 8),
             "default_bold",
             pgg.Color("white"),
             'LOC_CONTROLS_NORMAL' if self.controls else 'LOC_CONTROLS_INVERTED',
             on_unclick_command=self.toggle_controls,
             anchor=pgg.anchors.CENTER,
-            hover_cursor=cursor
+            hover_cursor=self.cursor
         )
 
     def init_values(self):
@@ -99,9 +103,9 @@ class SettingsFrame(pgg.Frame):
         self.master.settings.set_fullscreen(self.fullscreen)
         self.master.settings.set_language(self.language)
         if self.controls:
-            self.master.settings.set_controls({"K_LEFT": "left", "K_RIGHT": "right", "K_ESCAPE": "pause"}, PLAYGROUND)
+            self.master.settings.set_controls({"K_LEFT": "left", "K_RIGHT": "right", "K_ESCAPE": "pause", "K_SPACE" : "space"}, PLAYGROUND)
         else:
-            self.master.settings.set_controls({"K_RIGHT": "left", "K_LEFT": "right", "K_ESCAPE": "pause"}, PLAYGROUND)
+            self.master.settings.set_controls({"K_RIGHT": "left", "K_LEFT": "right", "K_ESCAPE": "pause", "K_SPACE" : "space"}, PLAYGROUND)
 
         self.game.update_settings()
         self.master.notify_change_all() # Update all the elements of the game so the new settings are taken into account.
@@ -122,80 +126,110 @@ class LobbyGamePhase(pgg.GamePhase):
         background_color = pgg.Color("#999") # The color of the background of our main frame
         initial_color = [
             pgg.Color(255, 0, 0), pgg.Color(0, 0, 255), pgg.Color(0, 255, 0), pgg.Color(255, 255, 0),
-            pgg.Color(255, 0, 255), pgg.Color(0, 255, 255), pgg.Color(255, 255, 255), pgg.Color(0, 0, 0)
-        ][np.random.randint(0, 8)] # This phase is about selecting a color, we set the initial value as a random
+            pgg.Color(255, 0, 255), pgg.Color(0, 255, 255), pgg.Color(0, 0, 0)
+        ][np.random.randint(0, 7)] # This phase is about selecting a color, we set the initial value as a random
         # among : blue, red, green, magenta, yellow, cyan, black and white.
         self.current_color = initial_color
 
         # We will display the current color in this rectangle.
-        self.selected_color_displayer_area = ((WINDOW_WIDTH//2, WINDOW_HEIGHT//2 - 130), 200, 100)
+        self.selected_color_displayer_area = (WINDOW_WIDTH//2 - 100, WINDOW_HEIGHT//2 - 130 - 50, 200, 100)
         
         # We create the background: it is a coloredractangle, of the same size than the game window.
         # We draw the initial color on it
-        self.background = pgg.art.ColoredRectangle(
+
+        self.background = pgg.art.Rectangle(
             background_color,
             WINDOW_WIDTH,
             WINDOW_HEIGHT,
-            transformation=pgg.art.transformation.DrawRectangle(
-                initial_color,
-                *self.selected_color_displayer_area
+            transformation=pgg.transform.Pipeline(
+                pgg.transform.ConvertRGBA(),
+                pgg.transform.DrawRoundedRectangle(
+                    initial_color,
+                    pgg.Rect(*self.selected_color_displayer_area),
+                    10,
+                    thickness=0
             )
-        )
+        ))
 
         # We want to add a mask on the frame. This mask is a binary mask based on the alpha value
         # of a colored rectangle with rounded angles.
-        window_mask = pgg.mask.FromArtAlpha(
-            pgg.art.ColoredRectangle((0, 0, 0), WINDOW_WIDTH, WINDOW_HEIGHT, 0, 50)
-        )
+        camera_mask = pgg.mask.GradientCircle(0.6, 0.9) + 0.05
+        
         # The window has the same size than the frame, and starts in (0, 0).
         # The window has a mask, which effect is DARKEN: 10%
-        window = pgg.Window(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, mask = window_mask, mask_effects={pgg.mask.DARKEN : 10})
+        camera = pgg.Camera(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, darken_mask=camera_mask)
 
         # We create the frame, with the window defined above and the background as its art.
+
         self.frame = pgg.Frame(
             self,
-            window,
-            self.background
+            pgg.Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT),
+            self.background,
+            camera=camera
         )
 
         # We create the label and the entry to select a name
         LABEL_SIZE = (300, self.typewriter.get_linesize("default_bold") + 4)
         LABEL_POSITION = (50, 50)
-        
+
+        row = pgg.Row(WINDOW_WIDTH//2, LABEL_POSITION[1], pgg.anchors.TOP_CENTER)
+        row.add(0, *LABEL_SIZE)
+        row.add(1, *LABEL_SIZE)
+
         self.name_label = pgg.widget.Label(
             self.frame,
-            pgg.art.ColoredRectangle((0, 0, 0, 0), *LABEL_SIZE),
+            pgg.art.Rectangle((0, 0, 200, 0), *LABEL_SIZE),
             "default_bold",
             (0, 0, 0, 255),
-            'LOC_SELECT_NAME',
-            *LABEL_POSITION,
+            pgg.TextFormatter("LOC_SELECT_NAME", ":"),
+            *row.get(0),
             justify=pgg.anchors.CENTER_RIGHT
         )
 
+        entry_tooltip = pgg.TextTooltip(
+            self, pgg.art.Rectangle((200, 255, 255, 255), 200, 20),
+            "LOC_TOOLTIP",
+            "default",
+            background_color,
+        )
+
+
         self.name_entry = pgg.widget.Entry(
             self.frame,
-            LABEL_POSITION[0] + LABEL_SIZE[0] + 10,
-            LABEL_POSITION[1],
-            pgg.art.ColoredRectangle((255, 255, 255, 255), *LABEL_SIZE),
+            *row.get(1),
+            pgg.art.Rectangle((255, 255, 255, 255), *LABEL_SIZE),
             "default_bold",
             (0, 0, 0, 255),
             None,
             None,
             justify=pgg.anchors.CENTER_LEFT,
-            max_length=25,
-            forbid_characters=" ',?"
+            max_length=80,
+            forbid_characters=" ',?",
+            empty_text_or_loc="LOC_SELECT_NAME",
+            empty_font_color=(100, 100, 100, 255),
+            tooltip=entry_tooltip
         )
 
         # Create the color sliders
 
+        # We define some constant for the position of the sliders.
+        SLIDER_WIDTH = 180
+        SLIDER_HEIGHT = 50
+        SLIDER_PAD = 30
+
+        slider_grid = pgg.Grid(WINDOW_WIDTH//2, WINDOW_HEIGHT//2 - 40, pgg.anchors.TOP_CENTER)
+        slider_grid.add(0, 0, *LABEL_SIZE, columnspan=3)
+        slider_grid.add(1, 0, SLIDER_WIDTH + SLIDER_PAD*2, SLIDER_HEIGHT)
+        slider_grid.add(1, 1, SLIDER_WIDTH + SLIDER_PAD*2, SLIDER_HEIGHT)
+        slider_grid.add(1, 2, SLIDER_WIDTH + SLIDER_PAD*2, SLIDER_HEIGHT)
+
         self.slider_label = pgg.widget.Label(
             self.frame,
-            pgg.art.ColoredRectangle((0, 0, 0, 0), *LABEL_SIZE),
+            pgg.art.Rectangle((0, 0, 0, 0), *LABEL_SIZE),
             "default_bold",
             (0, 0, 0, 255),
             'LOC_SELECT_COLOR',
-            x = WINDOW_WIDTH//2,
-            y=WINDOW_HEIGHT//2 - LABEL_SIZE[1] - 10,
+            *slider_grid.get(0, 0, pgg.anchors.TOP_CENTER),
             justify=pgg.anchors.CENTER,
             anchor=pgg.anchors.TOP_CENTER
         )
@@ -212,70 +246,72 @@ class LobbyGamePhase(pgg.GamePhase):
         white = pgg.Color("white")
         grey = white.darken(10)
 
-        # We define some constant for the position of the sliders.
-        SLIDER_WIDTH = 180
-        SLIDER_HEIGHT = 50
-        SLIDER_PAD = 30
-
         # For each color, we create the rounded rectangle that will be the background of the sliders.
-        red_slider_bg = pgg.art.ColoredRectangle(red, SLIDER_WIDTH, SLIDER_HEIGHT, border_radius=SLIDER_HEIGHT//2)
-        red_slider_fbg = pgg.art.ColoredRectangle(dark_red, SLIDER_WIDTH, SLIDER_HEIGHT, border_radius=SLIDER_HEIGHT//2)
+        red_slider_bg = pgg.art.RoundedRectangle(red, SLIDER_WIDTH, SLIDER_HEIGHT, SLIDER_HEIGHT//2)
+        red_slider_fbg = pgg.art.RoundedRectangle(dark_red, SLIDER_WIDTH, SLIDER_HEIGHT, SLIDER_HEIGHT//2)
 
-        green_slider_bg = pgg.art.ColoredRectangle(green, SLIDER_WIDTH, SLIDER_HEIGHT, border_radius=SLIDER_HEIGHT//2)
-        green_slider_fbg = pgg.art.ColoredRectangle(dark_green, SLIDER_WIDTH, SLIDER_HEIGHT, border_radius=SLIDER_HEIGHT//2)
+        green_slider_bg = pgg.art.RoundedRectangle(green, SLIDER_WIDTH, SLIDER_HEIGHT, SLIDER_HEIGHT//2)
+        green_slider_fbg = pgg.art.RoundedRectangle(dark_green, SLIDER_WIDTH, SLIDER_HEIGHT, SLIDER_HEIGHT//2)
 
-        blue_slider_bg = pgg.art.ColoredRectangle(blue, SLIDER_WIDTH, SLIDER_HEIGHT, border_radius=SLIDER_HEIGHT//2)
-        blue_slider_fbg = pgg.art.ColoredRectangle(dark_blue, SLIDER_WIDTH, SLIDER_HEIGHT, border_radius=SLIDER_HEIGHT//2)
+        blue_slider_bg = pgg.art.RoundedRectangle(blue, SLIDER_WIDTH, SLIDER_HEIGHT, SLIDER_HEIGHT//2)
+        blue_slider_fbg = pgg.art.RoundedRectangle(dark_blue, SLIDER_WIDTH, SLIDER_HEIGHT, SLIDER_HEIGHT//2)
 
         # We also create the cursors of the sliders
-        slider_cursor = pgg.art.ColoredCircle(white, SLIDER_HEIGHT//2, 7)
-        slider_cursor_focused = pgg.art.ColoredCircle(grey, SLIDER_HEIGHT//2, 9)
+        slider_cursor = pgg.art.Circle(white, SLIDER_HEIGHT//2, 7)
+        slider_cursor_focused = pgg.art.Circle(grey, SLIDER_HEIGHT//2, 9)
 
         # We create the slider.
+        x, y = slider_grid.get(1, 0, justify=pgg.anchors.CENTER)
         self.red_slider = pgg.widget.Slider(
-            master=self.frame, # The frame in which this slider is placed.
-            x=WINDOW_WIDTH//2 - SLIDER_WIDTH//2 - SLIDER_WIDTH - SLIDER_PAD,
-            y=WINDOW_HEIGHT//2, # x,y: the coordinate of the top left of the slider in the frame.
+            self.frame, # The frame in which this slider is placed.
+            x + SLIDER_PAD,
+            y,
             values=range(0, 256), # The accepted values for the red parameter: an integer from 0 to 255
             normal_background=red_slider_bg, # The background when the slider is not focused
             normal_cursor=slider_cursor.copy(), # The cursor when the slider is not focused
             initial_value=initial_color.r, # the initial value
             focused_background=red_slider_fbg,
-            focused_cursor=slider_cursor_focused.copy()
+            focused_cursor=slider_cursor_focused.copy(),
+            step_wth_arrow=32
         )
         # Here, we use .copy() to individualize each cursor, as the same art object is also used in the other widgets.
         # Now, if we want to modify the cursor, we can, it will not affect the copy.
         # In this specific case, we don't modify the cursor more and we only have one image, so copying is not mandatory.
 
+        x, y = slider_grid.get(1, 1, justify=pgg.anchors.CENTER)
         self.green_slider = pgg.widget.Slider(
             self.frame,
-            WINDOW_WIDTH//2,
-            WINDOW_HEIGHT//2,
+            x + SLIDER_PAD,
+            y,
             range(0, 256),
             green_slider_bg,
             slider_cursor.copy(),
             initial_color.g,
             green_slider_fbg,
             slider_cursor_focused.copy(),
-            anchor=pgg.anchors.TOP_CENTER
+            step_wth_arrow=32
         )
 
+        x, y = slider_grid.get(1, 2, justify=pgg.anchors.CENTER)
         self.blue_slider = pgg.widget.Slider(
             self.frame,
-            WINDOW_WIDTH//2 + SLIDER_WIDTH//2 + SLIDER_PAD,
-            WINDOW_HEIGHT//2,
+            x + SLIDER_PAD,
+            y,
             range(0, 256),
             blue_slider_bg,
             slider_cursor.copy(),
             initial_color.b,
             blue_slider_fbg,
-            slider_cursor_focused.copy()
+            slider_cursor_focused.copy(),
+            step_wth_arrow=32
         )
 
         # Create the validation button
 
-        button_bg = pgg.art.ColoredEllipse(white, 100, 50) # The button to validate is an Ellipse, this is its background
-        button_focus_bg = button_bg.copy(pgg.art.transformation.DrawEllipse(grey.lighten(5), 100, 50, (100, 50), 3)) # We duplicate the background to add a grey unfilled ellipsis on top for when it is focused
+        button_bg = pgg.art.Ellipse(white, 100, 50) # The button to validate is an Ellipse, this is its background
+        button_focus_bg = button_bg.copy(
+            pgg.transform.DrawEllipse(grey.lighten(10), 98, 48, (100, 50), 4),
+        ) # We duplicate the background to add a grey unfilled ellipsis on top for when it is focused
 
         self.button = pgg.widget.TextButton( # We create the validation button
             self.frame, # Its master is once again the frame
@@ -288,7 +324,7 @@ class LobbyGamePhase(pgg.GamePhase):
             None, # When the button is clicked, it will display the same background as when it is not.
             button_focus_bg, # When the button is focused but not clicked, its background is different
             anchor=pgg.anchors.TOP_CENTER, # We use an anchor to not specify the top left via x,y but to specify the top center.
-            active_area=pgg.mask.FromArtAlpha(button_bg), # We don't want to be able to click in the rectangle outside of the ellipse so we specify the active area.
+            active_area=pgg.Hitbox(0, 0, *button_bg.size, pgg.mask.FromArtAlpha(button_bg)), # We don't want to be able to click in the rectangle outside of the ellipse so we specify the active area.
             # This is the standard behavior if active_area=None is passed instead.
             on_click_command=self.set_ready # The command to be executed when the button is clicked
         )
@@ -299,7 +335,7 @@ class LobbyGamePhase(pgg.GamePhase):
         self.settings_button = pgg.widget.TextButton(
             self.frame,
             WINDOW_WIDTH, 0,
-            pgg.art.ColoredRectangle(grey.darken(10), 200, self.typewriter.get_linesize("default") + 4),
+            pgg.art.Rectangle(grey.darken(10), 200, self.typewriter.get_linesize("default") + 4),
             "default",
             white, 'LOC_SETTINGS',
             anchor=pgg.anchors.TOP_RIGHT,
@@ -322,7 +358,8 @@ class LobbyGamePhase(pgg.GamePhase):
             'blue' : self.current_color.b,
             'name': self.name_entry.get()
             }
-        )        
+        )
+        print(self.is_ready)
 
     def next(self):
         if self.is_ready: # Which mean we are ready to go to the game
@@ -348,10 +385,11 @@ class LobbyGamePhase(pgg.GamePhase):
         if self.current_color.r != self.red_slider.get() or self.current_color.g != self.green_slider.get() or self.current_color.b != self.blue_slider.get():
             # If the player used the sliders to change the color he want to play with.
             self.current_color = pgg.Color(self.red_slider.get(), self.green_slider.get(), self.blue_slider.get()) # We have a new color
-            self.background.transform(pgg.art.transformation.DrawRectangle( # We draw on the are a square of this color.
-                self.current_color,
-                *self.selected_color_displayer_area
-            ), self.settings)
+            self.background.transform(pgg.transform.DrawRoundedRectangle( # We draw on the are a square of this color.
+               self.current_color,
+               pgg.Rect(*self.selected_color_displayer_area),
+               10
+            ))
             self.logger.write({"Color changed" : {'red' : self.current_color.r, 'green' : self.current_color.g, 'blue' : self.current_color.b}}, True)
             # Only in debugging mode, we log the color that we just selected.
 
@@ -361,16 +399,13 @@ class Pawn(pgg.Actor):
 
         PAWN_SIZE = 40, 40
 
-        main_surface = pgg.art.ColoredRectangle(
-            color, *PAWN_SIZE, border_bottom_left_radius=PAWN_SIZE[1]//2, border_bottom_right_radius=PAWN_SIZE[1]//2,
+        main_surface = pgg.art.RoundedRectangle(
+            color, *PAWN_SIZE, top_left=0, bottom_left=PAWN_SIZE[0]//2, bottom_right=PAWN_SIZE[1]//2, background_color=(255, 255, 255, 255)
         )
-        super().__init__(frame, main_surface, 0, 0, anchor=pgg.anchors.TOP_CENTER, layer=1)
+        super().__init__(frame, main_surface, 100, 100, anchor=pgg.anchors.CENTER, layer=1, cursor=pgg.Cursor("SYSTEM_CURSOR_HAND"))
     
     def update(self, loop_duration):
         pass # For this specific case, we don't need to update anything as we use always the same art
-
-    def make_surface(self):
-        return  self.main_surface.get(self.game.settings, None)
 
     def start(self):
         pass
@@ -387,7 +422,7 @@ class Player:
         self.name = name
         self.label = pgg.widget.Label(
             frame,
-            pgg.art.ColoredRectangle((0, 0, 0, 0), 100, self._height),
+            pgg.art.Rectangle((0, 0, 0, 0), 100, self._height),
             "default",
             color,
             pgg.TextFormatter(self.name, "0"),
@@ -424,40 +459,47 @@ class PlaygroundGamePhase(pgg.GamePhase):
 
         WINDOW_WIDTH, WINDOW_HEIGHT = self.config.dimension
 
-        DrawGridTransformation = pgg.art.transformation.Pipeline(*[
-            pgg.art.transformation.DrawLine(grid_color, (0, i*WINDOW_HEIGHT//grid_frequency), (WINDOW_WIDTH, i*WINDOW_HEIGHT//grid_frequency), grid_thickness)
+        DrawGridTransformation = pgg.transform.Pipeline(*[
+            pgg.transform.DrawLine(grid_color, (0, i*WINDOW_HEIGHT//grid_frequency), (WINDOW_WIDTH, i*WINDOW_HEIGHT//grid_frequency + 1), grid_thickness)
             for i in range(1, grid_frequency)
         ], *[
-            pgg.art.transformation.DrawLine(grid_color, (i*WINDOW_WIDTH//grid_frequency, 0), (i*WINDOW_WIDTH//grid_frequency, WINDOW_HEIGHT), grid_thickness)
+            pgg.transform.DrawLine(grid_color, (i*WINDOW_WIDTH//grid_frequency, 0), (i*WINDOW_WIDTH//grid_frequency + 1, WINDOW_HEIGHT), grid_thickness)
             for i in range(1, grid_frequency)
         ])
 
 
-        background = pgg.art.ColoredRectangle(
+        background = pgg.art.Rectangle(
             background_color,
             WINDOW_WIDTH,
             WINDOW_HEIGHT,
-            transformation=DrawGridTransformation
+            transformation=
+            pgg.transform.Pipeline(
+                pgg.transform.ConvertRGBA(),
+                DrawGridTransformation
+            )
         )
 
         self.frame = pgg.Frame(
             self,
-            background.to_window(0, 0),
+            background.get_rect(),
             background
         )
 
         # Create the pause frame
 
-        pause_bg = pgg.art.ColoredRectangle(pgg.Color("#fff"), 200, 400, border_radius=10,
-                transformation=pgg.art.transformation.DrawRectangle(
+        pause_bg = pgg.art.RoundedRectangle(pgg.Color("#fff"), 200, 400, 10,
+                transformation=pgg.transform.DrawRoundedRectangle(
                     pgg.Color('black'),
-                    (100, 200), 200, 400, 8, 0, 10
+                    pgg.Rect(0, 0, 200, 400),
+                    10,
+                    thickness=5
             )
         )
-
+        rect = pause_bg.get_rect()
+        rect.center=(WINDOW_WIDTH//2, WINDOW_HEIGHT//2)
         self.pause_frame = pgg.Frame(
             self.frame,
-            pause_bg.to_window(WINDOW_WIDTH//2, WINDOW_HEIGHT//2, pgg.anchors.CENTER),
+            rect,
             pause_bg,
             layer=2 # set to 2 to be displayed on top of the pawns, whose layers are 1.
         )
@@ -467,7 +509,7 @@ class PlaygroundGamePhase(pgg.GamePhase):
         resume_button = pgg.widget.TextButton(
             self.pause_frame,
             self.pause_frame.width//2, self.pause_frame.height//4,
-            pgg.art.ColoredRectangle(pgg.Color('red').darken(30), *BUTTONS_DIMENSION),
+            pgg.art.Rectangle(pgg.Color('red').darken(30), *BUTTONS_DIMENSION),
             "default_bold",
             pgg.Color('white'),
             'LOC_RESUME',
@@ -478,7 +520,7 @@ class PlaygroundGamePhase(pgg.GamePhase):
         return_button = pgg.widget.TextButton(
             self.pause_frame,
             self.pause_frame.width//2, self.pause_frame.height//2,
-            pgg.art.ColoredRectangle(pgg.Color('blue').darken(30), *BUTTONS_DIMENSION),
+            pgg.art.Rectangle(pgg.Color('blue').darken(30), *BUTTONS_DIMENSION),
             "default_bold",
             pgg.Color('white'),
             'LOC_RETURN',
@@ -489,7 +531,7 @@ class PlaygroundGamePhase(pgg.GamePhase):
         settings_button = pgg.widget.TextButton(
             self.pause_frame,
             self.pause_frame.width//2, 3*self.pause_frame.height//4,
-            pgg.art.ColoredRectangle(pgg.Color('green').darken(30), *BUTTONS_DIMENSION),
+            pgg.art.Rectangle(pgg.Color('green').darken(30), *BUTTONS_DIMENSION),
             "default_bold",
             pgg.Color('white'),
             'LOC_SETTINGS',
@@ -558,8 +600,15 @@ class PlaygroundGamePhase(pgg.GamePhase):
             # send the data to the server
             if self.keyboard.actions_pressed.get('left'):
                 self.game.client.send("action", "left")
+                for player in self.players.values():
+                    player.pawn.rotate(-loop_duration/10)
             if self.keyboard.actions_pressed.get('right'):
                 self.game.client.send("action", "right")
+                for player in self.players.values():
+                    player.pawn.rotate(loop_duration/10)
+            if self.keyboard.actions_pressed.get('space'):
+                for player in self.players.values():
+                    self.frame.zoom_camera(1.005)
 
         # Interact with the pause
         if self.keyboard.actions_down.get('pause') and not self.settings_frame.visible:
@@ -579,7 +628,7 @@ class PlaygroundGamePhase(pgg.GamePhase):
         self.settings_frame.show()
         self.pause_frame.hide()
 
-g = pgg.Game(LOBBY, debug=True) # Instantiate the game
+g = pgg.Game(LOBBY, debug=False) # Instantiate the game
 LobbyGamePhase(g) # Instantiate each phases
 PlaygroundGamePhase(g)
 g.run() # Run the game

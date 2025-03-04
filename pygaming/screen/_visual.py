@@ -1,6 +1,6 @@
 """The visual module contains the Visual class, an abstract for all object displayable on the screen."""
-import pygame
 from abc import ABC, abstractmethod
+import pygame
 from .art import Art
 from ..settings import Settings
 
@@ -15,7 +15,7 @@ class Visual(ABC):
         self._surface_changed: bool = True
         self.visible = True
         self._update_if_invisible = update_if_invisible
-    
+
     def get_surface(self) -> pygame.Surface:
         """Return the surface to be displayed."""
         if self._surface_changed:
@@ -23,15 +23,15 @@ class Visual(ABC):
             self._last_surface = self.make_surface()
         return self._last_surface
 
-    def begin(self, settings):
+    def begin(self, settings: Settings):
         """Call self method at the beginning of the phase."""
         self.background.start(**settings)
         self.notify_change()
-    
+
     def finish(self):
         """Call self method at the end of the phase."""
         self.background.end()
-    
+
     def loop(self, loop_duration):
         """Call this method at every loop iteration."""
         has_changed = self.background.update(loop_duration)

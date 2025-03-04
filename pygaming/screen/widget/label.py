@@ -8,7 +8,6 @@ from ...database import TextFormatter
 from ..tooltip import Tooltip
 from ...cursor import Cursor
 
-
 class Label(Element):
     """A Label is an element used to display text as a unjustified lines."""
 
@@ -43,7 +42,7 @@ class Label(Element):
         - blinking_period: int [ms]. If an integer is specified, the text will blink with the given period.
         """
         self.font = font
-        self.text = str(localization_or_text)
+        self.text = localization_or_text
         super().__init__(master, background, x, y, anchor, layer, tooltip, cursor, False, False, None, False)
         self.justify = justify
         self._blinking_period = blinking_period

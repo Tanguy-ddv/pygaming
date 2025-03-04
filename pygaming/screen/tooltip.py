@@ -13,17 +13,16 @@ class Tooltip(Visual):
     def __init__(
         self,
         phase: GamePhase,
-        background: Art,        
+        background: Art
     ) -> None:
         """
-        Create an Element.
+        Create a Tooltip.
 
         Params:
         ----
-        - phase: Frame or Phase, the master of this object.
-        - background: The surface. It is an Art
+        - phase: GamePhase, the master of this object.
+        - background: Art, The image to be displayed
         """
-
         self.phase = phase
         Visual.__init__(self, background, False)
 
@@ -32,12 +31,12 @@ class Tooltip(Visual):
         """Return the game."""
         return self.phase.game
 
-
     def make_surface(self) -> pygame.Surface:
         """Make the surface of the tooltip as a pygame.Surface"""
         return self.background.get(None, **self.phase.settings)
 
 class TextTooltip(Tooltip):
+    """A TextTooltip is a tooltip with some text displayed on it."""
 
     def __init__(self, phase, background, text_or_loc: str | TextFormatter, font: str, font_color: ColorLike, jusitfy: Anchor = CENTER):
         super().__init__(phase, background)
@@ -51,7 +50,7 @@ class TextTooltip(Tooltip):
         """Reset the text or loc to a new value."""
         self._text = new_text_or_loc
         self.notify_change()
-    
+
     def make_surface(self):
         """Make the surface of the tooltip with the text on it."""
         background = self.background.get(None, **self.phase.settings)
