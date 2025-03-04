@@ -103,9 +103,9 @@ class SettingsFrame(pgg.Frame):
         self.master.settings.set_fullscreen(self.fullscreen)
         self.master.settings.set_language(self.language)
         if self.controls:
-            self.master.settings.set_controls({"K_LEFT": "left", "K_RIGHT": "right", "K_ESCAPE": "pause"}, PLAYGROUND)
+            self.master.settings.set_controls({"K_LEFT": "left", "K_RIGHT": "right", "K_ESCAPE": "pause", "K_SPACE" : "space"}, PLAYGROUND)
         else:
-            self.master.settings.set_controls({"K_RIGHT": "left", "K_LEFT": "right", "K_ESCAPE": "pause"}, PLAYGROUND)
+            self.master.settings.set_controls({"K_RIGHT": "left", "K_LEFT": "right", "K_ESCAPE": "pause", "K_SPACE" : "space"}, PLAYGROUND)
 
         self.game.update_settings()
         self.master.notify_change_all() # Update all the elements of the game so the new settings are taken into account.
@@ -592,7 +592,7 @@ class PlaygroundGamePhase(pgg.GamePhase):
                 for player in self.players.values(): # update the score and the position of the players
                     rank = self.get_rank(player)
                     player.update_rank(rank)
-                    # player.pawn.move(payload[player.name]['x'], payload[player.name]['y'])
+                    player.pawn.move(payload[player.name]['x'], payload[player.name]['y'])
                     self.notify_change()
 
         if not self.pause_frame.visible and not self.settings_frame.visible: # Otherwise it means that we are in pause.
@@ -608,8 +608,7 @@ class PlaygroundGamePhase(pgg.GamePhase):
                     player.pawn.rotate(loop_duration/10)
             if self.keyboard.actions_pressed.get('space'):
                 for player in self.players.values():
-                    player.pawn.zoom(1.01)
-        
+                    self.frame.zoom_camera(1.005)
 
         # Interact with the pause
         if self.keyboard.actions_down.get('pause') and not self.settings_frame.visible:
