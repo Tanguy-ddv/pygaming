@@ -7,7 +7,6 @@ from ..anchors import TOP_LEFT, CENTER, Anchor
 from .widget import Widget
 from ..art import Art
 from ...color import Color
-from ..art import mask
 from ...database import TextFormatter
 from ...cursor import Cursor
 from ..tooltip import Tooltip
@@ -150,7 +149,7 @@ class TextButton(Button):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         anchor: Anchor = TOP_LEFT,
-        active_area: Optional[mask.Mask | Hitbox] = None,
+        active_area: Optional[Hitbox] = None,
         layer: int = 0,
         hover_surface: Surface | None = None,
         hover_cursor: Cursor | None = None,

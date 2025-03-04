@@ -7,7 +7,7 @@ from ...error import PygamingException
 from .widget import Widget
 from ..anchors import TOP_LEFT, Anchor
 from ..frame import Frame
-from ..art.art import Art
+from ..art import Art
 from ...cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox
