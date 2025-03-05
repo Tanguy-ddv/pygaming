@@ -12,7 +12,6 @@ from ...cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox
 
-
 class Button(Widget):
     """A Button is a basic widget used to get a player click."""
 
@@ -97,12 +96,6 @@ class Button(Widget):
 
     def _make_hovered_surface(self) -> Surface:
         return self.hovered_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
-
-    def start(self):
-        """Nothing to do at the start of the phase for this widget."""
-
-    def end(self):
-        """Nothing to do at the end of the phase for this widget."""
 
     def update(self, loop_duration: int):
         """Update the button every loop iteration if it is visible."""
@@ -237,7 +230,6 @@ class TextButton(Button):
         else:
             rendered_text = self.game.typewriter.render(self._normal_font, self.text, self._normal_font_color, None, self.justify)
 
-        
         text_width, text_height = rendered_text.get_size()
         just_x = self.justify[0]*(bg.get_width() - text_width)
         just_y = self.justify[1]*(bg.get_height() - text_height)
