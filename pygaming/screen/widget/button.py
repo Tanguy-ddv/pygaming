@@ -90,12 +90,96 @@ class Button(Widget):
         return self.normal_background.get(**self.game.settings, match=None)
 
     def _make_focused_surface(self) -> Surface:
-        if self._is_clicked:
-            return self.active_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
         return self.focused_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
+
+    def _make_active_surface(self) -> Surface:
+        return self.active_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
     def _make_hovered_surface(self) -> Surface:
         return self.hovered_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
+
+    def make_surface(self):
+        """Return the surface of the widget."""
+        if self.disabled:
+            return self._make_disabled_surface()
+        elif self.focused:
+            return self._make_focused_surface()
+        elif self._hovered:
+            return self._make_hovered_surface()
+        elif self._is_clicked:
+            return self._make_active_surface()
+        else:
+            return self._make_normal_surface()
+
+    def loop(self, loop_duration: int):
+        """Call this method every loop iteration."""
+        if (self.on_master and self.is_visible()) or self._update_if_invisible:
+            if not self._continue_animation:
+                if self.disabled:
+                    has_changed = self.disabled_background.update(loop_duration)
+                elif self.focused:
+                    has_changed = self.focused_background.update(loop_duration)
+                elif self._hovered:
+                    has_changed = self.hovered_background.update(loop_duration)
+                elif self._is_clicked:
+                    has_changed = self.active_background.update(loop_duration)
+                else:
+                    has_changed = self.normal_background.update(loop_duration)
+                if has_changed:
+                    self.notify_change()
+            else:
+                has_changed = self.normal_background.update(loop_duration)
+                if has_changed:
+                    self.notify_change()
+            if self.is_visible():
+                self.update(loop_duration)
+
+    def switch_background(self):
+        """Switch to the disabled, focused or normal background."""
+        if not self._continue_animation:
+            if self.disabled:
+                self.active_background.reset()
+                self.focused_background.reset()
+                self.normal_background.reset()
+                self.hovered_background.reset()
+            elif self.focused:
+                self.active_background.reset()
+                self.normal_background.reset()
+                self.disabled_background.reset()
+                self.hovered_background.reset()
+            elif self._hovered:
+                self.active_background.reset()
+                self.normal_background.reset()
+                self.disabled_background.reset()
+                self.focused_background.reset()
+            elif self._is_clicked:
+                self.normal_background.reset()
+                self.disabled_background.reset()
+                self.focused_background.reset()
+                self.hovered_background.reset()
+            else:
+                self.active_background.reset()
+                self.disabled_background.reset()
+                self.focused_background.reset()
+                self.hovered_background.reset()                
+
+        self.notify_change()
+
+    def start(self):
+        """Execute this method at the beginning of the phase, load the arts that are set to force_load."""
+        self.normal_background.start(**self.game.settings)
+        self.focused_background.start(**self.game.settings)
+        self.disabled_background.start(**self.game.settings)
+        self.hovered_background.start(**self.game.settings)
+        self.active_background.start(**self.game.settings)
+
+    def end(self):
+        """Execute this method at the end of the phase, unload all the arts."""
+        self.normal_background.end()
+        self.focused_background.end()
+        self.disabled_background.end()
+        self.hovered_background.end()
+        self.active_background.end()
 
     def update(self, loop_duration: int):
         """Update the button every loop iteration if it is visible."""
