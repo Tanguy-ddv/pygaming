@@ -135,6 +135,9 @@ class Element(Visual):
         Visual.begin(self, self.game.settings)
         self.start()
 
+    def unset_hover(self):
+        pass
+
     @abstractmethod
     def start(self):
         """Execute this method at the beginning of the phase."""

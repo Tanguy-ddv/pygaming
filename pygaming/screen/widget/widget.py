@@ -30,9 +30,10 @@ class Widget(Element, ABC):
         active_area: Optional[Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
-        cursor: Cursor | None = None,
+        cursor: Optional[Cursor] = None,
         continue_animation: bool = False,
-        update_if_invisible: bool = False
+        update_if_invisible: bool = False,
+        hovered_background: Optional[Art] = None,
     ) -> None:
         super().__init__(
             master,
@@ -59,6 +60,13 @@ class Widget(Element, ABC):
         else:
             self.disabled_background = disabled_background
 
+        if hovered_background is None:
+            self.hovered_background = self.background
+        else:
+            self.hovered_background = hovered_background
+    
+        self._hovered = False
+
     @property
     def normal_background(self):
         """Alias for the surface."""
@@ -83,6 +91,10 @@ class Widget(Element, ABC):
     def _make_disabled_surface(self) -> Surface:
         """Return the surface based on its current state when the widget is disabled."""
         raise NotImplementedError()
+    
+    # @abstractmethod
+    def _make_hovered_surface(self) -> Surface:
+        """Return the surface based on its current state when the widget"""
 
     def make_surface(self):
         """Return the surface of the widget."""
@@ -92,24 +104,32 @@ class Widget(Element, ABC):
             return self._make_focused_surface()
         else:
             return self._make_normal_surface()
+    
+    def unset_hover(self):
+        self._hovered = False
+
+    def get_hover(self):
+        self._hovered = True
+        return super().get_hover()
 
     def loop(self, loop_duration: int):
         """Call this method every loop iteration."""
-        if not self._continue_animation:
-            if self.disabled:
-                has_changed = self.disabled_background.update(loop_duration)
-            elif self.focused:
-                has_changed = self.focused_background.update(loop_duration)
+        if (self.on_master and self.is_visible()) or self._update_if_invisible:
+            if not self._continue_animation:
+                if self.disabled:
+                    has_changed = self.disabled_background.update(loop_duration)
+                elif self.focused:
+                    has_changed = self.focused_background.update(loop_duration)
+                else:
+                    has_changed = self.normal_background.update(loop_duration)
+                if has_changed:
+                    self.notify_change()
             else:
                 has_changed = self.normal_background.update(loop_duration)
-            if has_changed:
-                self.notify_change()
-        else:
-            has_changed = self.normal_background.update(loop_duration)
-            if has_changed:
-                self.notify_change()
-        if self.is_visible():
-            self.update(loop_duration)
+                if has_changed:
+                    self.notify_change()
+            if self.is_visible():
+                self.update(loop_duration)
 
     def switch_background(self):
         """Switch to the disabled, focused or normal background."""
