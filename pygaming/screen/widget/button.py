@@ -147,13 +147,21 @@ class TextButton(Button):
         x: int,
         y: int,
         normal_background: Art,
-        font : str,
-        font_color: Color,
+        normal_font : str,
+        normal_font_color: Color,
         localization_or_text: str | TextFormatter,
         active_background: Optional[Art] = None,
+        active_font: Optional[str] = None,
+        active_font_color: Optional[Color] = None,
         focused_background: Optional[Art] = None,
+        focused_font: Optional[str] = None,
+        focused_font_color: Optional[Color] = None,
         disabled_background: Optional[Art] = None,
-        hovered_background: Optional[Art] = None,
+        disabled_font: Optional[str] = None,
+        disabled_font_color: Optional[Color] = None,
+        hovered_background: Optional[str] = None,
+        hovered_font: Optional[str] = None,
+        hovered_font_color: Optional[Color] = None,
         anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
         layer: int = 0,
@@ -184,14 +192,52 @@ class TextButton(Button):
             on_unclick_command,
             update_if_invisible
         )
-        self.font = font
-        self.font_color = font_color
         self.text = localization_or_text
         self.justify = jusitfy
 
+        self._normal_font = normal_font
+
+        if focused_font is None:
+            focused_font = normal_font
+        self._focused_font = focused_font
+        if disabled_font is None:
+            disabled_font = normal_font
+        self._disabled_font = disabled_font
+        if hovered_font is None:
+            hovered_font = normal_font
+        self._hovered_font = hovered_font
+        if active_font is None:
+            active_font = normal_font
+        self._active_font = active_font
+
+        self._normal_font_color = normal_font_color
+        if focused_font_color is None:
+            focused_font_color = normal_font_color
+        self._focused_font_color = focused_font_color
+        if disabled_font_color is None:
+            disabled_font_color = normal_font_color
+        self._disabled_font_color = disabled_font_color
+        if hovered_font_color is None:
+            hovered_font_color = normal_font_color
+        self._hovered_font_color = hovered_font_color
+        if active_font_color is None:
+            active_font_color = normal_font_color
+        self._active_font_color = active_font_color
+
     def make_surface(self):
         bg = super().make_surface()
-        rendered_text = self.game.typewriter.render(self.font, self.text, self.font_color, None, self.justify)
+        if self.disabled:
+            rendered_text = self.game.typewriter.render(self._disabled_font, self.text, self._disabled_font_color, None, self.justify)
+        elif self.focused:
+            rendered_text = self.game.typewriter.render(self._focused_font, self.text, self._focused_font_color, None, self.justify)
+        elif self._hovered:
+            rendered_text = self.game.typewriter.render(self._hovered_font, self.text, self._hovered_font_color, None, self.justify)
+        elif self._is_clicked:
+            rendered_text = self.game.typewriter.render(self._active_font, self.text, self._active_font_color, None, self.justify)
+        else:
+            rendered_text = self.game.typewriter.render(self._normal_font, self.text, self._normal_font_color, None, self.justify)
+
+        
         text_width, text_height = rendered_text.get_size()
         just_x = self.justify[0]*(bg.get_width() - text_width)
         just_y = self.justify[1]*(bg.get_height() - text_height)
