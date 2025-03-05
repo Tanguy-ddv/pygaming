@@ -95,7 +95,7 @@ class Button(Widget):
             return self.active_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
         return self.focused_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
-    def _make_normal_surface(self) -> Surface:
+    def _make_hovered_surface(self) -> Surface:
         return self.hovered_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
     def start(self):
