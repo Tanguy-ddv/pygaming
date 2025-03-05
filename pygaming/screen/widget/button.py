@@ -25,6 +25,7 @@ class Button(Widget):
         active_background: Optional[Art] = None,
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
+        hovered_background: Optional[Art] = None,
         anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
         layer: int = 0,
@@ -65,6 +66,7 @@ class Button(Widget):
             normal_background,
             focused_background,
             disabled_background,
+            hovered_background,
             anchor,
             active_area,
             layer,
@@ -86,12 +88,15 @@ class Button(Widget):
         return self.disabled_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
     def _make_normal_surface(self) -> Surface:
-        return self.normal_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
+        return self.normal_background.get(**self.game.settings, match=None)
 
     def _make_focused_surface(self) -> Surface:
         if self._is_clicked:
             return self.active_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
         return self.focused_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
+
+    def _make_normal_surface(self) -> Surface:
+        return self.hovered_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
 
     def start(self):
         """Nothing to do at the start of the phase for this widget."""
@@ -148,6 +153,7 @@ class TextButton(Button):
         active_background: Optional[Art] = None,
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
+        hovered_background: Optional[Art] = None,
         anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
         layer: int = 0,
@@ -167,6 +173,7 @@ class TextButton(Button):
             active_background,
             focused_background,
             disabled_background,
+            hovered_background,
             anchor,
             active_area,
             layer,

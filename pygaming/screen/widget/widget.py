@@ -26,6 +26,7 @@ class Widget(Element, ABC):
         normal_background: Art,
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
+        hovered_background: Optional[Art] = None,
         anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
         layer: int = 0,
@@ -33,7 +34,6 @@ class Widget(Element, ABC):
         cursor: Optional[Cursor] = None,
         continue_animation: bool = False,
         update_if_invisible: bool = False,
-        hovered_background: Optional[Art] = None,
     ) -> None:
         super().__init__(
             master,
@@ -92,9 +92,9 @@ class Widget(Element, ABC):
         """Return the surface based on its current state when the widget is disabled."""
         raise NotImplementedError()
     
-    # @abstractmethod
+    @abstractmethod
     def _make_hovered_surface(self) -> Surface:
-        """Return the surface based on its current state when the widget"""
+        """Return the surface based on its current state when the widget is hovered."""
 
     def make_surface(self):
         """Return the surface of the widget."""
@@ -102,14 +102,23 @@ class Widget(Element, ABC):
             return self._make_disabled_surface()
         elif self.focused:
             return self._make_focused_surface()
+        elif self._hovered:
+            return self._make_hovered_surface()
         else:
             return self._make_normal_surface()
     
     def unset_hover(self):
-        self._hovered = False
+        """Set the hovering flag to false."""
+        if self._hovered:
+            self._hovered = False
+            self.switch_background()
 
     def get_hover(self):
-        self._hovered = True
+        if not self._hovered:
+            self._hovered = True
+            self.switch_background()
+        else:
+            self._hovered = True
         return super().get_hover()
 
     def loop(self, loop_duration: int):
@@ -120,6 +129,8 @@ class Widget(Element, ABC):
                     has_changed = self.disabled_background.update(loop_duration)
                 elif self.focused:
                     has_changed = self.focused_background.update(loop_duration)
+                elif self._hovered:
+                    has_changed = self.hovered_background.update(loop_duration)
                 else:
                     has_changed = self.normal_background.update(loop_duration)
                 if has_changed:
@@ -137,12 +148,19 @@ class Widget(Element, ABC):
             if self.disabled:
                 self.focused_background.reset()
                 self.normal_background.reset()
+                self.hovered_background.reset()
             elif self.focused:
                 self.normal_background.reset()
                 self.disabled_background.reset()
+                self.hovered_background.reset()
+            elif self._hovered:
+                self.normal_background.reset()
+                self.disabled_background.reset()
+                self.focused_background.reset()
             else:
                 self.disabled_background.reset()
                 self.focused_background.reset()
+                self.hovered_background.reset()
 
         self.notify_change()
 
@@ -151,9 +169,11 @@ class Widget(Element, ABC):
         self.normal_background.start(**self.game.settings)
         self.focused_background.start(**self.game.settings)
         self.disabled_background.start(**self.game.settings)
+        self.hovered_background.start(**self.game.settings)
 
     def end(self):
         """Execute this method at the end of the phase, unload all the arts."""
         self.normal_background.end()
         self.focused_background.end()
         self.disabled_background.end()
+        self.hovered_background.end()

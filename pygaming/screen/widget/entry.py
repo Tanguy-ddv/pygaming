@@ -10,6 +10,10 @@ from ...cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox
 
+_DEFAULT_CARET_FREQUENCY = 500 # [ms]
+_DEFAULT_CARET_WIDTH = 2 # [px]
+_DEFAULT_MAX_LENGTH = 15
+
 class Entry(Widget):
     """The Entry widget is used to allow the user to add a textual input."""
 
@@ -26,7 +30,10 @@ class Entry(Widget):
         focused_font_color: Optional[str] = None,
         disabled_background: Optional[Art] = None,
         disabled_font: Optional[str] = None,
-        disbaled_font_color: Optional[str] = None,
+        disabled_font_color: Optional[str] = None,
+        hovered_background: Optional[str] = None,
+        hovered_font: Optional[str] = None,
+        hovered_font_color: Optional[str] = None,
         initial_value: str = '',
         extra_characters: str = '',
         forbid_characters: str = '',
@@ -37,9 +44,9 @@ class Entry(Widget):
         cursor: Cursor | None = None,
         continue_animation: bool = False,
         justify: Anchor = CENTER,
-        caret_frequency: int = 500,
-        caret_width: int = 2,
-        max_length: int = 10,
+        caret_frequency: int = _DEFAULT_CARET_FREQUENCY,
+        caret_width: int = _DEFAULT_CARET_WIDTH,
+        max_length: int = _DEFAULT_MAX_LENGTH,
         update_if_invisible: bool = False,
         empty_text_or_loc: str = "",
         empty_font: str = None,
@@ -85,6 +92,7 @@ class Entry(Widget):
             normal_background,
             focused_background,
             disabled_background,
+            hovered_background,
             anchor,
             active_area,
             layer,
@@ -97,21 +105,29 @@ class Entry(Widget):
         self._text = str(initial_value)
         self.extra_characters = extra_characters
         self.forbid_characters = forbid_characters
+
         self._normal_font = normal_font
+
         if focused_font is None:
             focused_font = normal_font
         self._focused_font = focused_font
         if disabled_font is None:
             disabled_font = normal_font
         self._disabled_font = disabled_font
+        if hovered_font is None:
+            hovered_font = normal_font
+        self._hovered_font = hovered_font
 
         self._normal_font_color = normal_font_color
         if focused_font_color is None:
             focused_font_color = normal_font_color
         self._focused_font_color = focused_font_color
-        if disbaled_font_color is None:
-            disbaled_font_color = normal_font_color
-        self._disabled_font_color = disabled_font
+        if disabled_font_color is None:
+            disabled_font_color = normal_font_color
+        self._disabled_font_color = disabled_font_color
+        if hovered_font_color is None:
+            hovered_font_color = normal_font_color
+        self._hovered_font_color = hovered_font_color
 
         self.max_length = max_length
 
@@ -144,13 +160,13 @@ class Entry(Widget):
 
     def _make_disabled_surface(self) -> Surface:
         return self._make_surface(
-            self.disabled_background.get(self.background if self._continue_animation else None),
+            self.disabled_background.get(self.background if self._continue_animation else None, **self.game.settings),
             self._disabled_font, self._disabled_font_color, False, self._text
         )
 
     def _make_focused_surface(self) -> Surface:
         return self._make_surface(
-            self.focused_background.get(self.background if self._continue_animation else None),
+            self.focused_background.get(self.background if self._continue_animation else None, **self.game.settings),
             self._focused_font, self._focused_font_color, self._show_caret, self._text
         )
 
@@ -162,6 +178,17 @@ class Entry(Widget):
             )
         return self._make_surface(
             self.normal_background.get(None, **self.game.settings),
+            self._empty_font, self._empty_font_color, False, self._empty_text_or_loc
+        )
+
+    def _make_hovered_surface(self) -> Surface:
+        if self._text: # if the current text is not empty
+            return self._make_surface(
+                self.hovered_background.get(None, **self.game.settings),
+                self._hovered_font, self._hovered_font_color, False, self._text
+            )
+        return self._make_surface(
+            self.hovered_background.get(None, **self.game.settings),
             self._empty_font, self._empty_font_color, False, self._empty_text_or_loc
         )
 

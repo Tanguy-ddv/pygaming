@@ -26,8 +26,10 @@ class Slider(Widget):
         initial_value: Optional[Any] = None,
         focused_background: Optional[Art] = None,
         focused_cursor: Optional[Art] = None,
-        disabled_background:  Optional[Art] = None,
-        disabled_cursor:  Optional[Art] = None,
+        disabled_background: Optional[Art] = None,
+        disabled_cursor: Optional[Art] = None,
+        hovered_background: Optional[Art] = None,
+        hovered_cursor: Optional[Art] = None,
         anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
         layer: int = 0,
@@ -76,6 +78,7 @@ class Slider(Widget):
             normal_background,
             focused_background,
             disabled_background,
+            hovered_background,
             anchor,
             active_area,
             layer,
@@ -88,6 +91,7 @@ class Slider(Widget):
         self.normal_cursor = normal_cursor
         self.focused_cursor = focused_cursor if focused_cursor else normal_cursor
         self.disabled_cursor = disabled_cursor if disabled_cursor else normal_cursor
+        self.hovered_cursor = hovered_cursor if hovered_cursor else normal_cursor
 
         # initial value and index
         self._values= list(values)
@@ -205,24 +209,21 @@ class Slider(Widget):
         return min(range(len(self._positions)), key=lambda i: abs(self._positions[i] - x))
 
     def _make_normal_surface(self) -> Surface:
-        background = self.normal_background
-        cursor = self.normal_cursor
-        return self._make_surface(background, cursor)
+        return self._make_surface(self.normal_background, self.normal_cursor)
 
     def _make_focused_surface(self) -> Surface:
-        background = self.focused_background
-        cursor = self.focused_cursor
-        return self._make_surface(background, cursor)
+        return self._make_surface(self.focused_background, self.focused_cursor)
 
     def _make_disabled_surface(self) -> Surface:
-        background = self.disabled_background
-        cursor = self.disabled_cursor
-        return self._make_surface(background, cursor)
+        return self._make_surface(self.disabled_background, self.disabled_cursor)
+
+    def _make_hovered_surface(self) -> Surface:
+        return self._make_surface(self.hovered_background, self.hovered_cursor)
 
     def _make_surface(self, background: Art, cursor: Art) -> Surface:
         """Make the surface with the cursor and the background."""
         bg = background.get(self.background if self._continue_animation else None, **self.game.settings)
         x = self._cursor_position - self.normal_cursor.width//2
         y = (background.height - cursor.height)//2
-        bg.blit(cursor.get(None, **self.game.settings), (x,y))
+        bg.blit(cursor.get(self.normal_cursor if self._continue_animation else None, **self.game.settings), (x,y))
         return bg
