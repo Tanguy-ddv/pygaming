@@ -18,7 +18,7 @@ class _BooleanMask(mask_.Mask):
         if not self.other.is_loaded():
             self.other.load(width, height, **ld_kwargs)
             need_to_unload = True
-        self.matrix = self.other.matrix.astype(bool)
+        self.matrix = self.other.matrix < 1
         if need_to_unload:
             self.other.unload()
 class Hitbox:
