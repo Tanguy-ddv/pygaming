@@ -3,7 +3,8 @@ import math
 from typing import Optional
 from pygame import transform as tf
 from ..phase import GamePhase
-from .element import Element, TOP_LEFT
+from .element import Element
+from .anchors import Anchor, TOP_LEFT
 from .art import Art
 from .hitbox import Hitbox
 from ..inputs.mouse import Click
@@ -24,9 +25,6 @@ class Actor(Element):
         self,
         master: GamePhase | Element,
         main_art: Art,
-        x: int,
-        y: int,
-        anchor: tuple[float | int, float | int] = TOP_LEFT,
         layer: int = 0,
         hitbox: Hitbox = None,
         tooltip: Tooltip = None,
@@ -36,9 +34,6 @@ class Actor(Element):
         super().__init__(
             master,
             main_art,
-            x,
-            y,
-            anchor,
             layer,
             tooltip,
             cursor,
@@ -52,8 +47,14 @@ class Actor(Element):
         self._current_art = "main"
         self._angle = 0
         self._zoom = 1
-        self._initial_anchor = anchor
         self._initial_size = self.width, self.height
+        self._initial_anchor = None
+    
+    def place(self, x: int, y:int, anchor: Anchor = TOP_LEFT, angle: float = 0, zoom: float = 1):
+        self._initial_anchor = anchor
+        self._angle = angle
+        self._zoom = zoom
+        super().place(x, y, anchor)
 
     @property
     def main_art(self):

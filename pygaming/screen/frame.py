@@ -18,8 +18,8 @@ class Frame(Element):
     def __init__(
         self,
         master: GamePhase | Frame,
-        window: pygame.Rect,
         background: Art,
+        size: Optional[tuple[int, int]] = None,
         focused_background: Optional[Art] = None,
         camera: Optional[Camera] = None,
         layer: int = 0,
@@ -32,22 +32,17 @@ class Frame(Element):
         Params:
         ----
         - master: Another Frame or a phase.
-        - window: Window or tuple[x, y, width, height] or tuple[x, y, width, height, anchor],
-        the window in which the frame will be display. The window might have a mask.
-        If a tuple of for int is specified, act like a window without any mask, where the two first values are the top_left coordinate
-        of the frame in its master, the two next are the dimension
-        If a tuple of for int and an anchor is specified, act like a window without any mask but with a specify anchor. In this case, 
-        the two first values are the coordinate of the anchor (last element of the tuple) point on the frame.
         - background: The AnimatedSurface or Surface representing the background of the Frame.
+        - size: tuple[int, int]. The size of the Frame. If None, the size of the background is used instead.
         - focused_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
         If None, copy the background
-        - camera: WindowLike, the rectangle of the background to get the image from. Use if you have a big background
+        - camera: Camera, the rectangle of the background to get the image from. Use if you have a big background
         If None, the top left is 0,0 and the dimensions are the window dimensions.
         - layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
         - continue_animation: bool. If set to False, switching from focused to unfocused will reset the animations.
         """
         self.children: list[Element] = []
-        self.window = window
+        self.window = pygame.Rect(0, 0, *(background.size if size is None else size))
 
         self.has_a_widget_focused = False
 
@@ -61,8 +56,6 @@ class Frame(Element):
             self,
             master,
             background,
-            *window.topleft,
-            TOP_LEFT,
             layer,
             None,
             None,
@@ -79,6 +72,18 @@ class Frame(Element):
             self.focused_background = self.background
         else:
             self.focused_background = focused_background
+        
+        self.width = self.window.width
+        self.height = self.window.height
+    
+    def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT):
+        """Place the Frame. Its width and height have already been defined"""
+        self._x = self.window.left = x - anchor[0]*self.window.width
+        self._y = self.window.top = y - anchor[1]*self.window.height
+
+        self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()
 
     def _compute_wc_ratio(self, master = None):
         """Recompute the ratio between the window and the camera dimensions."""
@@ -308,6 +313,22 @@ class Frame(Element):
     def unset_hover(self):
         for child in self.children:
             child.unset_hover()
+
+    @property
+    def relative_left(self):
+        return self.window.left
+    
+    @property
+    def relative_top(self):
+        return self.window.top
+    
+    @property
+    def relative_right(self):
+        return self.window.right
+    
+    @property
+    def relative_bottom(self):
+        return self.window.bottom
 
     @property
     def absolute_left(self):

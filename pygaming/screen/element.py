@@ -1,6 +1,7 @@
 """the element module contains the Element object, which is a base for every object displayed on the game window."""
+from __future__ import annotations
 from abc import abstractmethod
-from typing import Optional, Union
+from typing import Optional
 import pygame
 from ..phase import GamePhase
 from .tooltip import Tooltip
@@ -16,11 +17,8 @@ class Element(Visual):
 
     def __init__(
         self,
-        master: Union[GamePhase, 'Element', Tooltip], # Frame or phase, no direct typing of frame to avoid circular import
+        master: GamePhase | Element,
         background: Art,
-        x: int,
-        y: int,
-        anchor: Anchor = TOP_LEFT,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Optional[Cursor] = None,
@@ -58,45 +56,50 @@ class Element(Visual):
             active_area = Hitbox(0, 0, *self.background.size)
         self._active_area = active_area
 
-        self._x = x
-        self._y = y
-        self.anchor = anchor
+        self._x = None
+        self._y = None
+        self.anchor = None
         self.master = master
         self.master.add_child(self)
+        self.on_master = False
 
         self._cursor = cursor
         self._tooltip = tooltip
-
-        self.get_on_master()
 
     def get_on_master(self):
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
         on_screen = self.absolute_rect.colliderect((0, 0, *self.game.config.dimension))
         self.on_master = self.master.is_child_on_me(self) and on_screen
 
-    def move(self, new_x: int = None, new_y: int = None, new_anchor: Anchor = None):
+    def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT):
+        """Place the element on its master."""
+        self._x = x
+        self._y = y
+        self.anchor = anchor
+
+        self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()
+
+    def move(self, dx: int = 0, dy: int = 0):
         """
-        Move the element in the master frame.
+        Move the element on its master.
         
         Params:
         ---
-        - new_x: int = None. If specified, change the current x of the element. Otherwise do not change it.
-        - new_y: int = None. If specified, change the current y of the element. Otherwise do not change it.
-        - new_anchor: Anchor = None. If specified, change the current anchor of the element. Otherwise do not change it.
+        - new_x: int = 0, the number of pixel by which the element should be translated horizontally
+        - new_y: int = 0, the number of pixel by which the element should be translated vertically
         """
-        if new_anchor is not None:
-            self.anchor = new_anchor
-        if new_y is not None:
-            self._y = new_y
-        if new_x is not None:
-            self._x = new_x
+
+        self._x += dx
+        self._y += dy
 
         self.get_on_master()
         if self.on_master:
             self.master.notify_change()
 
     def is_contact(self, pos: Optional[Click | tuple[int, int]]):
-        """Return True if the mouse is hovering the element."""
+        """Return whether the position, relative to the top left of the master of this element, is in contact with the element."""
         if pos is None or not self.on_master:
             return False
         if isinstance(pos, tuple):
@@ -187,7 +190,7 @@ class Element(Visual):
 
     def is_visible(self):
         """Return wether the widget is visible or not."""
-        return self.visible and self.master.is_visible()
+        return self.visible and self._x is not None and self.master.is_visible()
 
     def enable(self):
         """Enable the object if it can be disabled."""

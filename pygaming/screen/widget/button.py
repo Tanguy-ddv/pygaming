@@ -18,14 +18,11 @@ class Button(Widget):
     def __init__(
         self,
         master: Frame,
-        x: int,
-        y: int,
         normal_background: Art,
         active_background: Optional[Art] = None,
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         hovered_background: Optional[Art] = None,
-        anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
         layer: int = 0,
         tooltip: Optional[Tooltip] = None,
@@ -42,14 +39,10 @@ class Button(Widget):
         ---
 
         - master: Frame. The Frame in which this widget is placed.
-        - x: int, the coordinate of the anchor in the master Frame
-        - y: int, the top coordinate of the anchor in the master Frame.
         - normal_background: AnimatedSurface | Surface: The surface used as the background of the button when it is neither focused nor disabled.
         - active_background: AnimatedSurface | Surface: The surface used as the background of the button when it is clicked.
         - focused_background: AnimatedSurface | Surface: The surface used as the background of the button when it is focused.
         - disabled_background: AnimatedSurface | Surface: The surface used as the background of the button when it is disabled.
-        - anchor: tuple[float, float]. The point of the button that is placed at the coordinate (x,y).
-          Use TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT or BOTTOM_RIGHT, or another personized tuple.
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the button. if None, then it is the whole background.
         - layer: int, the layer of the button in its master frame
         - tooltip: Tooltip, The tooltip to show when the button is hovered.
@@ -60,13 +53,10 @@ class Button(Widget):
         """
         super().__init__(
             master,
-            x,
-            y,
             normal_background,
             focused_background,
             disabled_background,
             hovered_background,
-            anchor,
             active_area,
             layer,
             tooltip,
@@ -221,8 +211,6 @@ class TextButton(Button):
     def __init__(
         self,
         master: Frame,
-        x: int,
-        y: int,
         normal_background: Art,
         normal_font : str,
         normal_font_color: Color,
@@ -239,11 +227,10 @@ class TextButton(Button):
         hovered_background: Optional[str] = None,
         hovered_font: Optional[str] = None,
         hovered_font_color: Optional[Color] = None,
-        anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
         layer: int = 0,
-        hover_surface: Surface | None = None,
-        hover_cursor: Cursor | None = None,
+        tooltip: Optional[Tooltip] = None,
+        cursor: Cursor | None = None,
         continue_animation: bool = False,
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
@@ -252,18 +239,15 @@ class TextButton(Button):
     ) -> None:
         super().__init__(
             master,
-            x,
-            y,
             normal_background,
             active_background,
             focused_background,
             disabled_background,
             hovered_background,
-            anchor,
             active_area,
             layer,
-            hover_surface,
-            hover_cursor,
+            tooltip,
+            cursor,
             continue_animation,
             on_click_command,
             on_unclick_command,

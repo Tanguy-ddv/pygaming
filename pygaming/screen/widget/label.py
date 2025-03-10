@@ -1,7 +1,7 @@
 """The label module contains the Label Element used to display text."""
 import pygame
 from ..element import Element
-from ..anchors import TOP_LEFT, CENTER, Anchor
+from ..anchors import CENTER, Anchor
 from ...color import Color
 from ..art import Art
 from ...database import TextFormatter
@@ -18,9 +18,6 @@ class Label(Element):
         font: str,
         font_color: Color,
         localization_or_text: str | TextFormatter,
-        x: int,
-        y: int,
-        anchor: Anchor = TOP_LEFT,
         tooltip: Tooltip = None,
         cursor: Cursor = None,
         layer: int = 0,
@@ -34,16 +31,13 @@ class Label(Element):
         - background: A SurfaceLike object beiing the background of the text.
         - font: Font, the font to be used to display the text.
         - localization_or_text: The text, localization or TextFormatter to be displayed, can be modify with set_localization_or_text(new_text).
-        - x: The first coordinate of the anchor in the Frame.
-        - y: The first coordinate of the anchor in the Frame.
-        - anchor: The anchor of the coordinate.
         - layer: int, the layer of the element in the frame.
         - justify: the position of the text in the label, should be an anchor (i.e a tuple[x, y] with 0 <= x, y <= 1, )
         - blinking_period: int [ms]. If an integer is specified, the text will blink with the given period.
         """
         self.font = font
         self.text = localization_or_text
-        super().__init__(master, background, x, y, anchor, layer, tooltip, cursor, False, False, None, False)
+        super().__init__(master, background, layer, tooltip, cursor, False, False, None, False)
         self.justify = justify
         self._blinking_period = blinking_period
         self._time_since_last_blink = 0
