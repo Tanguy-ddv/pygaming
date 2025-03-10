@@ -94,10 +94,13 @@ class Frame(Element):
         """Update the hovering."""
         surf, cursor = None, None
         mouse_pos = self.game.mouse.get_position()
+        check_contact = True
         for child in self.visible_children:
-            if child.is_contact(mouse_pos):
+            if check_contact and child.is_contact(mouse_pos):
                 surf, cursor = child.get_hover()
-                break
+                check_contact = False # This is a "smooth break" to avoid checking if there is a contact for every child once one is found.
+            else:
+                child.unset_hover()
         return surf, cursor
 
     def update_focus(self, click: Click | None):
@@ -301,6 +304,10 @@ class Frame(Element):
             for child in self.children:
                 child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
             self.notify_change()
+        
+    def unset_hover(self):
+        for child in self.children:
+            child.unset_hover()
 
     @property
     def absolute_left(self):

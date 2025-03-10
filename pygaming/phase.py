@@ -295,6 +295,8 @@ class GamePhase(_BasePhase, Visual):
             
             if frame.is_contact((x,y)):
                 tooltip, cursor = frame.get_hover()
+            else:
+                frame.unset_hover()
 
         if tooltip is None: # We are not on a widget requiring a tooltip
             if self.current_tooltip is not None:

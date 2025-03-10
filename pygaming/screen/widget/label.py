@@ -3,7 +3,7 @@ import pygame
 from ..element import Element
 from ..anchors import TOP_LEFT, CENTER, Anchor
 from ...color import Color
-from ..art.art import Art
+from ..art import Art
 from ...database import TextFormatter
 from ..tooltip import Tooltip
 from ...cursor import Cursor
