@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional
 import pygame
-from ..phase import GamePhase
+from ._master import Master
 from .tooltip import Tooltip
 from .art.art import Art
 from .anchors import TOP_LEFT, Anchor
@@ -18,7 +18,7 @@ class Element(Visual):
 
     def __init__(
         self,
-        master: GamePhase | Element,
+        master: Master,
         background: Art,
         tooltip: Optional[Tooltip] = None,
         cursor: Optional[Cursor] = None,
@@ -32,7 +32,7 @@ class Element(Visual):
 
         Params:
         ----
-        - master: Frame or Phase, the master of this object.
+        - master: Master, the master of this object.
         - background: The background. It is an Art
         - tooltip: Tooltip. If a surface is provided, it to be displayed at the mouse location when the
         frame is hovered by the mouse.
