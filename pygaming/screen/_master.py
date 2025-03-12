@@ -34,3 +34,13 @@ class Master(ABC):
     def visible_children(self):
         """Return the list of visible children sorted by increasing layer."""
         return sorted(filter(lambda ch: ch.visible and ch.on_master, self.children), key= lambda w: w.layer)
+
+    @property
+    def absolute_left(self):
+        """Return the absolute left coordinate of the object on the screen."""
+        return self.absolute_rect.left
+    
+    @property
+    def absolute_top(self):
+        """Return the absolute top coordinate of the object on the screen."""
+        return self.absolute_rect.top
