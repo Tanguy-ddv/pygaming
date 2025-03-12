@@ -25,7 +25,6 @@ class Actor(Element):
         self,
         master: GamePhase | Element,
         main_art: Art,
-        layer: int = 0,
         hitbox: Hitbox = None,
         tooltip: Tooltip = None,
         cursor: Cursor = None,
@@ -34,7 +33,6 @@ class Actor(Element):
         super().__init__(
             master,
             main_art,
-            layer,
             tooltip,
             cursor,
             False,
@@ -50,11 +48,11 @@ class Actor(Element):
         self._initial_size = self.width, self.height
         self._initial_anchor = None
     
-    def place(self, x: int, y:int, anchor: Anchor = TOP_LEFT, angle: float = 0, zoom: float = 1):
+    def place(self, x: int, y:int, anchor: Anchor = TOP_LEFT, angle: float = 0, zoom: float = 1, layer: int = 0):
         self._initial_anchor = anchor
         self._angle = angle
         self._zoom = zoom
-        super().place(x, y, anchor)
+        return super().place(x, y, anchor, layer)
 
     @property
     def main_art(self):

@@ -22,7 +22,6 @@ class Frame(Element):
         size: Optional[tuple[int, int]] = None,
         focused_background: Optional[Art] = None,
         camera: Optional[Camera] = None,
-        layer: int = 0,
         continue_animation: bool = False,
         update_if_invisible: bool = False
     ) -> None:
@@ -56,12 +55,11 @@ class Frame(Element):
             self,
             master,
             background,
-            layer,
             None,
             None,
-            can_be_disabled=False,
-            can_be_focused=True,
-            active_area=None,
+            False,
+            True,
+            None,
             update_if_invisible=update_if_invisible
         )
         self._continue_animation = continue_animation
@@ -76,14 +74,17 @@ class Frame(Element):
         self.width = self.window.width
         self.height = self.window.height
     
-    def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT):
+    def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT, layer: int = 0):
         """Place the Frame. Its width and height have already been defined"""
         self._x = self.window.left = x - anchor[0]*self.window.width
         self._y = self.window.top = y - anchor[1]*self.window.height
+        self.layer = layer
 
         self.get_on_master()
         if self.on_master:
             self.master.notify_change()
+        
+        return self
 
     def _compute_wc_ratio(self, master = None):
         """Recompute the ratio between the window and the camera dimensions."""

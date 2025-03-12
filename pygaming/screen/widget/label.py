@@ -20,7 +20,6 @@ class Label(Element):
         localization_or_text: str | TextFormatter,
         tooltip: Tooltip = None,
         cursor: Cursor = None,
-        layer: int = 0,
         justify: Anchor = CENTER,
         blinking_period: int = None,
     ) -> None:
@@ -31,13 +30,12 @@ class Label(Element):
         - background: A SurfaceLike object beiing the background of the text.
         - font: Font, the font to be used to display the text.
         - localization_or_text: The text, localization or TextFormatter to be displayed, can be modify with set_localization_or_text(new_text).
-        - layer: int, the layer of the element in the frame.
         - justify: the position of the text in the label, should be an anchor (i.e a tuple[x, y] with 0 <= x, y <= 1, )
         - blinking_period: int [ms]. If an integer is specified, the text will blink with the given period.
         """
         self.font = font
         self.text = localization_or_text
-        super().__init__(master, background, layer, tooltip, cursor, False, False, None, False)
+        super().__init__(master, background, tooltip, cursor, False, False, None, False)
         self.justify = justify
         self._blinking_period = blinking_period
         self._time_since_last_blink = 0

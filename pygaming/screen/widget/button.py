@@ -24,7 +24,6 @@ class Button(Widget):
         disabled_background: Optional[Art] = None,
         hovered_background: Optional[Art] = None,
         active_area: Optional[Hitbox] = None,
-        layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
         continue_animation: bool = False,
@@ -44,7 +43,6 @@ class Button(Widget):
         - focused_background: AnimatedSurface | Surface: The surface used as the background of the button when it is focused.
         - disabled_background: AnimatedSurface | Surface: The surface used as the background of the button when it is disabled.
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the button. if None, then it is the whole background.
-        - layer: int, the layer of the button in its master frame
         - tooltip: Tooltip, The tooltip to show when the button is hovered.
         - cursor: Cursor The cursor of the mouse to use when the widget is hovered
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
@@ -58,7 +56,6 @@ class Button(Widget):
             disabled_background,
             hovered_background,
             active_area,
-            layer,
             tooltip,
             cursor,
             continue_animation,
@@ -228,7 +225,6 @@ class TextButton(Button):
         hovered_font: Optional[str] = None,
         hovered_font_color: Optional[Color] = None,
         active_area: Optional[Hitbox] = None,
-        layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
         continue_animation: bool = False,
@@ -245,7 +241,6 @@ class TextButton(Button):
             disabled_background,
             hovered_background,
             active_area,
-            layer,
             tooltip,
             cursor,
             continue_animation,

@@ -11,6 +11,7 @@ from ..inputs import Click
 from ..cursor import Cursor
 from ._visual import Visual
 from .hitbox import Hitbox
+from ..error import PygamingException
 
 class Element(Visual):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, frames."""
@@ -19,7 +20,6 @@ class Element(Visual):
         self,
         master: GamePhase | Element,
         background: Art,
-        layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
@@ -33,19 +33,17 @@ class Element(Visual):
         Params:
         ----
         - master: Frame or Phase, the master of this object.
-        - surface: The surface. It is an Art
-        - x, int, the coordinates in the master of the anchor point.
-        - y: int, the coordinates in the master of the anchor point.
-        - anchor: the anchor point in % of the width and height. 
+        - background: The background. It is an Art
         - tooltip: Tooltip. If a surface is provided, it to be displayed at the mouse location when the
         frame is hovered by the mouse.
         - cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the element.
         - can_be_disabled: some element can be disabled.
         - can_be_focused: Some element can be focused.
+        - active_area
+        - update_if_invisible
         """
 
         Visual.__init__(self, background, update_if_invisible)
-        self.layer = layer
         self.visible = True
         self.can_be_focused = can_be_focused
         self.focused = False
@@ -59,6 +57,7 @@ class Element(Visual):
         self._x = None
         self._y = None
         self.anchor = None
+        self.layer = None
         self.master = master
         self.master.add_child(self)
         self.on_master = False
@@ -71,15 +70,27 @@ class Element(Visual):
         on_screen = self.absolute_rect.colliderect((0, 0, *self.game.config.dimension))
         self.on_master = self.master.is_child_on_me(self) and on_screen
 
-    def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT):
-        """Place the element on its master."""
+    def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT, layer=0):
+        """
+        Place the element on its master.
+        
+        :param x: int, the horizontal coordinate in the master, of the anchor.
+        :param y: int, the vertical coordinate in the master, of the anchor.
+        :param anchor: Anchor, the anchor point of the element that will be placed at the coordinate (x,y)
+        :layer: int, the z-coordinate of the element, used to manage the order of display and interaction.
+
+        :return self: Element, the element itself is returned allowing method chaining.
+        """
         self._x = x
         self._y = y
         self.anchor = anchor
+        self.layer = layer
 
         self.get_on_master()
         if self.on_master:
             self.master.notify_change()
+        
+        return self
 
     def move(self, dx: int = 0, dy: int = 0):
         """
@@ -87,9 +98,12 @@ class Element(Visual):
         
         Params:
         ---
-        - new_x: int = 0, the number of pixel by which the element should be translated horizontally
-        - new_y: int = 0, the number of pixel by which the element should be translated vertically
+        - dx: int = 0, the number of pixel by which the element should be translated horizontally
+        - dy: int = 0, the number of pixel by which the element should be translated vertically
         """
+
+        if self._x is None:
+            raise PygamingException(f"{self} cannot be move as it has not been placed yet.")
 
         self._x += dx
         self._y += dy

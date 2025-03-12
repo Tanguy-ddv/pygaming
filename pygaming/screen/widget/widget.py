@@ -26,7 +26,6 @@ class Widget(Element, ABC):
         disabled_background: Optional[Art] = None,
         hovered_background: Optional[Art] = None,
         active_area: Optional[Hitbox] = None,
-        layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Optional[Cursor] = None,
         continue_animation: bool = False,
@@ -35,7 +34,6 @@ class Widget(Element, ABC):
         super().__init__(
             master,
             normal_background,
-            layer,
             tooltip,
             cursor,
             True,

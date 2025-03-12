@@ -36,7 +36,6 @@ class Entry(Widget):
         extra_characters: str = '',
         forbid_characters: str = '',
         active_area: Optional[Hitbox] = None,
-        layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
         continue_animation: bool = False,
@@ -68,7 +67,6 @@ class Entry(Widget):
         - extra_characters: str
         - forbid_charcaters: str
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the slider. if None, then it is the whole background.
-        - layer: int, the layer of the slider in its master frame
         - tooltip: Tooltip, The tooltip to show when the slider is hovered.
         - cursor: Cursor The cursor of the mouse to use when the widget is hovered,
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
@@ -85,7 +83,6 @@ class Entry(Widget):
             disabled_background,
             hovered_background,
             active_area,
-            layer,
             tooltip,
             cursor,
             continue_animation,

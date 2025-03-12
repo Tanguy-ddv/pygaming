@@ -29,7 +29,6 @@ class Slider(Widget):
         hovered_background: Optional[Art] = None,
         hovered_cursor: Optional[Art] = None,
         active_area: Optional[Hitbox] = None,
-        layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
         continue_animation: bool = False,
@@ -53,7 +52,6 @@ class Slider(Widget):
         - disabled_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is disabled.
         - disabled_cursor: AnimatedSurface | Surface: The surface used as the cursor of the slider when it is disabled.
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the slider. if None, then it is the whole background.
-        - layer: int, the layer of the slider in its master frame
         - tooltip: Tooltip, the tooltip to show when the slider is hovered.
         - cursor: Cursor The cursor of the mouse to use when the widget is hovered
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
@@ -71,7 +69,6 @@ class Slider(Widget):
             disabled_background,
             hovered_background,
             active_area,
-            layer,
             tooltip,
             cursor,
             continue_animation,
