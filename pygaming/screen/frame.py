@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import Optional
 import numpy as np
 import pygame
-from ..phase import GamePhase
+from ._master import Master
 from .element import Element
 from .art.art import Art
 from .camera import Camera
 from .anchors import CENTER, TOP_LEFT, Anchor
 from ..inputs import Click
-class Frame(Element):
+class Frame(Element, Master):
     """
     The Frame represent a fraction of the screen.
     It has backgrounds and can contain many elements, including other frames, widgets and actors.
@@ -17,7 +17,7 @@ class Frame(Element):
 
     def __init__(
         self,
-        master: GamePhase | Frame,
+        master: Master,
         background: Art,
         size: Optional[tuple[int, int]] = None,
         focused_background: Optional[Art] = None,
@@ -40,16 +40,14 @@ class Frame(Element):
         - layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
         - continue_animation: bool. If set to False, switching from focused to unfocused will reset the animations.
         """
-        self.children: list[Element] = []
-        self.window = pygame.Rect(0, 0, *(background.size if size is None else size))
+        window = pygame.Rect(0, 0, *(background.size if size is None else size))
 
         self.has_a_widget_focused = False
 
         if camera is None:
-            camera = Camera(0, 0, *self.window.size)
+            camera = Camera(0, 0, *window.size)
 
-        self.camera = camera
-
+        Master.__init__(self, camera, window)
         self._compute_wc_ratio(master=master)
         Element.__init__(
             self,
@@ -86,15 +84,11 @@ class Frame(Element):
         
         return self
 
-    def _compute_wc_ratio(self, master = None):
+    def _compute_wc_ratio(self, master: Master = None):
         """Recompute the ratio between the window and the camera dimensions."""
         if master is None:
             master = self.master
         self.wc_ratio = self.window.width/self.camera.width*master.wc_ratio[0], self.window.height/self.camera.height*master.wc_ratio[1]
-
-    def add_child(self, child: Element):
-        """Add a new element to the child list."""
-        self.children.append(child)
 
     def get_hover(self) -> tuple[bool, pygame.Surface | None]:
         """Update the hovering."""
@@ -219,15 +213,6 @@ class Frame(Element):
         """Update all the children of the frame."""
         for element in self.children:
             element.loop(loop_duration)
-
-    def is_child_on_me(self, child: Element):
-        """Return whether the child is visible on the frame or not."""
-        return self.camera.colliderect(child.relative_rect)
-
-    @property
-    def visible_children(self):
-        """Return the list of visible children sorted by increasing layer."""
-        return sorted(filter(lambda ch: ch.visible and ch.on_master, self.children), key= lambda w: w.layer)
 
     @property
     def _widget_children(self):
