@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import Optional
 import numpy as np
 import pygame
-from ..phase import GamePhase
+from ._master import Master
 from .element import Element
 from .art.art import Art
 from .camera import Camera
 from .anchors import CENTER, TOP_LEFT, Anchor
 from ..inputs import Click
-class Frame(Element):
+class Frame(Element, Master):
     """
     The Frame represent a fraction of the screen.
     It has backgrounds and can contain many elements, including other frames, widgets and actors.
@@ -17,12 +17,11 @@ class Frame(Element):
 
     def __init__(
         self,
-        master: GamePhase | Frame,
-        window: pygame.Rect,
+        master: Master,
         background: Art,
+        size: Optional[tuple[int, int]] = None,
         focused_background: Optional[Art] = None,
         camera: Optional[Camera] = None,
-        layer: int = 0,
         continue_animation: bool = False,
         update_if_invisible: bool = False
     ) -> None:
@@ -32,43 +31,33 @@ class Frame(Element):
         Params:
         ----
         - master: Another Frame or a phase.
-        - window: Window or tuple[x, y, width, height] or tuple[x, y, width, height, anchor],
-        the window in which the frame will be display. The window might have a mask.
-        If a tuple of for int is specified, act like a window without any mask, where the two first values are the top_left coordinate
-        of the frame in its master, the two next are the dimension
-        If a tuple of for int and an anchor is specified, act like a window without any mask but with a specify anchor. In this case, 
-        the two first values are the coordinate of the anchor (last element of the tuple) point on the frame.
         - background: The AnimatedSurface or Surface representing the background of the Frame.
+        - size: tuple[int, int]. The size of the Frame. If None, the size of the background is used instead.
         - focused_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
         If None, copy the background
-        - camera: WindowLike, the rectangle of the background to get the image from. Use if you have a big background
+        - camera: Camera, the rectangle of the background to get the image from. Use if you have a big background
         If None, the top left is 0,0 and the dimensions are the window dimensions.
         - layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
         - continue_animation: bool. If set to False, switching from focused to unfocused will reset the animations.
         """
-        self.children: list[Element] = []
-        self.window = window
+        window = pygame.Rect(0, 0, *(background.size if size is None else size))
 
         self.has_a_widget_focused = False
 
         if camera is None:
-            camera = Camera(0, 0, *self.window.size)
+            camera = Camera(0, 0, *window.size)
 
-        self.camera = camera
-
+        Master.__init__(self, camera, window)
         self._compute_wc_ratio(master=master)
         Element.__init__(
             self,
             master,
             background,
-            *window.topleft,
-            TOP_LEFT,
-            layer,
             None,
             None,
-            can_be_disabled=False,
-            can_be_focused=True,
-            active_area=None,
+            False,
+            True,
+            None,
             update_if_invisible=update_if_invisible
         )
         self._continue_animation = continue_animation
@@ -79,16 +68,27 @@ class Frame(Element):
             self.focused_background = self.background
         else:
             self.focused_background = focused_background
+        
+        self.width = self.window.width
+        self.height = self.window.height
+    
+    def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT, layer: int = 0):
+        """Place the Frame. Its width and height have already been defined"""
+        self._x = self.window.left = x - anchor[0]*self.window.width
+        self._y = self.window.top = y - anchor[1]*self.window.height
+        self.layer = layer
 
-    def _compute_wc_ratio(self, master = None):
+        self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()
+        
+        return self
+
+    def _compute_wc_ratio(self, master: Master = None):
         """Recompute the ratio between the window and the camera dimensions."""
         if master is None:
             master = self.master
         self.wc_ratio = self.window.width/self.camera.width*master.wc_ratio[0], self.window.height/self.camera.height*master.wc_ratio[1]
-
-    def add_child(self, child: Element):
-        """Add a new element to the child list."""
-        self.children.append(child)
 
     def get_hover(self) -> tuple[bool, pygame.Surface | None]:
         """Update the hovering."""
@@ -214,15 +214,6 @@ class Frame(Element):
         for element in self.children:
             element.loop(loop_duration)
 
-    def is_child_on_me(self, child: Element):
-        """Return whether the child is visible on the frame or not."""
-        return self.camera.colliderect(child.relative_rect)
-
-    @property
-    def visible_children(self):
-        """Return the list of visible children sorted by increasing layer."""
-        return sorted(filter(lambda ch: ch.visible and ch.on_master, self.children), key= lambda w: w.layer)
-
     @property
     def _widget_children(self):
         """Return the list of visible widgets in the frame."""
@@ -308,6 +299,22 @@ class Frame(Element):
     def unset_hover(self):
         for child in self.children:
             child.unset_hover()
+
+    @property
+    def relative_left(self):
+        return self.window.left
+    
+    @property
+    def relative_top(self):
+        return self.window.top
+    
+    @property
+    def relative_right(self):
+        return self.window.right
+    
+    @property
+    def relative_bottom(self):
+        return self.window.bottom
 
     @property
     def absolute_left(self):

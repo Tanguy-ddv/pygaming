@@ -2,7 +2,7 @@
 from typing import Optional
 from pygame import Surface, draw
 from .widget import Widget
-from ..anchors import TOP_LEFT, CENTER, Anchor
+from ..anchors import CENTER, Anchor
 from ..frame import Frame
 from ...color import Color
 from ..art import Art
@@ -20,8 +20,6 @@ class Entry(Widget):
     def __init__(
         self,
         master: Frame,
-        x: int,
-        y: int,
         normal_background: Art,
         normal_font: str,
         normal_font_color: Color,
@@ -37,9 +35,7 @@ class Entry(Widget):
         initial_value: str = '',
         extra_characters: str = '',
         forbid_characters: str = '',
-        anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
-        layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
         continue_animation: bool = False,
@@ -58,8 +54,6 @@ class Entry(Widget):
         Params:
         ---
         - master: Frame. The Frame in which this widget is placed.
-        - x: int, the coordinate of the anchor in the master Frame
-        - y: int, the top coordinate of the anchor in the master Frame.
         - normal_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is neither focused nor disabled.
         - normal_font: str
         - normal_font_color: Color
@@ -72,10 +66,7 @@ class Entry(Widget):
         - initial_value: str
         - extra_characters: str
         - forbid_charcaters: str
-        - anchor: tuple[float, float]. The point of the slider that is placed at the coordinate (x,y).
-          Use TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT or BOTTOM_RIGHT, or another personized tuple.
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the slider. if None, then it is the whole background.
-        - layer: int, the layer of the slider in its master frame
         - tooltip: Tooltip, The tooltip to show when the slider is hovered.
         - cursor: Cursor The cursor of the mouse to use when the widget is hovered,
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
@@ -87,15 +78,11 @@ class Entry(Widget):
 
         super().__init__(
             master,
-            x,
-            y,
             normal_background,
             focused_background,
             disabled_background,
             hovered_background,
-            anchor,
             active_area,
-            layer,
             tooltip,
             cursor,
             continue_animation,

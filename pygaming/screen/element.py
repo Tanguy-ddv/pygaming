@@ -1,27 +1,25 @@
 """the element module contains the Element object, which is a base for every object displayed on the game window."""
+from __future__ import annotations
 from abc import abstractmethod
-from typing import Optional, Union
+from typing import Optional
 import pygame
-from ..phase import GamePhase
+from ._master import Master
 from .tooltip import Tooltip
 from .art.art import Art
-from .anchors import TOP_LEFT, Anchor
+from .anchors import TOP_LEFT, Anchor, CENTER
 from ..inputs import Click
 from ..cursor import Cursor
 from ._visual import Visual
 from .hitbox import Hitbox
+from ..error import PygamingException
 
 class Element(Visual):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, frames."""
 
     def __init__(
         self,
-        master: Union[GamePhase, 'Element', Tooltip], # Frame or phase, no direct typing of frame to avoid circular import
+        master: Master,
         background: Art,
-        x: int,
-        y: int,
-        anchor: Anchor = TOP_LEFT,
-        layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
@@ -34,20 +32,18 @@ class Element(Visual):
 
         Params:
         ----
-        - master: Frame or Phase, the master of this object.
-        - surface: The surface. It is an Art
-        - x, int, the coordinates in the master of the anchor point.
-        - y: int, the coordinates in the master of the anchor point.
-        - anchor: the anchor point in % of the width and height. 
+        - master: Master, the master of this object.
+        - background: The background. It is an Art
         - tooltip: Tooltip. If a surface is provided, it to be displayed at the mouse location when the
         frame is hovered by the mouse.
         - cursor: Cursor. If a cursor is provided, it is the cursor of the mouse when the mouse is over the element.
         - can_be_disabled: some element can be disabled.
         - can_be_focused: Some element can be focused.
+        - active_area
+        - update_if_invisible
         """
 
         Visual.__init__(self, background, update_if_invisible)
-        self.layer = layer
         self.visible = True
         self.can_be_focused = can_be_focused
         self.focused = False
@@ -58,45 +54,128 @@ class Element(Visual):
             active_area = Hitbox(0, 0, *self.background.size)
         self._active_area = active_area
 
-        self._x = x
-        self._y = y
-        self.anchor = anchor
+        self._x = None
+        self._y = None
+        self.anchor = None
+        self.layer = None
         self.master = master
         self.master.add_child(self)
+        self.on_master = False
 
         self._cursor = cursor
         self._tooltip = tooltip
 
-        self.get_on_master()
+        self._current_grid = None # None or a Grid.
 
     def get_on_master(self):
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
         on_screen = self.absolute_rect.colliderect((0, 0, *self.game.config.dimension))
         self.on_master = self.master.is_child_on_me(self) and on_screen
 
-    def move(self, new_x: int = None, new_y: int = None, new_anchor: Anchor = None):
+    def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT, layer=0):
         """
-        Move the element in the master frame.
+        Place the element on its master.
+        
+        :param x: int, the horizontal coordinate in the master, of the anchor.
+        :param y: int, the vertical coordinate in the master, of the anchor.
+        :param anchor: Anchor, the anchor point of the element that will be placed at the coordinate (x,y)
+        :param layer: int, the z-coordinate of the element, used to manage the order of display and interaction.
+
+        :return self: Element, the element itself is returned allowing method chaining.
+        """
+        # Remove the element from the node.
+        if self._current_grid is not None:
+            self._current_grid.remove(self)
+            self._current_grid = None
+
+        self._x = x
+        self._y = y
+        self.anchor = anchor
+        self.layer = layer
+
+        self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()
+        
+        return self
+
+    def grid(self,
+        row: int,
+        column: int,
+        grid = None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        anchor: Anchor = TOP_LEFT,
+        justify: Anchor = CENTER,
+        layer: int = 0
+    ) -> Element:
+        """
+        Place the element on its master using a grid.
+        
+        :param row: int, The row on the grid this element is placed on.
+        :param column: int, The column on the grid this element is placed on.
+        :param grid: int = None, Grid or None. If None, then the first grid is used. If an int is provided, the grid-th grid of the master is used.
+            If the master do not have a grid-th Grid, then it is created with an anchor of TOP_LEFT and coordinates of 0, 0.
+            If a Grid is provided (an object created by master.create_grid(...)), then it is used.
+        :param rowspan: int = 1 the number of row the element can span across
+        :param: columnspan: int = 1 the number of columns the element can span across
+        :param padx: int = 0 the number of pixels added on the left and right of the element
+        :param pady: int = 0 the number of pixels added above and below the element
+        :param anchor: Anchor = TOP_LEFT, the anchor of the element.
+        :param justify: Anchor = CENTER. In case the cell is larger than the element, this is used to specify where the element should be aligned
+        :param layer: int, the z-coordinate of the element, used to manage the order of display and interaction.
+
+        :return self: Element, the element itself is returned allowing method chaining.
+        """
+
+        if self._current_grid is not None:
+            self._current_grid.remove(self)
+
+        grid = self.master.get_grid(grid)
+        grid.add(row, column, self, rowspan, columnspan, padx, pady, anchor, justify)
+        self._current_grid = grid
+        self._x, self._y = grid.get(row, column)
+        self.anchor = anchor
+        self.layer = layer
+
+        self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()
+
+        return self
+
+    def move(self, dx: int = 0, dy: int = 0):
+        """
+        Move the element on its master.
         
         Params:
         ---
-        - new_x: int = None. If specified, change the current x of the element. Otherwise do not change it.
-        - new_y: int = None. If specified, change the current y of the element. Otherwise do not change it.
-        - new_anchor: Anchor = None. If specified, change the current anchor of the element. Otherwise do not change it.
+        - dx: int = 0, the number of pixel by which the element should be translated horizontally
+        - dy: int = 0, the number of pixel by which the element should be translated vertically
+
+        Note:
+        ----
+        If the element has been placed with grid, it is removed from the grid.
         """
-        if new_anchor is not None:
-            self.anchor = new_anchor
-        if new_y is not None:
-            self._y = new_y
-        if new_x is not None:
-            self._x = new_x
+
+        if self._current_grid is not None:
+            self._current_grid.remove(self)
+            self._current_grid = None
+
+        if self._x is None:
+            raise PygamingException(f"{self} cannot be move as it has not been placed yet.")
+
+        self._x += dx
+        self._y += dy
 
         self.get_on_master()
         if self.on_master:
             self.master.notify_change()
 
     def is_contact(self, pos: Optional[Click | tuple[int, int]]):
-        """Return True if the mouse is hovering the element."""
+        """Return whether the position, relative to the top left of the master of this element, is in contact with the element."""
         if pos is None or not self.on_master:
             return False
         if isinstance(pos, tuple):
@@ -187,7 +266,7 @@ class Element(Visual):
 
     def is_visible(self):
         """Return wether the widget is visible or not."""
-        return self.visible and self.master.is_visible()
+        return self.visible and self._x is not None and self.master.is_visible()
 
     def enable(self):
         """Enable the object if it can be disabled."""

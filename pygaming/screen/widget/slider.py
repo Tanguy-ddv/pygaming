@@ -18,8 +18,6 @@ class Slider(Widget):
     def __init__(
         self,
         master: Frame,
-        x: int,
-        y: int,
         values: Iterable,
         normal_background: Art,
         normal_cursor: Art,
@@ -30,9 +28,7 @@ class Slider(Widget):
         disabled_cursor: Optional[Art] = None,
         hovered_background: Optional[Art] = None,
         hovered_cursor: Optional[Art] = None,
-        anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
-        layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
         continue_animation: bool = False,
@@ -47,8 +43,6 @@ class Slider(Widget):
         Params:
         ---
         - master: Frame. The Frame in which this widget is placed.
-        - x: int, the coordinate of the anchor in the master Frame
-        - y: int, the top coordinate of the anchor in the master Frame.
         - values: Iterable, the ordered list of values from which the slider can select.
         - normal_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is neither focused nor disabled.
         - normal_cursor: AnimatedSurface | Surface: The surface used as the cursor of the slider when it is neither focused nor disabled.
@@ -57,10 +51,7 @@ class Slider(Widget):
         - focused_cursor: AnimatedSurface | Surface: The surface used as the cursor of the slider when it is focused.
         - disabled_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is disabled.
         - disabled_cursor: AnimatedSurface | Surface: The surface used as the cursor of the slider when it is disabled.
-        - anchor: tuple[float, float]. The point of the slider that is placed at the coordinate (x,y).
-          Use TOP_LEFT, TOP_RIGHT, CENTER, BOTTOM_LEFT or BOTTOM_RIGHT, or another personized tuple.
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the slider. if None, then it is the whole background.
-        - layer: int, the layer of the slider in its master frame
         - tooltip: Tooltip, the tooltip to show when the slider is hovered.
         - cursor: Cursor The cursor of the mouse to use when the widget is hovered
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
@@ -73,15 +64,11 @@ class Slider(Widget):
         """
         super().__init__(
             master,
-            x,
-            y,
             normal_background,
             focused_background,
             disabled_background,
             hovered_background,
-            anchor,
             active_area,
-            layer,
             tooltip,
             cursor,
             continue_animation,

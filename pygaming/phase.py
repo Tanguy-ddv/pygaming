@@ -9,6 +9,7 @@ from .server import Server
 from .cursor import Cursor
 from .screen._visual import Visual
 from .screen.art import Rectangle
+from .screen._master import Master
 
 _TOOLTIP_DELAY = 500 # [ms]
 
@@ -140,7 +141,7 @@ class ServerPhase(_BasePhase, ABC):
         """Update the phase every loop iteraton."""
         self.update(loop_duration)
 
-class GamePhase(_BasePhase, Visual):
+class GamePhase(_BasePhase, Visual, Master):
     """
     The GamePhase is a phase to be added to the game only.
     Each SeverPhase must implements the `start`, `update`, `end`, `next` and `apply_transition` emthods.
@@ -161,16 +162,16 @@ class GamePhase(_BasePhase, Visual):
     to the soundbox and jukebox via `self.soundbox` and `self.jukebox`.
     """
 
-    def __init__(self, name, game: Game) -> None:
+    def __init__(self, name: str, game: Game) -> None:
+
         _BasePhase.__init__(self, name, game)
+        camera = window = absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
+        Master.__init__(self, camera, window)
+        self.absolute_rect = absolute_rect
+
         background = Rectangle((0, 0, 0, 0), *self.config.dimension)
         Visual.__init__(self, background, False)
 
-        self.frames = [] # list[Frame]
-
-        self.absolute_left = 0
-        self.absolute_top = 0
-        self.camera = self.window = self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
         self.wc_ratio = (1, 1)
 
         # Data about the hovering
@@ -180,10 +181,6 @@ class GamePhase(_BasePhase, Visual):
         self._tooltip_x, self._tooltip_y = None, None
         self._tooltip_delay = _TOOLTIP_DELAY # [ms], the delay waited before showing the tooltip
 
-    def add_child(self, frame):
-        """Add a new frame to the phase."""
-        self.frames.append(frame)
-
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
         # Update the game settings
@@ -192,7 +189,7 @@ class GamePhase(_BasePhase, Visual):
         self.game.update_settings()
 
         # Start the frames
-        for frame in self.frames:
+        for frame in self.children:
             frame.begin()
         # Change to default cursor
         self.current_cursor = self._default_cursor
@@ -204,14 +201,10 @@ class GamePhase(_BasePhase, Visual):
     def finish(self):
         """This method is called at the end of the phase."""
         self.end()
-        for frame in self.frames:
+        for frame in self.children:
             frame.end() # Unload
         Visual.finish(self)
         gc.collect()
-
-    def is_child_on_me(self, child):
-        """Return whether the child is visible on the phase or not."""
-        return self.absolute_rect.colliderect(child.relative_rect)
 
     @property
     def game(self) -> Game:
@@ -258,7 +251,7 @@ class GamePhase(_BasePhase, Visual):
     def notify_change_all(self):
         """Notify the change to everyone."""
         self.notify_change()
-        for frame in self.frames:
+        for frame in self.children:
             frame.notify_change_all()
 
     def is_visible(self):
@@ -270,28 +263,28 @@ class GamePhase(_BasePhase, Visual):
         Visual.loop(self, loop_duration)
         self._update_focus()
         self.update(loop_duration)
-        for frame in self.frames:
+        for frame in self.children:
             frame.loop(loop_duration)
 
     def _update_focus(self):
         """Update the focus of all the frames."""
         ck1 = self.mouse.get_click(1)
         if ck1:
-            for frame in self.frames:
+            for frame in self.children:
                 if frame.is_contact(ck1):
                     frame.update_focus(ck1)
                 else:
                     frame.remove_focus()
 
         if "tab" in self.keyboard.actions_down and self.keyboard.actions_down["tab"]:
-            for frame in self.frames:
+            for frame in self.children:
                 frame.next_object_focus()
 
     def update_hover(self, loop_duration):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         x, y = self.mouse.get_position()
         cursor, tooltip = None, None
-        for frame in self.visible_frames:
+        for frame in self.visible_children:
             
             if frame.is_contact((x,y)):
                 tooltip, cursor = frame.get_hover()
@@ -331,15 +324,10 @@ class GamePhase(_BasePhase, Visual):
             # Trigger the update of the cursor.
             pygame.mouse.set_pos(x, y)
 
-    @property
-    def visible_frames(self):
-        """Return all the visible frames sorted by increasing layer."""
-        return sorted(filter(lambda f: f.visible, self.frames), key= lambda w: w.layer)
-
     def make_surface(self) -> pygame.Surface:
         """Make the new surface to be returned to his parent."""
         bg = self.background.get(None, **self.settings)
-        for frame in self.visible_frames:
+        for frame in self.visible_children:
             surf = frame.get_surface()
             bg.blit(surf, (frame.relative_left, frame.relative_top))
 

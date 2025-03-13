@@ -21,15 +21,11 @@ class Widget(Element, ABC):
     def __init__(
         self,
         master: Frame,
-        x: int,
-        y: int,
         normal_background: Art,
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         hovered_background: Optional[Art] = None,
-        anchor: Anchor = TOP_LEFT,
         active_area: Optional[Hitbox] = None,
-        layer: int = 0,
         tooltip: Optional[Tooltip] = None,
         cursor: Optional[Cursor] = None,
         continue_animation: bool = False,
@@ -38,10 +34,6 @@ class Widget(Element, ABC):
         super().__init__(
             master,
             normal_background,
-            x,
-            y,
-            anchor,
-            layer,
             tooltip,
             cursor,
             True,
@@ -139,7 +131,7 @@ class Widget(Element, ABC):
                 has_changed = self.normal_background.update(loop_duration)
                 if has_changed:
                     self.notify_change()
-            if self.is_visible():
+            if self.is_visible() or self._update_if_invisible:
                 self.update(loop_duration)
 
     def switch_background(self):
