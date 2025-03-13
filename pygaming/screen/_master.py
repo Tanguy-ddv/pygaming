@@ -2,7 +2,7 @@
 from abc import abstractmethod, ABC
 from pygame import Rect
 from .camera import Camera
-from .geometry_manager import Grid
+from ._geometry_manager import Grid
 from .anchors import Anchor, TOP_LEFT
 
 class Master(ABC):

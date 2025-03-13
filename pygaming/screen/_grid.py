@@ -1,4 +1,4 @@
-"""The geometry manager module contains the grid, row and columns geometry managers."""
+"""The grid module defines the Grid object, used to place elements on a frame."""
 from dataclasses import dataclass
 from typing import Any
 from itertools import product
