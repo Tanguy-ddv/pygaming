@@ -2,6 +2,8 @@
 from abc import abstractmethod, ABC
 from pygame import Rect
 from .camera import Camera
+from .geometry_manager import Grid
+from .anchors import Anchor, TOP_LEFT
 
 class Master(ABC):
     """The class Master is an abstract for the classes that can be the master of an Element."""
@@ -12,11 +14,23 @@ class Master(ABC):
         self.camera = camera
         self.window = window
         self.wc_ratio = (1, 1)
+        self.grids: list[Grid] = []
         self.absolute_rect: Rect
-    
+
     def add_child(self, child):
         """Add a new element to the child list."""
         self.children.append(child)
+
+    def create_grid(self, x: int, y: int, anchor: Anchor = TOP_LEFT):
+        grid = Grid(x, y, anchor)
+        self.grids.append(grid)
+        return grid
+
+    def get_grid(self, idx: int | None):
+        if idx is not None and -1 < idx < len(self.grids):
+            return self.grids[idx]
+        else:
+            return self.create_grid(0, 0, TOP_LEFT)
 
     @abstractmethod
     def notify_change(self):
