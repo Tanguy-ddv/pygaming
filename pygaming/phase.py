@@ -172,8 +172,6 @@ class GamePhase(_BasePhase, Visual, Master):
         background = Rectangle((0, 0, 0, 0), *self.config.dimension)
         Visual.__init__(self, background, False)
 
-        self.absolute_left = 0
-        self.absolute_top = 0
         self.wc_ratio = (1, 1)
 
         # Data about the hovering

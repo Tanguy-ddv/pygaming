@@ -6,7 +6,7 @@ import pygame
 from ._master import Master
 from .tooltip import Tooltip
 from .art.art import Art
-from .anchors import TOP_LEFT, Anchor
+from .anchors import TOP_LEFT, Anchor, CENTER
 from ..inputs import Click
 from ..cursor import Cursor
 from ._visual import Visual
@@ -65,6 +65,8 @@ class Element(Visual):
         self._cursor = cursor
         self._tooltip = tooltip
 
+        self._current_grid = None # None or a Grid.
+
     def get_on_master(self):
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
         on_screen = self.absolute_rect.colliderect((0, 0, *self.game.config.dimension))
@@ -81,6 +83,11 @@ class Element(Visual):
 
         :return self: Element, the element itself is returned allowing method chaining.
         """
+        # Remove the element from the node.
+        if self._current_grid is not None:
+            self._current_grid.remove(self)
+            self._current_grid = None
+
         self._x = x
         self._y = y
         self.anchor = anchor
@@ -92,6 +99,45 @@ class Element(Visual):
         
         return self
 
+    def grid(self,
+        row: int,
+        column: int,
+        grid=None,
+        rowspan: int = 1,
+        columnspan: int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        anchor: Anchor = TOP_LEFT,
+        justify: Anchor = CENTER,
+        layer: int = 0
+    ):
+        """
+        Place the element on its master using a grid.
+        
+        :param row:
+        :param column:
+        :param grid: int, Grid or None. If None, then the first grid is used. If an int is provided, the grid-th grid of the master is used.
+        If the master do not have a grid-th Grid, then it is created with an anchor of TOP_LEFT and coordinates of 0, 0.
+        If a Grid is provided (an object created by master.create_grid(...)), then it is used.
+        :
+        """
+
+        if self._current_grid is not None:
+            self._current_grid.remove(self)
+
+        grid = self.master.get_grid(grid)
+        grid.add(row, column, self, rowspan, columnspan, padx, pady, anchor, justify)
+        self._current_grid = grid
+        self._x, self._y = grid.get(row, column)
+        self.anchor = anchor
+        self.layer = layer
+
+        self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()
+
+        return self
+
     def move(self, dx: int = 0, dy: int = 0):
         """
         Move the element on its master.
@@ -100,7 +146,15 @@ class Element(Visual):
         ---
         - dx: int = 0, the number of pixel by which the element should be translated horizontally
         - dy: int = 0, the number of pixel by which the element should be translated vertically
+
+        Note:
+        ----
+        If the element has been placed with grid, it is removed from the grid.
         """
+
+        if self._current_grid is not None:
+            self._current_grid.remove(self)
+            self._current_grid = None
 
         if self._x is None:
             raise PygamingException(f"{self} cannot be move as it has not been placed yet.")

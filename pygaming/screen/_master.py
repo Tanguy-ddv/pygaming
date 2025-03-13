@@ -26,8 +26,12 @@ class Master(ABC):
         self.grids.append(grid)
         return grid
 
-    def get_grid(self, idx: int | None):
-        if idx is not None and -1 < idx < len(self.grids):
+    def get_grid(self, idx: int | Grid | None):
+        if isinstance(idx, Grid):
+            return idx
+        if idx is None:
+            idx = 0
+        if -1 < idx < len(self.grids):
             return self.grids[idx]
         else:
             return self.create_grid(0, 0, TOP_LEFT)

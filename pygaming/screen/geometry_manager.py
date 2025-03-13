@@ -1,5 +1,6 @@
 """The geometry manager module contains the grid, row and columns geometry managers."""
 from dataclasses import dataclass
+from typing import Any
 from itertools import product
 from .anchors import TOP_LEFT, Anchor, CENTER
 
@@ -7,10 +8,13 @@ from .anchors import TOP_LEFT, Anchor, CENTER
 class _GridObject:
     """Represent an object in a cell."""
 
-    width: int
-    height: int
     rowspan: int
     columnspan: int
+    padx: int
+    pady: int
+    element: Any # This is an Element, no direct typing to avoid circular imports
+    anchor: Anchor
+    justify: Anchor
 
 class Grid:
     """
@@ -47,24 +51,45 @@ class Grid:
         grid_height = sum(self._heights.get(row, 0) for row in range(0, max_row + 1))
 
         self._left = self._x - self._anchor[0]*grid_width
-        self._top = self._y - self._anchor[1]*grid_height 
+        self._top = self._y - self._anchor[1]*grid_height
 
-    def add(self, row, column, width, height, rowspan=1, columnspan=1, error_if_exist=True):
+        # Update the position of all elements.
+        for (rw, col), obj in self._objects.items():
+            element = obj.element
+            x, y = self.get(rw, col)
+            element._x = x
+            element._y = y
+
+    def add(
+        self,
+        row: int,
+        column: int,
+        element: Any, # This is an Element, no direct typing to avoid circular imports
+        rowspan: int = 1,
+        columnspan:int = 1,
+        padx: int = 0,
+        pady: int = 0,
+        anchor: Anchor=TOP_LEFT,
+        justify: Anchor=CENTER
+    ):
         """
         Add a new cell in the grid.
         
         Params:
         ---
         - row, column: int, the index of the new cell in the grid.
-        - width, height: int, the size of the cell.
+        - element: the element inside the cell.
         - rowspan, columnspan: int, the number of rows and columns the cell we spread across.
-        - error_if_exist: bool, whether an error should be raised if a cell is created on an already existing cell.
+        - padx, pady
+        - anchor: Anchor, the anchor that will be given to the element at creation.
+        - justify: Anchor, specify where the object should placed relatively to its cell
+        in case the size of the cell doesn't match the size of the element.
 
         Raises:
         ---
-        - ValueError if the cell already exists and the error_if_exist argument is set to False.
+        - ValueError if the cell already exists and the error_if_exist argument is set to True.
         """
-        if error_if_exist and any(
+        if any(
             (rw, col) in self._dupl_objects
             for rw, col in product(
                 range(row, row + rowspan),
@@ -72,27 +97,24 @@ class Grid:
             )
         ):
             raise ValueError(f"{row, column} already exists in this grid")
-        self._objects[(row, column)] = _GridObject(width, height, rowspan, columnspan)
+        self._objects[(row, column)] = _GridObject(rowspan, columnspan, padx, pady, element, anchor, justify)
         for rw, col in product(range(row, row + rowspan), range(column, column + columnspan)):
             self._dupl_objects[(rw, col)] = self._objects[(row, column)]
         self._update(row, column, rowspan, columnspan)
 
     def _width_at(self, column):
-        return max((obj.width/obj.columnspan for ((_, col), obj) in self._dupl_objects.items() if col == column), default=0)
+        return max(((obj.element.width + 2*obj.padx)/obj.columnspan for ((_, col), obj) in self._dupl_objects.items() if col == column), default=0)
 
     def _height_at(self, row):
-        return max((obj.height/obj.rowspan for ((rw, _), obj) in self._dupl_objects.items() if rw == row), default=0)
+        return max(((obj.element.height + 2*obj.pady)/obj.rowspan for ((rw, _), obj) in self._dupl_objects.items() if rw == row), default=0)
 
-    def get(self, row, column, anchor: Anchor = TOP_LEFT, justify: Anchor = CENTER):
+    def get(self, row, column):
         """
         Get the coordinate of the anchor of an object placed in the grid.
         
         Params:
         ---
         - row, column: int, the index of the grid cell.
-        - anchor: Anchor, the anchor that will be given to the element at creation.
-        - justify: Anchor, specify where the object should placed relatively to its cell
-        in case the size of the cell doesn't match the size of the element.
 
         Raises:
         ---
@@ -113,15 +135,15 @@ class Grid:
         mutlicol_width = sum(self._widths.get(col, 0) for col in range(column, column + obj.columnspan))
         multirow_height = sum(self._heights.get(rw, 0) for rw in range(row, row + obj.rowspan))
         # The coordinate of the object in the cell
-        obj_x = cell_x + justify[0]*(mutlicol_width - obj.width)
-        obj_y = cell_y + justify[1]*(multirow_height - obj.height)
+        obj_x = cell_x + obj.justify[0]*(mutlicol_width - obj.element.width)
+        obj_y = cell_y + obj.justify[1]*(multirow_height - obj.element.height)
         # The position of the anchored point relative to the top-left of the grid.
-        rel_x = obj_x + anchor[0]*obj.width
-        rel_y = obj_y + anchor[1]*obj.height
+        rel_x = obj_x + obj.anchor[0]*obj.element.width
+        rel_y = obj_y + obj.anchor[1]*obj.element.height
         # The position on the master.
-        return self._left + rel_x, self._top + rel_y
+        return self._left + rel_x + obj.padx, self._top + rel_y + obj.pady
 
-    def remove(self, row, column, error_if_no: bool = False):
+    def remove(self, elem):
         """
         Remove a cell from the grid.
 
@@ -132,15 +154,14 @@ class Grid:
 
         Raises:
         ---
-        - ValueError if the cell does not exist and error_if_no is set to True.
+        - ValueError if the cell does not exist.
         """
-        if (row, column) in self._objects:
-            obj = self._objects[(row, column)]
-            del self._objects[(row, column)]
-        elif error_if_no:
-            raise ValueError(f"The specified cell {row}, {column} do not exist.")
-        else:
-            return
-        for rw, col in product(range(row, row + obj.rowspan), range(column, column + obj.columnspan)):
+        for row, column in self._objects:
+            if self._objects[(row, column)].element == elem: 
+                obj = self._objects[(row, column)]
+                break
+
+        del self._objects[(row, column)]
+        for rw, col in product(range(row, row + obj.rowspan), range(col, col + obj.columnspan)):
             del self._dupl_objects[(rw, col)]
-        self._update(row, column, obj.rowspan, obj.columnspan)
+        self._update(row, col, obj.rowspan, obj.columnspan)
