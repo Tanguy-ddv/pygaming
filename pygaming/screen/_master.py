@@ -1,5 +1,6 @@
 """The master module defines the Master abstract class implementing methods related to being a master."""
 from abc import abstractmethod, ABC
+from ..game import Game
 from pygame import Rect
 from .camera import Camera
 from ._grid import Grid
@@ -15,6 +16,7 @@ class Master(ABC):
         self.window = window
         self.wc_ratio = (1, 1)
         self.grids: list[Grid] = []
+        self.game: Game
         self.absolute_rect: Rect
 
     def add_child(self, child):
@@ -22,11 +24,15 @@ class Master(ABC):
         self.children.append(child)
 
     def create_grid(self, x: int, y: int, anchor: Anchor = TOP_LEFT):
+        """Create a grid to manage the geomtry of the master."""
         grid = Grid(x, y, anchor)
         self.grids.append(grid)
         return grid
 
     def get_grid(self, idx: int | Grid | None):
+        """
+        Return the grid associated with the index.
+        """
         if isinstance(idx, Grid):
             return idx
         if idx is None:
@@ -45,8 +51,8 @@ class Master(ABC):
         pass
 
     def is_child_on_me(self, child):
-        """Return whether the child is visible on the phase or not."""
-        return self.absolute_rect.colliderect(child.relative_rect)
+        """Return whether the child is visible on the frame or not."""
+        return self.camera.colliderect(child.relative_rect)
 
     @property
     def visible_children(self):

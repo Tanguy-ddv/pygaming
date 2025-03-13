@@ -79,7 +79,7 @@ class Element(Visual):
         :param x: int, the horizontal coordinate in the master, of the anchor.
         :param y: int, the vertical coordinate in the master, of the anchor.
         :param anchor: Anchor, the anchor point of the element that will be placed at the coordinate (x,y)
-        :layer: int, the z-coordinate of the element, used to manage the order of display and interaction.
+        :param layer: int, the z-coordinate of the element, used to manage the order of display and interaction.
 
         :return self: Element, the element itself is returned allowing method chaining.
         """
@@ -102,7 +102,7 @@ class Element(Visual):
     def grid(self,
         row: int,
         column: int,
-        grid=None,
+        grid = None,
         rowspan: int = 1,
         columnspan: int = 1,
         padx: int = 0,
@@ -110,16 +110,24 @@ class Element(Visual):
         anchor: Anchor = TOP_LEFT,
         justify: Anchor = CENTER,
         layer: int = 0
-    ):
+    ) -> Element:
         """
         Place the element on its master using a grid.
         
-        :param row:
-        :param column:
-        :param grid: int, Grid or None. If None, then the first grid is used. If an int is provided, the grid-th grid of the master is used.
-        If the master do not have a grid-th Grid, then it is created with an anchor of TOP_LEFT and coordinates of 0, 0.
-        If a Grid is provided (an object created by master.create_grid(...)), then it is used.
-        :
+        :param row: int, The row on the grid this element is placed on.
+        :param column: int, The column on the grid this element is placed on.
+        :param grid: int = None, Grid or None. If None, then the first grid is used. If an int is provided, the grid-th grid of the master is used.
+            If the master do not have a grid-th Grid, then it is created with an anchor of TOP_LEFT and coordinates of 0, 0.
+            If a Grid is provided (an object created by master.create_grid(...)), then it is used.
+        :param rowspan: int = 1 the number of row the element can span across
+        :param: columnspan: int = 1 the number of columns the element can span across
+        :param padx: int = 0 the number of pixels added on the left and right of the element
+        :param pady: int = 0 the number of pixels added above and below the element
+        :param anchor: Anchor = TOP_LEFT, the anchor of the element.
+        :param justify: Anchor = CENTER. In case the cell is larger than the element, this is used to specify where the element should be aligned
+        :param layer: int, the z-coordinate of the element, used to manage the order of display and interaction.
+
+        :return self: Element, the element itself is returned allowing method chaining.
         """
 
         if self._current_grid is not None:
