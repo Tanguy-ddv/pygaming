@@ -70,7 +70,7 @@ class Element(Visual):
     def get_on_master(self):
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
         on_screen = self.absolute_rect.colliderect((0, 0, *self.game.config.dimension))
-        self.on_master = self.master.is_child_on_me(self) and on_screen
+        self.on_master = on_screen and self.master.is_child_on_me(self)
 
     def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT, layer=0):
         """

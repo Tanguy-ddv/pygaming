@@ -50,6 +50,10 @@ class Master(ABC):
     def notify_change_all(self):
         pass
 
+    @abstractmethod
+    def is_visible(self):
+        pass
+
     def is_child_on_me(self, child):
         """Return whether the child is visible on the frame or not."""
         return self.camera.colliderect(child.relative_rect)
