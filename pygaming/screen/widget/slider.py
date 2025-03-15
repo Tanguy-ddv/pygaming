@@ -188,12 +188,15 @@ class Slider(Widget):
             # if we are doing a transition
             if self._current_transition is not None:
                 self.notify_change()
-                self._current_transition_delta += loop_duration/self._transition_duration
+                if self._transition_duration > 0:
+                    self._current_transition_delta += loop_duration/self._transition_duration
+                else:
+                    self._current_transition_delta = 1.01 # The transition is instantaneous
                 t = self._transition_func(self._current_transition_delta)
                 self._cursor_position = self._current_transition[0]*(1-t) + t*self._current_transition[1]
 
                 # If we finished the transition
-                if self._current_transition_delta > 1:
+                if self._current_transition_delta >= 1:
                     self._current_transition_delta = 0
                     self._current_transition = None
                     self._cursor_position = self._positions[self._index]
