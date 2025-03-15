@@ -115,8 +115,8 @@ class Slider(Widget):
         else:
             raise PygamingException(f"{self._initial_value} is not a valid initial value as it is not in the values list {self._values}.")
 
-        x_min = self._active_area.left + self.normal_cursor.width//2
-        x_max = self._active_area.right - self.normal_cursor.width//2
+        x_min = self._active_area.left + self._cursor_width//2
+        x_max = self._active_area.right - self._cursor_width//2
  
         self._positions = [
               x_max*(t/(len(self._values)-1))
@@ -136,6 +136,24 @@ class Slider(Widget):
 
     def update(self, loop_duration: int):
         """Update the slider based on the inputs."""
+
+        # Update the cursor image
+        if (self.on_master and self.is_visible()) or self._update_if_invisible:
+            if not self._continue_animation:
+                if self.disabled:
+                    has_changed = self.disabled_cursor.update(loop_duration)
+                elif self.focused:
+                    has_changed = self.focused_cursor.update(loop_duration)
+                elif self._hovered:
+                    has_changed = self.hovered_cursor.update(loop_duration)
+                else:
+                    has_changed = self.normal_cursor.update(loop_duration)
+                if has_changed:
+                    self.notify_change()
+            else:
+                has_changed = self.normal_cursor.update(loop_duration)
+                if has_changed:
+                    self.notify_change()
 
         # Get a click
         ck1 = self.game.mouse.get_click(1)
