@@ -6,7 +6,7 @@ import pygame
 from ._master import Master
 from .tooltip import Tooltip
 from .art.art import Art
-from .anchors import TOP_LEFT, Anchor, CENTER
+from .anchors import TOP_LEFT, Anchor2DLike, CENTER_CENTER
 from ..inputs import Click
 from ..cursor import Cursor
 from ._visual import Visual
@@ -72,7 +72,7 @@ class Element(Visual):
         on_screen = self.absolute_rect.colliderect((0, 0, *self.game.config.dimension))
         self.on_master = on_screen and self.master.is_child_on_me(self)
 
-    def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT, layer=0):
+    def place(self, x: int, y: int, anchor: Anchor2DLike = TOP_LEFT, layer=0):
         """
         Place the element on its master.
         
@@ -107,8 +107,8 @@ class Element(Visual):
         columnspan: int = 1,
         padx: int = 0,
         pady: int = 0,
-        anchor: Anchor = TOP_LEFT,
-        justify: Anchor = CENTER,
+        anchor: Anchor2DLike = TOP_LEFT,
+        justify: Anchor2DLike = CENTER_CENTER,
         layer: int = 0
     ) -> Element:
         """

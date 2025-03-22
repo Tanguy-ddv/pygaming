@@ -2,7 +2,7 @@
 import pygame
 from ..element import Element
 from ..frame import Frame
-from ..anchors import CENTER, Anchor
+from ..anchors import CENTER_CENTER, Anchor2DLike
 from ...color import Color
 from ..art import Art
 from ...database import TextFormatter
@@ -21,7 +21,7 @@ class Label(Element):
         localization_or_text: str | TextFormatter,
         tooltip: Tooltip = None,
         cursor: Cursor = None,
-        justify: Anchor = CENTER,
+        justify: Anchor2DLike = CENTER_CENTER,
         blinking_period: int = None,
     ) -> None:
         """
@@ -31,7 +31,7 @@ class Label(Element):
         - background: A SurfaceLike object beiing the background of the text.
         - font: Font, the font to be used to display the text.
         - localization_or_text: The text, localization or TextFormatter to be displayed, can be modify with set_localization_or_text(new_text).
-        - justify: the position of the text in the label, should be an anchor (i.e a tuple[x, y] with 0 <= x, y <= 1, )
+        - justify: the position of the text in the label, should be an anchor (i.e a tuple[x, y] with 0 <= x, y <= 1, or an Anchor2D from pygaming.anchor)
         - blinking_period: int [ms]. If an integer is specified, the text will blink with the given period.
         """
         self.font = font

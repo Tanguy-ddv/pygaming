@@ -3,7 +3,7 @@
 from typing import Optional, Callable, Any
 from pygame import Surface
 from ..frame import Frame
-from ..anchors import TOP_LEFT, CENTER, Anchor
+from ..anchors import CENTER_CENTER, Anchor2DLike
 from .widget import Widget
 from ..art import Art
 from ...color import Color
@@ -230,7 +230,7 @@ class TextButton(Button):
         continue_animation: bool = False,
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
-        jusitfy: Anchor = CENTER,
+        jusitfy: Anchor2DLike = CENTER_CENTER,
         update_if_invisible: bool = False
     ) -> None:
         super().__init__(

@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Any
 from itertools import product
-from .anchors import TOP_LEFT, Anchor, CENTER
+from .anchors import TOP_LEFT, Anchor2DLike, CENTER_CENTER
 
 @dataclass
 class _GridObject:
@@ -13,8 +13,8 @@ class _GridObject:
     padx: int
     pady: int
     element: Any # This is an Element, no direct typing to avoid circular imports
-    anchor: Anchor
-    justify: Anchor
+    anchor: Anchor2DLike
+    justify: Anchor2DLike
 
 class Grid:
     """
@@ -25,7 +25,7 @@ class Grid:
     the grid's dimensions and alignment.
     """
 
-    def __init__(self, x: int, y: int, anchor: Anchor = TOP_LEFT):
+    def __init__(self, x: int, y: int, anchor: Anchor2DLike = TOP_LEFT):
         self._x = x
         self._y = y
         self._anchor = anchor
@@ -69,8 +69,8 @@ class Grid:
         columnspan:int = 1,
         padx: int = 0,
         pady: int = 0,
-        anchor: Anchor=TOP_LEFT,
-        justify: Anchor=CENTER
+        anchor: Anchor2DLike = TOP_LEFT,
+        justify: Anchor2DLike = CENTER_CENTER
     ):
         """
         Add a new cell in the grid.

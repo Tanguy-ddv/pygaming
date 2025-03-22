@@ -7,7 +7,7 @@ from ._master import Master
 from .element import Element
 from .art.art import Art
 from .camera import Camera
-from .anchors import CENTER, TOP_LEFT, Anchor
+from .anchors import CENTER_CENTER, TOP_LEFT, Anchor2DLike
 from ..inputs import Click
 class Frame(Element, Master):
     """
@@ -72,7 +72,7 @@ class Frame(Element, Master):
         self.width = self.window.width
         self.height = self.window.height
     
-    def place(self, x: int, y: int, anchor: Anchor = TOP_LEFT, layer: int = 0):
+    def place(self, x: int, y: int, anchor: Anchor2DLike = TOP_LEFT, layer: int = 0):
         """Place the Frame. Its width and height have already been defined"""
         self._x = self.window.left = x - anchor[0]*self.window.width
         self._y = self.window.top = y - anchor[1]*self.window.height
@@ -256,7 +256,7 @@ class Frame(Element, Master):
                 child.get_on_master() # All children recompute whether they are on the master (this frame) or out.
             self.notify_change()
 
-    def set_camera_position(self, new_x, new_y, anchor: Anchor = TOP_LEFT):
+    def set_camera_position(self, new_x, new_y, anchor: Anchor2DLike = TOP_LEFT):
         """Reset the camera position on the frame with a new value."""
         new_y = np.clip(int(new_y - anchor[1]*self.camera.height), 0, self.height - self.camera.height)
         new_x = np.clip(int(new_x - anchor[0]*self.camera.width), 0, self.width - self.camera.width)
@@ -268,7 +268,7 @@ class Frame(Element, Master):
                 child.get_on_master()
             self.notify_change()
 
-    def zoom_camera(self, ratio_x: float, target: Anchor = CENTER, ratio_y = None):
+    def zoom_camera(self, ratio_x: float, target: Anchor2DLike = CENTER_CENTER, ratio_y = None):
         """
         Zoom by a given factor on the target point.
 
