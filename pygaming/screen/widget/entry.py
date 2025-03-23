@@ -2,7 +2,7 @@
 from typing import Optional
 from pygame import Surface, draw
 from .widget import Widget
-from ..anchors import CENTER, Anchor
+from ..anchors import LEFT, AnchorLike, Anchor
 from ..frame import Frame
 from ...color import Color
 from ..art import Art
@@ -39,7 +39,7 @@ class Entry(Widget):
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
         continue_animation: bool = False,
-        justify: Anchor = CENTER,
+        justify: AnchorLike = LEFT,
         caret_frequency: int = _DEFAULT_CARET_FREQUENCY,
         caret_width: int = _DEFAULT_CARET_WIDTH,
         max_length: int = _DEFAULT_MAX_LENGTH,
@@ -70,7 +70,7 @@ class Entry(Widget):
         - tooltip: Tooltip, The tooltip to show when the slider is hovered.
         - cursor: Cursor The cursor of the mouse to use when the widget is hovered,
         - continue_animation: bool, If False, swapping state (normal, focused, disabled) restart the animations of the animated background.
-        - justify: str, the position of the text in the entry. can be TEXT_CENTERED, TEXT_RIGHT, TEXT_LEFT
+        - justify: AnchorLike, the position of the text in the entry.
         - caret_frequency: int, The blinking frequency of the caret (ms)
         - caret_width: int, The width of the caret in pixel.
         - max_length: The maximum number of characters the entry can support.
@@ -118,7 +118,7 @@ class Entry(Widget):
 
         self.max_length = max_length
 
-        self._justify = justify
+        self._justify = Anchor(justify)
         self._caret_width = caret_width
 
         self._caret_index = len(self._text)

@@ -5,7 +5,6 @@ from ZOCallable import ZOCallable, verify_ZOCallable
 from ZOCallable.functions import linear
 from ...error import PygamingException
 from .widget import Widget
-from ..anchors import TOP_LEFT, Anchor
 from ..frame import Frame
 from ..art import Art
 from ...cursor import Cursor

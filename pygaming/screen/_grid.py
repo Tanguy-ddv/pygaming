@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Any
 from itertools import product
-from .anchors import TOP_LEFT, Anchor, CENTER
+from .anchors import TOP_LEFT, Anchor, CENTER_CENTER
 
 @dataclass
 class _GridObject:
@@ -69,8 +69,8 @@ class Grid:
         columnspan:int = 1,
         padx: int = 0,
         pady: int = 0,
-        anchor: Anchor=TOP_LEFT,
-        justify: Anchor=CENTER
+        anchor: Anchor = TOP_LEFT,
+        justify: Anchor = CENTER_CENTER
     ):
         """
         Add a new cell in the grid.

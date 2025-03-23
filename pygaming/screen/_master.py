@@ -4,7 +4,7 @@ from ..game import Game
 from pygame import Rect
 from .camera import Camera
 from ._grid import Grid
-from .anchors import Anchor, TOP_LEFT
+from .anchors import AnchorLike, Anchor, TOP_LEFT
 
 class Master(ABC):
     """The class Master is an abstract for the classes that can be the master of an Element."""
@@ -23,9 +23,9 @@ class Master(ABC):
         """Add a new element to the child list."""
         self.children.append(child)
 
-    def create_grid(self, x: int, y: int, anchor: Anchor = TOP_LEFT):
+    def create_grid(self, x: int, y: int, anchor: AnchorLike = TOP_LEFT):
         """Create a grid to manage the geomtry of the master."""
-        grid = Grid(x, y, anchor)
+        grid = Grid(x, y, Anchor(anchor))
         self.grids.append(grid)
         return grid
 
