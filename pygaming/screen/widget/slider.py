@@ -105,7 +105,6 @@ class Slider(Widget):
 
     def start(self):
         # the positions of the cursor for each value
-        self.normal_background.set_load_on_start()
         super().start()
         if self._initial_value is None:
             self._index = 0
