@@ -74,6 +74,10 @@ class Anchor(Enum, metaclass=_AnchorMeta):
             return self.x if idx == 'x' else self.y
         raise IndexError(f"Anchors can only be subscripted by -1, 0, 1 , 'x' and 'y', but got {idx}")
 
+    def __iter__(self):
+        yield self.value.x
+        yield self.value.y
+
 def barycenter(anchors: Sequence['Anchor'], weights: Sequence[float] = None):
     """Return the barycenter of several anchors."""
     if weights:
