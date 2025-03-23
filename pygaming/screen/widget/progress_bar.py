@@ -1,13 +1,13 @@
 """The progess_bar module contains the ProgressBar."""
 from pygame.transform import scale, smoothscale
-from typing import Literal
+from typing import Literal, Callable
 from ZOCallable import ZOCallable, verify_ZOCallable
 from ZOCallable.functions import linear
 from pygame.surface import Surface as Surface
 from ..element import Element
 from ..frame import Frame
 from ..anchors import Anchor
-from ...color import Color
+from ...color import ColorLike
 from ..art import Art, Rectangle
 from ...database import TextFormatter
 from ..tooltip import Tooltip
@@ -155,3 +155,58 @@ class ProgressBar(Element):
         background.blit(bar, pos)
         background.blit(foreground, (0, 0))
         return background
+
+class TextProgressBar(ProgressBar):
+
+    def __init__(
+        self,
+        master: Frame,
+        bar: Art,
+        initial_value: float,
+        font: str,
+        font_color: ColorLike,
+        background: Art = None,
+        foreground: Art = None,
+        extending_side: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
+        displaying: Literal['scaling', 'sliding', 'hiding', 'smooth_scaling'] = 'sliding',
+        transition_function: ZOCallable = linear,
+        transition_duration: int = 300,
+        tooltip: Tooltip = None,
+        cursor: Cursor = None,
+        justify: Anchor = Anchor.CENTER,
+        text_factory: Callable[[float], str | TextFormatter] = lambda value: str(int(value*100)) + '%',
+        use_virtual_value: bool = False
+    ):
+        super().__init__(
+            master,
+            bar,
+            initial_value,
+            background,
+            foreground,
+            extending_side,
+            displaying,
+            transition_function,
+            transition_duration,
+            tooltip,
+            cursor
+        )
+
+        self._justify = justify
+        self._font = font
+        self._font_color = font_color
+        self._text_factory = text_factory
+        self._use_virtual_value = use_virtual_value
+
+    def _render_text(self):
+        value = self._current_position if self._use_virtual_value else self._value
+        return self.game.typewriter.render(self._font, self._text_factory(value), self._font_color, None, self._justify)
+
+    def make_surface(self):
+        """Return the surface of the Label."""
+        bg = ProgressBar.make_surface(self)
+        rendered_text = self._render_text()
+        text_width, text_height = rendered_text.get_size()
+        just_x = self._justify[0]*(self.background.width - text_width)
+        just_y = self._justify[1]*(self.background.height - text_height)
+        bg.blit(rendered_text, (just_x, just_y))
+        return bg
