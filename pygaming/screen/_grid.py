@@ -161,6 +161,6 @@ class Grid:
                 break
 
         del self._objects[(row, column)]
-        for rw, col in product(range(row, row + obj.rowspan), range(col, col + obj.columnspan)):
+        for rw, col in product(range(row, row + obj.rowspan), range(column, column + obj.columnspan)):
             del self._dupl_objects[(rw, col)]
         self._update(row, col, obj.rowspan, obj.columnspan)
