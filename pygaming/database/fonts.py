@@ -6,7 +6,7 @@ from .texts import Texts, TextFormatter
 from .database import Database
 from ..settings import Settings
 from ..file import get_file
-from ..screen.anchors import TOP_LEFT
+from ..screen.anchors import LEFT, Anchor
 
 class Font(_Ft):
     """The Font class is used to display texts."""
@@ -81,7 +81,7 @@ class TypeWriter:
             thefont = self._all_phases_fonts.get(font, self._default_font)
         return thefont
 
-    def render(self, font: str, text_or_loc: str | TextFormatter, color: Color, background_color: Color = None, justify: tuple[float, float] = TOP_LEFT) -> Surface:
+    def render(self, font: str, text_or_loc: str | TextFormatter, color: Color, background_color: Color = None, justify: Anchor = LEFT) -> Surface:
         """
         Draw text or localization on a new Surface.
         
@@ -94,7 +94,7 @@ class TypeWriter:
         - color: Color, the color to display the font in
         - background_color: Color = None, the color of the background. If a color is given,
         the surface returned has a solid background with this color, otherwise the background is transparent
-        - justify: tuple[float, float] Only for multiline renders, justifies justify the text according to its first component.
+        - justify: Anchor, only for multiline renders.
         """
         thefont = self._get_font(font)
         thetext = self._texts.get(text_or_loc)
