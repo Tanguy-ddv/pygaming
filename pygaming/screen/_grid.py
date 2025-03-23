@@ -134,13 +134,13 @@ class Grid:
         mutlicol_width = sum(self._widths.get(col, 0) for col in range(column, column + obj.columnspan))
         multirow_height = sum(self._heights.get(rw, 0) for rw in range(row, row + obj.rowspan))
         # The coordinate of the object in the cell
-        obj_x = cell_x + obj.justify[0]*(mutlicol_width - obj.element.width)
-        obj_y = cell_y + obj.justify[1]*(multirow_height - obj.element.height)
+        obj_x = cell_x + obj.justify[0]*(mutlicol_width - 2*obj.padx - obj.element.width) + obj.padx
+        obj_y = cell_y + obj.justify[1]*(multirow_height - 2*obj.pady - obj.element.height) + obj.pady
         # The position of the anchored point relative to the top-left of the grid.
         rel_x = obj_x + obj.anchor[0]*obj.element.width
         rel_y = obj_y + obj.anchor[1]*obj.element.height
         # The position on the master.
-        return self._left + rel_x + obj.padx, self._top + rel_y + obj.pady
+        return self._left + rel_x , self._top + rel_y
 
     def remove(self, elem):
         """
