@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import Any
 from itertools import product
 from .anchors import TOP_LEFT, Anchor, CENTER_CENTER
-
 @dataclass
 class _GridObject:
     """Represent an object in a cell."""
@@ -71,7 +70,7 @@ class Grid:
         pady: int = 0,
         anchor: Anchor = TOP_LEFT,
         justify: Anchor = CENTER_CENTER
-    ):
+):
         """
         Add a new cell in the grid.
         

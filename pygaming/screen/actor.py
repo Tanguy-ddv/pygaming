@@ -47,7 +47,7 @@ class Actor(Element):
         self._zoom = 1
         self._initial_size = self.width, self.height
         self._initial_anchor = None
-    
+
     def place(self, x: int, y:int, anchor: AnchorLike = TOP_LEFT, angle: float = 0, zoom: float = 1, layer: int = 0):
         self._initial_anchor = Anchor(anchor)
         self._angle = angle

@@ -32,6 +32,7 @@ class Label(Element):
         - font: Font, the font to be used to display the text.
         - localization_or_text: The text, localization or TextFormatter to be displayed, can be modify with set_localization_or_text(new_text).
         - justify: the position of the text in the label, should be an anchor (i.e a tuple[x, y] with 0 <= x, y <= 1, or an Anchor2D from pygaming.anchor)
+        - justify: the position of the text in the label, should be an anchor (i.e a tuple[x, y] with 0 <= x, y <= 1, or an Anchor2D from pygaming.anchor)
         - blinking_period: int [ms]. If an integer is specified, the text will blink with the given period.
         """
         self.font = font

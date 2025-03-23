@@ -73,6 +73,7 @@ class Frame(Element, Master):
         self.height = self.window.height
 
     def place(self, x: int, y: int, anchor: AnchorLike = TOP_LEFT, layer: int = 0):
+
         """Place the Frame. Its width and height have already been defined"""
         self.anchor = Anchor(anchor)
         self._x = self.window.left = x - self.anchor[0]*self.window.width
@@ -271,6 +272,7 @@ class Frame(Element, Master):
             self.notify_change()
 
     def zoom_camera(self, ratio_x: float, target: AnchorLike = CENTER_CENTER, ratio_y = None):
+
         """
         Zoom by a given factor on the target point.
 

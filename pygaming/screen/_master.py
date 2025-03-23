@@ -24,6 +24,7 @@ class Master(ABC):
         self.children.append(child)
 
     def create_grid(self, x: int, y: int, anchor: AnchorLike = TOP_LEFT):
+
         """Create a grid to manage the geomtry of the master."""
         grid = Grid(x, y, Anchor(anchor))
         self.grids.append(grid)
