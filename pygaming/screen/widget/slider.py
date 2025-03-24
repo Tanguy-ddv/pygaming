@@ -1,15 +1,15 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
-from typing import Optional, Iterable, Any
+from typing import Optional, Sequence, Any, Literal
 from pygame import Surface
 from ZOCallable import ZOCallable, verify_ZOCallable
 from ZOCallable.functions import linear
-from ...error import PygamingException
 from .widget import Widget
 from ..frame import Frame
 from ..art import Art
 from ...cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox
+from ..anchors import Anchor
 
 class Slider(Widget):
     """The Slider is a widget that is used to select a value in a given range."""
@@ -17,7 +17,7 @@ class Slider(Widget):
     def __init__(
         self,
         master: Frame,
-        values: Iterable,
+        values: Sequence,
         normal_background: Art,
         normal_cursor: Art,
         initial_value: Optional[Any] = None,
@@ -29,12 +29,13 @@ class Slider(Widget):
         hovered_cursor: Optional[Art] = None,
         active_area: Optional[Hitbox] = None,
         tooltip: Optional[Tooltip] = None,
-        cursor: Cursor | None = None,
+        cursor: Optional[Cursor] = None,
         continue_animation: bool = False,
         transition_function: ZOCallable = linear,
         transition_duration: int = 300, # [ms]
         update_if_invisible: bool = True,
         step_wth_arrow: int = 1,
+        direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT
     ) -> None:
         """
         A Slider is a widget that is used to select a value in a given range by moving a cursor from left to right on a background.
@@ -43,13 +44,13 @@ class Slider(Widget):
         ---
         - master: Frame. The Frame in which this widget is placed.
         - values: Iterable, the ordered list of values from which the slider can select.
-        - normal_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is neither focused nor disabled.
-        - normal_cursor: AnimatedSurface | Surface: The surface used as the cursor of the slider when it is neither focused nor disabled.
+        - normal_background: Art: The art used as the background of the slider when it is neither focused nor disabled.
+        - normal_cursor: Art : The art used as the cursor of the slider when it is neither focused nor disabled.
         - initial_value: Any, The initial value set to the cursor. If None, use the first value.
-        - focused_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is focused.
-        - focused_cursor: AnimatedSurface | Surface: The surface used as the cursor of the slider when it is focused.
-        - disabled_background: AnimatedSurface | Surface: The surface used as the background of the slider when it is disabled.
-        - disabled_cursor: AnimatedSurface | Surface: The surface used as the cursor of the slider when it is disabled.
+        - focused_background: Art : The art used as the background of the slider when it is focused.
+        - focused_cursor: Art : The art used as the cursor of the slider when it is focused.
+        - disabled_background: Art : The art used as the background of the slider when it is disabled.
+        - disabled_cursor: Art : The art used as the cursor of the slider when it is disabled.
         - active_area: Rect. The Rectangle in the bacground that represent the active part of the slider. if None, then it is the whole background.
         - tooltip: Tooltip, the tooltip to show when the slider is hovered.
         - cursor: Cursor The cursor of the mouse to use when the widget is hovered
@@ -60,6 +61,9 @@ class Slider(Widget):
         - transition_duration: int [ms], the duration of the transition in ms.
         - update_if_invisible: bool, set to True if you want the widget to be update even if it is not visible. Default is True to finish the transitions.
         - step_wth_arrow: int, the number of step the slider should do when it is updated with an arrow of the keyboard. Default is 1
+        - direction: the direction of the slider when its internal index increases. If BOTTOM or TOP are selected, then the slider is vertical
+        otherwise, it is horizontal. If LEFT is selected, the last value of the values Sequence is selected when the cursor is at its left-most position
+        and so on. default is RIGHT.
         """
         super().__init__(
             master,
@@ -83,10 +87,10 @@ class Slider(Widget):
         self._values= list(values)
         self._initial_value = initial_value
         self._index = 0
-
         self._positions = []
 
         self._cursor_width = self.normal_cursor.width
+        self._cursor_height = self.normal_cursor.height
         self._holding_cursor = False
 
         # Transition-related attributes
@@ -98,6 +102,8 @@ class Slider(Widget):
         self._cursor_position = None
 
         self._step_wth_arrow = step_wth_arrow
+
+        self._direction = direction
 
     def get(self):
         """Return the value selected by the player."""
@@ -111,16 +117,27 @@ class Slider(Widget):
         elif self._initial_value in self._values:
             self._index = self._values.index(self._initial_value)
         else:
-            raise PygamingException(f"{self._initial_value} is not a valid initial value as it is not in the values list {self._values}.")
+            raise ValueError(f"{self._initial_value} is not a valid initial value as it is not in the values list {self._values}.")
 
-        x_min = self._active_area.left + self._cursor_width//2
-        x_max = self._active_area.right - self._cursor_width//2
+        if self._direction in [Anchor.RIGHT, Anchor.LEFT]:
+
+            pos_min = self._active_area.left + self._cursor_width//2
+            pos_max = self._active_area.right - self._cursor_width//2
+        
+        else:
+
+            pos_min = self._active_area.top + self._cursor_height//2
+            pos_max = self._active_area.bottom - self._cursor_height//2
  
         self._positions = [
-              x_max*(t/(len(self._values)-1))
-            + x_min*(1 - t/(len(self._values)-1))
+              pos_max*(t/(len(self._values)-1))
+            + pos_min*(1 - t/(len(self._values)-1))
             for t in range(len(self._values))
         ]
+
+        if self._direction in [Anchor.LEFT, Anchor.TOP]:
+            self._positions.reverse()
+            self._index = len(self._positions) - self._index - 1
 
         self._cursor_position = self._positions[self._index]
 
@@ -159,26 +176,55 @@ class Slider(Widget):
         # If the user is clicking:
         if self.is_contact(ck1) and not self.disabled:
 
-            local_x = ck1.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio).x
-            # If the user is clicking on the cursor, we want the cursor to follow the user click
-            if self._cursor_position < local_x < self._cursor_position + self._cursor_width:
-                self._holding_cursor = True
+            if self._direction in [Anchor.LEFT, Anchor.RIGHT]:
 
-            # If the user is clicking elsewhere, we want the slider to set a transition to this position.
-            elif not self._holding_cursor:
+                local_x = ck1.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio).x
+                # If the user is clicking on the cursor, we want the cursor to follow the user click
+                if self._cursor_position < local_x < self._cursor_position + self._cursor_width:
+                    self._holding_cursor = True
 
-                # We verify that we clicked on a new position
-                new_index = self._get_index_of_click(local_x)
-                self._start_transition(new_index)
+                # If the user is clicking elsewhere, we want the slider to set a transition to this position.
+                elif not self._holding_cursor:
 
-            # In the case we are holding the cursor
-            if self._holding_cursor: # We do not use else because we want to execute this after the 1st if.
+                    # We verify that we clicked on a new position
+                    new_index = self._get_index_of_click(local_x)
+                    self._start_transition(new_index)
 
-                local_x = min(max(self._positions[0], local_x), self._positions[-1])
-                self._cursor_position = local_x
-                self.notify_change()
+                # In the case we are holding the cursor
+                if self._holding_cursor: # We do not use else because we want to execute this after the 1st if.
+                    
+                    if self._direction == Anchor.LEFT:
+                        local_x = max(min(self._positions[0], local_x), self._positions[-1])
+                    else:
+                        local_x = min(max(self._positions[0], local_x), self._positions[-1])
+                    self._index = self._get_index_of_click(local_x)
+                    
+                    self._cursor_position = local_x
+                    self.notify_change()
+            else:
+                local_y = ck1.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio).y
+                # If the user is clicking on the cursor, we want the cursor to follow the user click
+                if self._cursor_position < local_y < self._cursor_position + self._cursor_height:
+                    self._holding_cursor = True
 
-                self._index = self._get_index_of_click(local_x)
+                # If the user is clicking elsewhere, we want the slider to set a transition to this position.
+                elif not self._holding_cursor:
+
+                    # We verify that we clicked on a new position
+                    new_index = self._get_index_of_click(local_y)
+                    self._start_transition(new_index)
+
+                # In the case we are holding the cursor
+                if self._holding_cursor: # We do not use else because we want to execute this after the 1st if.
+                    
+                    if self._direction == Anchor.TOP:
+                        local_y = max(min(self._positions[0], local_y), self._positions[-1])
+                    else:
+                        local_y = min(max(self._positions[0], local_y), self._positions[-1])
+                    self._index = self._get_index_of_click(local_y)
+                    
+                    self._cursor_position = local_y
+                    self.notify_change()
 
         # In the case the user is not clicking
         else:
@@ -200,12 +246,28 @@ class Slider(Widget):
                     self._cursor_position = self._positions[self._index]
 
         # Verify the use of the arrows
-        if self.focused and not self.disabled:
-            if self.game.keyboard.actions_down['left'] and self._index > 0:
+        if self._direction in [Anchor.LEFT, Anchor.RIGHT] and self.focused and not self.disabled:
+            if self.anchor == Anchor.RIGHT:
+                right = 'right'
+                left = 'left'
+            else:
+                right = 'left'
+                left = 'right'
+            if self.game.keyboard.actions_down[left] and self._index > 0:
                 self._start_transition(max(0, self._index - self._step_wth_arrow))
-            if self.game.keyboard.actions_down['right'] and self._index < len(self._values) - 1:
+            if self.game.keyboard.actions_down[right] and self._index < len(self._values) - 1:
                 self._start_transition(min(self._index + self._step_wth_arrow, len(self._values) - 1))
-
+        elif self.focused and not self.disabled:
+            if self.anchor == Anchor.RIGHT:
+                up = 'up'
+                down = 'down'
+            else:
+                up = 'down'
+                down = 'up'
+            if self.game.keyboard.actions_down[up] and self._index > 0:
+                self._start_transition(max(0, self._index - self._step_wth_arrow))
+            if self.game.keyboard.actions_down[down] and self._index < len(self._values) - 1:
+                self._start_transition(min(self._index + self._step_wth_arrow, len(self._values) - 1))
 
     def _get_index_of_click(self, x):
         """Get the index the closest to the click"""
@@ -226,7 +288,11 @@ class Slider(Widget):
     def _make_surface(self, background: Art, cursor: Art) -> Surface:
         """Make the surface with the cursor and the background."""
         bg = background.get(self.background if self._continue_animation else None, **self.game.settings)
-        x = self._cursor_position - self.normal_cursor.width//2
-        y = (background.height - cursor.height)//2
+        if self._direction in [Anchor.LEFT, Anchor.RIGHT]:
+            x = self._cursor_position - self.normal_cursor.width//2
+            y = (background.height - cursor.height)//2
+        else:
+            y = self._cursor_position - self.normal_cursor.height//2
+            x = (background.width - cursor.width)//2
         bg.blit(cursor.get(self.normal_cursor if self._continue_animation else None, **self.game.settings), (x,y))
         return bg
