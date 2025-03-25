@@ -1,5 +1,5 @@
 """Then entry module contains the entry widget."""
-from typing import Optional
+from typing import Optional, Callable, Any
 from pygame import Surface, draw
 from .widget import Widget
 from ..anchors import LEFT, AnchorLike, Anchor
@@ -47,6 +47,7 @@ class Entry(Widget):
         empty_text_or_loc: str = "",
         empty_font: str = None,
         empty_font_color: str = None,
+        command: Optional[Callable[[], Any]] = None
     ) -> None:
         """
         The Entry widget is used to allow the user to add a textual input.
@@ -92,6 +93,8 @@ class Entry(Widget):
         self._text = str(initial_value)
         self.extra_characters = extra_characters
         self.forbid_characters = forbid_characters
+
+        self._command = command
 
         self._normal_font = normal_font
 
@@ -203,7 +206,9 @@ class Entry(Widget):
 
             # Modify the text if a character is typed
             new_characters = ''.join(self.game.keyboard.get_characters(self.extra_characters, self.forbid_characters))
-            self.add_new_characters(new_characters)
+            if new_characters and self._command is not None:
+                self._command()
+            command_called = self._add_new_characters(new_characters)
 
             # Move the caret if an arrow is tapped.
             if self.game.keyboard.actions_down['left']:
@@ -211,13 +216,15 @@ class Entry(Widget):
             if self.game.keyboard.actions_down['right']:
                 self.move_to_the_right()
 
-            if self.game.keyboard.actions_down['backspace']:
+            if self.game.keyboard.actions_down['backspace']: # Delete one caracter.
                 self.del_one()
+                if self._command is not None and not command_called:
+                    self._command()
         else:
             self._show_caret = True
 
-    def add_new_characters(self, new_characters):
-        """Add new characters to the value."""
+    def _add_new_characters(self, new_characters):
+        """Add new characters to the value. Return True if some new characters have been added."""
         margin = self.max_length - len(self._text)
         if margin < len(new_characters):
             new_characters = new_characters[:margin]
@@ -226,6 +233,8 @@ class Entry(Widget):
             self._text = self._text[:self._caret_index] + new_characters + self._text[self._caret_index:]
             self._caret_index += len(new_characters)
             self.notify_change()
+            return True
+        return False
 
     def del_one(self):
         """Delete a character."""

@@ -35,7 +35,8 @@ class Slider(Widget):
         transition_duration: int = 300, # [ms]
         update_if_invisible: bool = True,
         step_wth_arrow: int = 1,
-        direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT
+        direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
+        command: Optional[Callable[[], Any]] = None,
     ) -> None:
         """
         A Slider is a widget that is used to select a value in a given range by moving a cursor from left to right on a background.
@@ -104,6 +105,7 @@ class Slider(Widget):
         self._step_wth_arrow = step_wth_arrow
 
         self._direction = direction
+        self._command = command
 
     def get(self):
         """Return the value selected by the player."""
@@ -175,6 +177,8 @@ class Slider(Widget):
 
         # If the user is clicking:
         if self.is_contact(ck1) and not self.disabled:
+            if self._command is not None:
+                self._command()
 
             if self._direction in [Anchor.LEFT, Anchor.RIGHT]:
 
@@ -255,8 +259,12 @@ class Slider(Widget):
                 left = 'right'
             if self.game.keyboard.actions_down[left] and self._index > 0:
                 self._start_transition(max(0, self._index - self._step_wth_arrow))
+                if self._command is not None:
+                    self._command()
             if self.game.keyboard.actions_down[right] and self._index < len(self._values) - 1:
                 self._start_transition(min(self._index + self._step_wth_arrow, len(self._values) - 1))
+                if self._command is not None:
+                    self._command()
         elif self.focused and not self.disabled:
             if self.anchor == Anchor.RIGHT:
                 up = 'up'
@@ -266,8 +274,12 @@ class Slider(Widget):
                 down = 'up'
             if self.game.keyboard.actions_down[up] and self._index > 0:
                 self._start_transition(max(0, self._index - self._step_wth_arrow))
+                if self._command is not None:
+                    self._command()
             if self.game.keyboard.actions_down[down] and self._index < len(self._values) - 1:
                 self._start_transition(min(self._index + self._step_wth_arrow, len(self._values) - 1))
+                if self._command is not None:
+                    self._command()
 
     def _get_index_of_click(self, x):
         """Get the index the closest to the click"""
@@ -325,7 +337,8 @@ class TextSlider(Slider):
         text_factory: Callable[[Any], str] = str,
         justify: Anchor = Anchor.CENTER_CENTER,
         step_wth_arrow: int = 1,
-        direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT
+        direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
+        command: Optional[Callable[[], Any]] = None,
     ) -> None:
         """
         A Slider is a widget that is used to select a value in a given range by moving a cursor from left to right on a background.
@@ -355,7 +368,29 @@ class TextSlider(Slider):
         otherwise, it is horizontal. If LEFT is selected, the last value of the values Sequence is selected when the cursor is at its left-most position
         and so on. default is RIGHT.
         """
-        super().__init__(master, values, normal_background, normal_cursor, initial_value, focused_background, focused_cursor, disabled_background, disabled_cursor, hovered_background, hovered_cursor, active_area, tooltip, cursor, continue_animation, transition_function, transition_duration, update_if_invisible, step_wth_arrow, direction)
+        super().__init__(
+            master,
+            values,
+            normal_background,
+            normal_cursor,
+            initial_value,
+            focused_background,
+            focused_cursor,
+            disabled_background,
+            disabled_cursor,
+            hovered_background,
+            hovered_cursor,
+            active_area,
+            tooltip,
+            cursor,
+            continue_animation,
+            transition_function,
+            transition_duration,
+            update_if_invisible,
+            step_wth_arrow,
+            direction,
+            command
+        )
         self._font = font
         self._font_color = font_color
         self._text_factory = text_factory
