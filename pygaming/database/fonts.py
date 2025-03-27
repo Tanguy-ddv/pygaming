@@ -1,6 +1,7 @@
 """The Font module contain the font class."""
 from pygame.font import Font as _Ft
 from pygame import Surface, SRCALPHA, Rect
+from gamarts import Art
 from ..color import Color
 from .texts import Texts, TextFormatter
 from .database import Database
@@ -114,7 +115,7 @@ class TypeWriter:
 
         return thefont.render(thetext, self._antialias, color, background_color)
 
-    def render_paragraphs(self, font: str, text_or_loc: str | TextFormatter, color: Color, rect: Rect, background_color: Color = None) -> Surface:
+    def render_paragraphs(self, font: str, text_or_loc: str | TextFormatter, color: Color, rect: Rect | Art, background_color: Color = None) -> Surface:
         """
         Draw a text or a localization as multiple justified paragraphs.
         
@@ -131,7 +132,7 @@ class TypeWriter:
         thefont = self._get_font(font)
         thetext = self._texts.get(text_or_loc)
 
-        if thefont.size(thetext)[0] <= rect.size[0] and not '\n' in thetext:
+        if thefont.size(thetext)[0] <= rect.width and not '\n' in thetext:
             return thefont.render(thetext, True, color, background_color)
 
         background = Surface(rect.size, SRCALPHA)
@@ -143,17 +144,17 @@ class TypeWriter:
         for text in thetext.split('\n'):
             words = text.split()
             first_line = True
-            while words and line_y <= rect.size[1]:
+            while words and line_y <= rect.height:
                 thisline = []
                 # Find the words that will fit in the line
-                while words and thefont.size(('    ' if first_line else '') + ' '.join(thisline + [words[0]]))[0] <= rect.size[0]:
+                while words and thefont.size(('    ' if first_line else '') + ' '.join(thisline + [words[0]]))[0] <= rect.width:
                     thisline.append(words.pop(0))
                 if first_line:
                     thisline.insert(0, '   ')
 
                 if words:
                     # Spread the extra pixels among all spaces
-                    extra_pixels = rect.size[0] - thefont.size(' '.join(thisline))[0]
+                    extra_pixels = rect.width - thefont.size(' '.join(thisline))[0]
                     spaces = [extra_pixels//(len(thisline) - 1) for _ in range(len(thisline) - 1)]
                     if len(thisline) > 1:
                         for i in range(extra_pixels%(len(thisline) - 1)):

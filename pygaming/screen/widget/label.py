@@ -86,4 +86,4 @@ class Paragraph(Label):
     """A Paragraph is used to display a piece of a text as a justified paragraph."""
 
     def _render_text(self):
-        return self.game.typewriter.render_paragraphs(self.font, self.text, self.font_color, pygame.Rect(0, 0, *self.background.size), None)
+        return self.game.typewriter.render_paragraphs(self.font, self.text, self.font_color, self.background, None)
