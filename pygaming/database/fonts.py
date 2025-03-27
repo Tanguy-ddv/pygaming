@@ -82,7 +82,7 @@ class TypeWriter:
             thefont = self._all_phases_fonts.get(font, self._default_font)
         return thefont
 
-    def render(self, font: str, text_or_loc: str | TextFormatter, color: Color, background_color: Color = None, justify: Anchor = LEFT) -> Surface:
+    def render(self, font: str, text_or_loc: str | TextFormatter, color: Color, background_color: Color = None, justify: Anchor = LEFT, can_be_loc: bool = True) -> Surface:
         """
         Draw text or localization on a new Surface.
         
@@ -98,7 +98,10 @@ class TypeWriter:
         - justify: Anchor, only for multiline renders.
         """
         thefont = self._get_font(font)
-        thetext = self._texts.get(text_or_loc)
+        if can_be_loc:
+            thetext = self._texts.get(text_or_loc)
+        else:
+            thetext = str(text_or_loc)
         if "\n" in thetext:
             lines = [line.strip() for line in text_or_loc.split('\n')]
             line_size = thefont.get_linesize()
@@ -115,7 +118,7 @@ class TypeWriter:
 
         return thefont.render(thetext, self._antialias, color, background_color)
 
-    def render_paragraphs(self, font: str, text_or_loc: str | TextFormatter, color: Color, rect: Rect | Art, background_color: Color = None) -> Surface:
+    def render_paragraphs(self, font: str, text_or_loc: str | TextFormatter, color: Color, rect: Rect | Art, background_color: Color = None, can_be_loc: bool = True) -> Surface:
         """
         Draw a text or a localization as multiple justified paragraphs.
         
@@ -130,8 +133,10 @@ class TypeWriter:
         the surface returned has a solid background with this color, otherwise the background is transparent
         """
         thefont = self._get_font(font)
-        thetext = self._texts.get(text_or_loc)
-
+        if can_be_loc:
+            thetext = self._texts.get(text_or_loc)
+        else:
+            thetext = str(text_or_loc)
         if thefont.size(thetext)[0] <= rect.width and not '\n' in thetext:
             return thefont.render(thetext, True, color, background_color)
 
