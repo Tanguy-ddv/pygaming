@@ -1,4 +1,5 @@
 """The Font module contain the font class."""
+from typing import Literal
 from pygame.font import Font as _Ft
 from pygame import Surface, SRCALPHA, Rect
 from gamarts import Art
@@ -40,6 +41,26 @@ class Font(_Ft):
         self.italic = italic
         self.underline = underline
         self.strikethrough = strikethrough
+
+class Charet:
+
+    def __init__(self, frequency: int) -> None:
+        self._index = 0
+        self._top_index = None
+        self._down_index = None
+        self._left_index = None
+        self._right_index = None
+        self._coord = None, None
+        self.__frequency = frequency
+        self.__time_since_last_update = 0
+        self.show
+
+    
+    def update(self, text, loop_duration, anchor: Literal[Anchor.LEFT, Anchor.CENTER, Anchor.RIGHT] | None = None, extend: bool = False):
+        self.__time_since_last_update += loop_duration
+        if self.__time_since_last_update > self.__frequency:
+            self.__time_since_last_update -= self.__frequency
+            self.show = not self.show
 
 class TypeWriter:
     """The TypeWriter is a class used to manage the fonts and the text generation."""
@@ -118,7 +139,17 @@ class TypeWriter:
 
         return thefont.render(thetext, self._antialias, color, background_color)
 
-    def render_paragraphs(self, font: str, text_or_loc: str | TextFormatter, color: Color, rect: Rect | Art, background_color: Color = None, can_be_loc: bool = True) -> Surface:
+    # also do it from a precomputed paragraph ? So if there is a charet, calculate it elsewhere and use the calculations here.
+    def render_paragraphs(
+            self,
+            font: str,
+            text_or_loc: str | TextFormatter,
+            color: Color,
+            rect: Rect | Art,
+            background_color: Color = None,
+            can_be_loc: bool = True,
+            autotab_on_first_line: bool = False
+        ) -> Surface:
         """
         Draw a text or a localization as multiple justified paragraphs.
         
@@ -148,7 +179,8 @@ class TypeWriter:
         # Render the paragraphs one by one
         for text in thetext.split('\n'):
             words = text.split()
-            first_line = True
+            first_line = autotab_on_first_line # The first line variable is used to know if we need to add a tab.
+            # If we don't auto tab, it is like if there is no first line
             while words and line_y <= rect.height:
                 thisline = []
                 # Find the words that will fit in the line
