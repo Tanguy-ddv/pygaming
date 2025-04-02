@@ -1,5 +1,5 @@
 """Then entry module contains the entry widget."""
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, Literal
 from pygame import Surface, draw
 from .widget import Widget
 from ..anchors import LEFT, AnchorLike, Anchor
@@ -13,6 +13,7 @@ from ..hitbox import Hitbox
 _DEFAULT_CARET_FREQUENCY = 500 # [ms]
 _DEFAULT_CARET_WIDTH = 2 # [px]
 _DEFAULT_MAX_LENGTH = 15
+_PASSWORD_CHAR = "\u2022"
 
 class Entry(Widget):
     """The Entry widget is used to allow the user to add a textual input."""
@@ -37,7 +38,7 @@ class Entry(Widget):
         forbid_characters: str = '',
         active_area: Optional[Hitbox] = None,
         tooltip: Optional[Tooltip] = None,
-        cursor: Cursor | None = None,
+        cursor: Optional[Cursor] = None,
         continue_animation: bool = False,
         justify: AnchorLike = LEFT,
         caret_frequency: int = _DEFAULT_CARET_FREQUENCY,
@@ -45,9 +46,10 @@ class Entry(Widget):
         max_length: int = _DEFAULT_MAX_LENGTH,
         update_if_invisible: bool = False,
         empty_text_or_loc: str = "",
-        empty_font: str = None,
-        empty_font_color: str = None,
-        command: Optional[Callable[[], Any]] = None
+        empty_font: Optional[str] = None,
+        empty_font_color: Optional[str] = None,
+        command: Optional[Callable[[], Any]] = None,
+        password: bool = False
     ) -> None:
         """
         The Entry widget is used to allow the user to add a textual input.
@@ -92,9 +94,10 @@ class Entry(Widget):
 
         self._text = str(initial_value)
         self.extra_characters = extra_characters
-        self.forbid_characters = forbid_characters
+        self.forbid_characters = forbid_characters + '\n'
 
         self._command = command
+        self.password = password
 
         self._normal_font = normal_font
 
@@ -142,23 +145,26 @@ class Entry(Widget):
         """Return the textual value currently entered."""
         return self._text
 
+    def __make_text_to_display(self):
+        return self._text if not self.password else _PASSWORD_CHAR*len(self._text)
+
     def _make_disabled_surface(self) -> Surface:
         return self._make_surface(
             self.disabled_background.get(self.background if self._continue_animation else None, **self.game.settings),
-            self._disabled_font, self._disabled_font_color, False, self._text
+            self._disabled_font, self._disabled_font_color, False, self.__make_text_to_display()
         )
 
     def _make_focused_surface(self) -> Surface:
         return self._make_surface(
             self.focused_background.get(self.background if self._continue_animation else None, **self.game.settings),
-            self._focused_font, self._focused_font_color, self._show_caret, self._text
+            self._focused_font, self._focused_font_color, self._show_caret, self.__make_text_to_display()
         )
 
     def _make_normal_surface(self) -> Surface:
         if self._text: # if the current text is not empty
             return self._make_surface(
                 self.normal_background.get(None, **self.game.settings),
-                self._normal_font, self._normal_font_color, False, self._text
+                self._normal_font, self._normal_font_color, False, self.__make_text_to_display()
             )
         return self._make_surface(
             self.normal_background.get(None, **self.game.settings),
@@ -169,7 +175,7 @@ class Entry(Widget):
         if self._text: # if the current text is not empty
             return self._make_surface(
                 self.hovered_background.get(None, **self.game.settings),
-                self._hovered_font, self._hovered_font_color, False, self._text
+                self._hovered_font, self._hovered_font_color, False, self.__make_text_to_display()
             )
         return self._make_surface(
             self.hovered_background.get(None, **self.game.settings),
@@ -182,15 +188,16 @@ class Entry(Widget):
         just_y = self._justify[1]*(background.get_height() - text_height)
         # if the text is too long, we center on the charet, if the charet is too much on the right or left, we let the first/last
         # character be on the left/right.
+        text = self.__make_text_to_display()
         if text_width > background.get_width():
-            just_x = min(0, -self.game.typewriter.size(font, self._text[:self._caret_index])[0] + background.get_width()//2)
+            just_x = min(0, -self.game.typewriter.size(font, text[:self._caret_index])[0] + background.get_width()//2)
             just_x = max(just_x, background.get_width() - text_width)
         else:
             just_x = self._justify[0]*(background.get_width() - text_width)
         background.blit(rendered_text, (just_x, just_y))
         if caret:
             caret_height = self.game.typewriter.get_linesize(font)
-            caret_x = just_x + self.game.typewriter.size(font, self._text[:self._caret_index])[0]
+            caret_x = just_x + self.game.typewriter.size(font, text[:self._caret_index])[0]
             draw.line(background, self._focused_font_color, (caret_x, just_y), (caret_x, just_y + caret_height), self._caret_width)
         return background
 
