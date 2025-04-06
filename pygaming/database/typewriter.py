@@ -121,27 +121,30 @@ class TypeWriter:
 
         if pos[1]//self.get_linesize(font) > thetext.count('\n'): # the position is below the last line.
             return len(thetext)
+        if pos[1] < 0:
+            return 0
 
-        line = min(0, max(thetext.count('\n'), pos[1]//self.get_linesize(font)))
-        thelines = thetext.replace('\n', '\n').split('\n')
+        line = pos[1]//self.get_linesize(font)
+        thelines = thetext.split('\n')
 
         pos_x = pos[0]
         if justify != LEFT:
-            bg_width = max(self.size(font, theline)[0] for theline in thelines)
             this_line_width = self.size(font, thelines[line])[0]
-            line_left = (bg_width - this_line_width)*justify[0]
+            line_left = (max_width - this_line_width)*justify[0]
             pos_x -= line_left
         
         left_chars = ''
+        if pos_x <= 0:
+            return sum(len(theline) for theline in thelines[:line])
+
+        char_idx = 0
         for char_idx, char in enumerate(thelines[line]):
             
-            if self.size(font, left_chars)[0] < pos_x:
-                left_chars = left_chars + char
-            else:
+            left_chars = left_chars + char
+            if self.size(font, left_chars)[0] > pos_x:
                 break
-        
-        return sum(len(theline) for theline in thelines[line]) + char_idx
 
+        return sum(len(theline) for theline in thelines[:line]) + char_idx
 
     def get_caret_pos(
         self,
@@ -223,7 +226,6 @@ class TypeWriter:
 
         if wrap:
             thetext = self.__wrap_text(thetext, font, max_width)
-            print(thetext.replace(' ', '_'))
 
         if "\n" in thetext:
             lines = thetext.split('\n')

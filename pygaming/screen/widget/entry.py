@@ -211,13 +211,13 @@ class Entry(Widget):
                 self._caret_delta = 0
                 self._show_caret = not self._show_caret
 
-            # Modify the text if a character is typed
+            # Modify the text if a character is entered
             new_characters = ''.join(self.game.keyboard.get_characters(self.extra_characters, self.forbid_characters))
             command_called = self._add_new_characters(new_characters)
             if new_characters and self._command is not None:
                 self._command()
 
-            # Move the caret if an arrow is tapped.
+            # Move the caret if an arrow is pressed.
             if self.game.keyboard.actions_down['left']:
                 self.move_to_the_left()
             if self.game.keyboard.actions_down['right']:
@@ -371,19 +371,42 @@ class Text(Widget):
         if self._caret_index > 0:
             self._text = self._text[:self._caret_index - 1] + self._text[self._caret_index:]
             self._caret_index -= 1
-            self.notify_change()
 
     def move_to_the_right(self):
         """Move the caret to the right."""
         if self._caret_index < len(self._text):
             self._caret_index += 1
-            self.notify_change()
 
     def move_to_the_left(self):
         """Move the caret to the left."""
         if self._caret_index > 0:
             self._caret_index -= 1
-            self.notify_change()
+
+    def move_to_the_bottom(self):
+        """Move the caret to the bottom."""
+
+        car_pos = self.game.typewriter.get_caret_pos(
+            self._focused_font, self._caret_index, self._text, self._justify, False, self._wrap, self.focused_background.width
+        )
+
+        new_pos = car_pos[0], car_pos[1] + self.game.typewriter.get_linesize(self._focused_font)
+
+        self._caret_index = self.game.typewriter.get_caret_index(
+            self._focused_font, new_pos, self._text, self._justify, False, self._wrap, self.focused_background.width
+        )
+
+    def move_to_the_top(self):
+        """Move the caret to the top."""
+
+        car_pos = self.game.typewriter.get_caret_pos(
+            self._focused_font, self._caret_index, self._text, self._justify, False, self._wrap, self.focused_background.width
+        )
+
+        new_pos = car_pos[0], car_pos[1] - self.game.typewriter.get_linesize(self._focused_font)
+
+        self._caret_index = self.game.typewriter.get_caret_index(
+            self._focused_font, new_pos, self._text, self._justify, False, self._wrap, self.focused_background.width
+        )
 
     def _add_new_characters(self, new_characters):
         """Add new characters to the value. Return True if some new characters have been added."""
@@ -436,7 +459,7 @@ class Text(Widget):
     def __make_surface(self, background: Surface, font: str, color: Color, caret: bool, text: str):
         rendered_text = self.game.typewriter.render(
             font, text, color, justify=self._justify,
-            can_be_loc=False, wrap = self._wrap, max_width=background.get_width()
+            can_be_loc=len(self._text) == 0, wrap = self._wrap, max_width=background.get_width()
         )
         text_width, _ = rendered_text.get_size()
         # if the text is too long, we center on the charet, if the charet is too much on the right or left, we let the first/last
@@ -448,6 +471,12 @@ class Text(Widget):
             caret_height = self.game.typewriter.get_linesize(font)
             background.fill(color, Rect(caret_x, caret_y + _DEFAULT_PAD, self._caret_width, caret_height))
         return background
+    
+    def __reset_caret(self, show: bool):
+        self.notify_change()
+        self._caret_delta = 0
+        self._show_caret = show
+
 
     def update(self, loop_duration: int):
         """Update the entry with the inputs."""
@@ -455,25 +484,43 @@ class Text(Widget):
         if self.focused and not self.disabled:
             self._caret_delta += loop_duration/self._caret_frequency
             if self._caret_delta > 1:
-                self.notify_change()
-                self._caret_delta = 0
-                self._show_caret = not self._show_caret
+                self.__reset_caret(not self._show_caret)
 
-            # Modify the text if a character is typed
+            # Modify the text if a character is entered
             new_characters = ''.join(self.game.keyboard.get_characters(self.extra_characters, self.forbid_characters))
             command_called = self._add_new_characters(new_characters)
-            if new_characters and self._command is not None:
-                self._command()
+            if new_characters:
+                self.__reset_caret(True)
+                if self._command is not None:
+                    self._command()
 
-            # Move the caret if an arrow is tapped.
+            # Move the caret if an arrow is pressed.
             if self.game.keyboard.actions_down['left']:
                 self.move_to_the_left()
+                self.__reset_caret(True)
             if self.game.keyboard.actions_down['right']:
                 self.move_to_the_right()
-
+                self.__reset_caret(True)
+            if self.game.keyboard.actions_down['up']:
+                self.move_to_the_top()
+                self.__reset_caret(True)
+            if self.game.keyboard.actions_down['down']:
+                self.move_to_the_bottom()
+                self.__reset_caret(True)
             if self.game.keyboard.actions_down['backspace']: # Delete one caracter.
                 self.del_one()
+                self.__reset_caret(True)
                 if self._command is not None and not command_called:
                     self._command()
+
+            ck1 = self.game.mouse.get_click(1)
+            if self.is_contact(ck1):
+
+                pos = ck1.make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
+                self._caret_index = self.game.typewriter.get_caret_index(
+                    self._focused_font, pos, self._text, self._justify, False, self._wrap, self.background.width
+                )
+                self.__reset_caret(True)
+                
         else:
             self._show_caret = True

@@ -31,6 +31,17 @@ class Click:
             int((self.start_y - absolute_top)/wc_ratio[1]),
             self.duration
         )
+    
+    def __iter__(self):
+        yield self.x
+        yield self.y
+    
+    def __getitem__(self, idx):
+        if idx in [0, 1, -1]:
+            return self.y if idx else self.x
+        if idx in ['x', 'y']:
+            return self.x if idx == 'x' else self.y
+        raise IndexError(f"Clicks can only be subscripted by -1, 0, 1 , 'x' and 'y', but got {idx}")
 
 class Mouse:
     """The Mouse class is used to manage mouse inputs."""
