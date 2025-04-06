@@ -1,12 +1,13 @@
 """The Font module contain the font class."""
 from pygame.font import Font as _Ft
 from pygame import Surface, SRCALPHA, Rect
+from gamarts import Art
 from ..color import Color
 from .texts import Texts, TextFormatter
 from .database import Database
 from ..settings import Settings
 from ..file import get_file
-from ..screen.anchors import TOP_LEFT
+from ..screen.anchors import LEFT, Anchor
 
 class Font(_Ft):
     """The Font class is used to display texts."""
@@ -81,7 +82,127 @@ class TypeWriter:
             thefont = self._all_phases_fonts.get(font, self._default_font)
         return thefont
 
-    def render(self, font: str, text_or_loc: str | TextFormatter, color: Color, background_color: Color = None, justify: tuple[float, float] = TOP_LEFT) -> Surface:
+    def __wrap_text(self, thetext: str, font: str, max_width: int):
+
+        thefont = self._get_font(font)
+
+        lines = []
+        for text in thetext.split('\n'):
+            words_and_whitespaces = [word+' ' for word in text.split(' ')]
+            words = text.split(' ')
+            while words:
+                thisline = []
+                # Find the words that will fit in the line
+                while words and thefont.size(' '.join(thisline + [words[0]]))[0] <= max_width:
+                    thisline.append(words_and_whitespaces.pop(0))
+                    words.pop(0)
+                lines.append(''.join(thisline)[:-1]) # remove the trainling whitespace
+
+        return '\n'.join(lines)
+
+    def get_caret_index(
+        self,
+        font: str,
+        pos: tuple[int, int],
+        text_or_loc: str | TextFormatter,
+        justify: Anchor = LEFT,
+        can_be_loc: bool = True,
+        wrap: bool = True,
+        max_width: int = None
+    ):
+        """Get the index of the caret in the text given its position."""
+        if can_be_loc:
+            thetext = self._texts.get(text_or_loc)
+        else:
+            thetext = str(text_or_loc)
+
+        if wrap:
+            thetext = self.__wrap_text(thetext, font, max_width)
+
+        if pos[1]//self.get_linesize(font) > thetext.count('\n'): # the position is below the last line.
+            return len(thetext)
+        if pos[1] < 0:
+            return 0
+
+        line = pos[1]//self.get_linesize(font)
+        thelines = thetext.split('\n')
+
+        pos_x = pos[0]
+        if justify != LEFT:
+            this_line_width = self.size(font, thelines[line])[0]
+            line_left = (max_width - this_line_width)*justify[0]
+            pos_x -= line_left
+        
+        left_chars = ''
+        if pos_x <= 0:
+            return sum(len(theline) for theline in thelines[:line])
+
+        char_idx = 0
+        for char_idx, char in enumerate(thelines[line]):
+            
+            left_chars = left_chars + char
+            if self.size(font, left_chars)[0] > pos_x:
+                break
+
+        return sum(len(theline) for theline in thelines[:line]) + char_idx
+
+    def get_caret_pos(
+        self,
+        font: str,
+        caret_index: int,
+        text_or_loc: str | TextFormatter,
+        justify: Anchor = LEFT,
+        can_be_loc: bool = True,
+        wrap: bool = True,
+        max_width: int = None
+    ) -> tuple[int, int]:
+        """
+        Return the position of the caret given its index.
+
+        Params:
+        ---
+        - font,
+        - caret_index: the index of the caret in the text.
+        - ...
+        - wrap: if False, a new line is automatically created when the current line size is above max_width.
+        - max_width: the maximum width allowed for the text. Only relevant if wrap is set to False
+        """
+        if can_be_loc:
+            thetext = self._texts.get(text_or_loc)
+        else:
+            thetext = str(text_or_loc)
+
+        if wrap:
+            thetext = self.__wrap_text(thetext, font, max_width)
+
+        line = 0
+        thelines = thetext.split('\n')
+        cum_length = 0
+        if len(thelines) > 1:
+            while line < len(thelines) - 1 and cum_length + len(thelines[line]) < caret_index:
+                cum_length += len(thelines[line]) + 1
+                line += 1
+        
+        w = self.size(font, thelines[line][:caret_index - cum_length])[0]
+
+        if justify != LEFT:
+            this_line_width = self.size(font, thelines[line])[0]
+            line_left = (max_width - this_line_width)*justify[0]
+            w = line_left + w
+
+        return w, self.get_linesize(font)*line
+
+    def render(
+        self,
+        font: str,
+        text_or_loc: str | TextFormatter,
+        color: Color,
+        background_color: Color = None,
+        justify: Anchor = LEFT,
+        can_be_loc: bool = True,
+        wrap: bool = False,
+        max_width: int = None
+    ) -> Surface:
         """
         Draw text or localization on a new Surface.
         
@@ -94,14 +215,22 @@ class TypeWriter:
         - color: Color, the color to display the font in
         - background_color: Color = None, the color of the background. If a color is given,
         the surface returned has a solid background with this color, otherwise the background is transparent
-        - justify: tuple[float, float] Only for multiline renders, justifies justify the text according to its first component.
+        - justify: Anchor, only for multiline renders.
+        - can_be_loc: bool, return whether the text or loc can be a loc or not.
         """
         thefont = self._get_font(font)
-        thetext = self._texts.get(text_or_loc)
+        if can_be_loc:
+            thetext = self._texts.get(text_or_loc)
+        else:
+            thetext = str(text_or_loc)
+
+        if wrap:
+            thetext = self.__wrap_text(thetext, font, max_width)
+
         if "\n" in thetext:
-            lines = [line.strip() for line in text_or_loc.split('\n')]
-            line_size = thefont.get_linesize()
-            bg_width = max(thefont.size(line)[0] for line in lines)
+            lines = thetext.split('\n')
+            line_size = self.get_linesize(font)
+            bg_width = max(self.size(font, line)[0] for line in lines)
             bg_height = len(lines)*line_size
             background = Surface((bg_width, bg_height), SRCALPHA)
             background.fill((0, 0, 0, 0) if background_color is None else background_color)
@@ -114,7 +243,16 @@ class TypeWriter:
 
         return thefont.render(thetext, self._antialias, color, background_color)
 
-    def render_paragraphs(self, font: str, text_or_loc: str | TextFormatter, color: Color, rect: Rect, background_color: Color = None) -> Surface:
+    def render_paragraphs(
+        self,
+        font: str,
+        text_or_loc: str | TextFormatter,
+        color: Color,
+        rect: Rect | Art,
+        background_color: Color = None,
+        can_be_loc: bool = True,
+        autotab_on_first_line: bool = False
+    ) -> Surface:
         """
         Draw a text or a localization as multiple justified paragraphs.
         
@@ -129,9 +267,11 @@ class TypeWriter:
         the surface returned has a solid background with this color, otherwise the background is transparent
         """
         thefont = self._get_font(font)
-        thetext = self._texts.get(text_or_loc)
-
-        if thefont.size(thetext)[0] <= rect.size[0] and not '\n' in thetext:
+        if can_be_loc:
+            thetext = self._texts.get(text_or_loc)
+        else:
+            thetext = str(text_or_loc)
+        if thefont.size(thetext)[0] <= rect.width and not '\n' in thetext:
             return thefont.render(thetext, True, color, background_color)
 
         background = Surface(rect.size, SRCALPHA)
@@ -142,18 +282,17 @@ class TypeWriter:
         # Render the paragraphs one by one
         for text in thetext.split('\n'):
             words = text.split()
-            first_line = True
-            while words and line_y <= rect.size[1]:
-                thisline = []
+            first_line = autotab_on_first_line # The first line variable is used to know if we need to add a tab.
+            # If we don't auto tab, it is like if there is no first line
+            while words and line_y <= rect.height:
+                thisline = ['    '] if first_line else []
                 # Find the words that will fit in the line
-                while words and thefont.size(('    ' if first_line else '') + ' '.join(thisline + [words[0]]))[0] <= rect.size[0]:
+                while words and thefont.size(' '.join(thisline + [words[0]]))[0] <= rect.width:
                     thisline.append(words.pop(0))
-                if first_line:
-                    thisline.insert(0, '   ')
 
                 if words:
                     # Spread the extra pixels among all spaces
-                    extra_pixels = rect.size[0] - thefont.size(' '.join(thisline))[0]
+                    extra_pixels = rect.width - thefont.size(' '.join(thisline))[0]
                     spaces = [extra_pixels//(len(thisline) - 1) for _ in range(len(thisline) - 1)]
                     if len(thisline) > 1:
                         for i in range(extra_pixels%(len(thisline) - 1)):
@@ -218,7 +357,7 @@ class TypeWriter:
         """
         text = self._texts.get(text_or_loc)
         if "\n" in text:
-            lines = [line.strip() for line in text.split('\n')]
+            lines = text.split('\n')
             thefont = self._get_font(font)
             line_size = thefont.get_linesize()
             bg_width = max(thefont.size(line)[0] for line in lines)

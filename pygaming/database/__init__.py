@@ -6,6 +6,6 @@ from .database import Database, GAME, SERVER
 from .texts import Texts, TextFormatter
 from .speeches import Speeches
 from .sounds import SoundBox
-from .fonts import TypeWriter
+from .typewriter import TypeWriter
 
 __all__ = ['Texts', 'Database', 'Speeches', 'SoundBox', 'SERVER', 'GAME', 'TypeWriter', 'TextFormatter']

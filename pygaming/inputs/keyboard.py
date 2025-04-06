@@ -6,7 +6,7 @@ from .controls import Controls
 from ..settings import Settings
 from ..config import Config
 
-_ACCEPTED_LETTERS = ascii_letters + digits + punctuation + " "
+_ACCEPTED_LETTERS = ascii_letters + digits + punctuation + " \n"
 
 class Keyboard:
     """The keyboard class is used to manage the keyboard inputs."""
@@ -47,12 +47,15 @@ class Keyboard:
         if not isinstance(extra_characters, str) and isinstance(extra_characters, Iterable):
             extra_characters = ''.join(extra_characters)
         return [
-            event.unicode for event in self.event_list
-            if (event.type == pygame.KEYDOWN
+            event.unicode if event.key != pygame.K_RETURN else '\n' for event in self.event_list
+            if ((event.type == pygame.KEYDOWN
                 and event.unicode
                 and event.unicode in _ACCEPTED_LETTERS + extra_characters
                 and not event.unicode in forbid_characters
                 )
+                # This is an new line.
+            or ('\n' not in forbid_characters and event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN)
+            )
         ]
 
     def udpate_actions_down(self):

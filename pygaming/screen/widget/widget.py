@@ -5,7 +5,6 @@ from typing import Optional
 from pygame import Surface
 from ..frame import Frame
 from ..element import Element
-from ..anchors import TOP_LEFT, Anchor
 from ..art import Art
 from ...cursor import Cursor
 from ..tooltip import Tooltip

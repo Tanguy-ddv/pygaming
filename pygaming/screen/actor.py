@@ -4,7 +4,7 @@ from typing import Optional
 from pygame import transform as tf
 from ..phase import GamePhase
 from .element import Element
-from .anchors import Anchor, TOP_LEFT
+from .anchors import AnchorLike, TOP_LEFT, Anchor
 from .art import Art
 from .hitbox import Hitbox
 from ..inputs.mouse import Click
@@ -47,9 +47,9 @@ class Actor(Element):
         self._zoom = 1
         self._initial_size = self.width, self.height
         self._initial_anchor = None
-    
-    def place(self, x: int, y:int, anchor: Anchor = TOP_LEFT, angle: float = 0, zoom: float = 1, layer: int = 0):
-        self._initial_anchor = anchor
+
+    def place(self, x: int, y:int, anchor: AnchorLike = TOP_LEFT, angle: float = 0, zoom: float = 1, layer: int = 0):
+        self._initial_anchor = Anchor(anchor)
         self._angle = angle
         self._zoom = zoom
         return super().place(x, y, anchor, layer)
