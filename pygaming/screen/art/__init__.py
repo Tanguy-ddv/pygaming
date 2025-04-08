@@ -2,6 +2,7 @@
 from typing import Callable
 from gamarts import mask
 from gamarts import transform
+from ...file import get_file
 from .art import *
 
 # Update the FromImageColor mask.
@@ -21,3 +22,4 @@ mask.FromImageColor.__init__ = __new_fic_init
 mask.Mask.get_at = lambda self, pos: self.matrix.shape[0] >= pos[0] >= 0 and self.matrix.shape[1] >= pos[1] >= 0 and bool(self.matrix[*pos])
 
 del Callable
+del get_file
