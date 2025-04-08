@@ -68,6 +68,34 @@ class Canvas(Element):
         self._index += 1
         self._background_copy.transform(transfo)
         self.notify_change()
+    
+    def draw_line(self, color, p1, p2, thickness: int = 0, allow_antialias: bool = True):
+        transfo = transform.DrawLine(color, p1, p2, thickness, allow_antialias)
+        self.transform(transfo)
+
+    def draw_lines(self, color, points, thickness: int = 0, closed: bool=False, allow_antialias: bool = True):
+        transfo = transform.DrawLines(color, points, thickness, closed, allow_antialias)
+        self.transform(transfo)
+
+    def draw_polygon(self, color, points, thickness: int = 0, allow_antialias: bool = True):
+        transfo = transform.DrawPolygon(color, points, thickness, allow_antialias)
+        self.transform(transfo)
+
+    def draw_circle(self, color, radius, center, thickness: int = 0, allow_antialias: bool = True):
+        transfo = transform.DrawCircle(color, radius, center, thickness, allow_antialias)
+        self.transform(transfo)
+
+    def draw_ellipse(self, color, radius_x, radius_y, center, thickness: int = 0, angle:int = 0, allow_antialias: bool = True):
+        transfo = transform.DrawEllipse(color, radius_x, radius_y, center, thickness, angle, allow_antialias)
+        self.transform(transfo)
+
+    def draw_rectangle(self, color, rect, thickness: int = 0, allow_antialias: bool = True):
+        transfo = transform.DrawRectangle(color, rect, thickness, allow_antialias)
+        self.transform(transfo)
+    
+    def draw_rounded_rectangle(self,color, rect, top_left, top_right = None, bottom_right = None, bottom_left = None, thickness: int = 0, allow_antialias: bool = True):
+        transfo = transform.DrawRoundedRectangle(color, rect, top_left, top_right, bottom_right, bottom_left, thickness, allow_antialias)
+        self.transform(transfo)
 
     def make_surface(self) -> Surface:
         return self._background_copy.get(self.background, **self.game.settings)
