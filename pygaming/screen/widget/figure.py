@@ -1,6 +1,6 @@
 """The figure module contains the figure widget that uses matplotlib to draw figure on the screen."""
 from typing import Callable
-import matplotlib
+from matplotlib import rcParams
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure as _Fg
 from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -10,16 +10,15 @@ from ..tooltip import Tooltip
 from ...cursor import Cursor
 from ..art import Art, Rectangle, transform
 from .._master import Master
-matplotlib.use('agg')
 
 _original_ax_getattribute = Axes.__getattribute__
 
 def _new_ax_gettattribute(self: Axes, name:str):
 	attr = _original_ax_getattribute(self, name)
-	if (name.startswith(('get', '_', 'set_visible', 'draw', 'stale_callback', 'apply_aspect'))
-		or not isinstance(attr, Callable) or isinstance(attr, property)):
-		return attr
-	if (fig:=self.get_figure()) is not None:
+	if ((isinstance(attr, Callable) and not isinstance(attr, property))
+	 	and not name.startswith(('get', '_', 'draw', 'stale_callback', 'apply_aspect'))
+		and (fig:=_original_ax_getattribute(self, 'figure')) is not None
+	):
 		fig.notify_change()
 	return attr
 
@@ -34,6 +33,10 @@ def _new_ax_init(self: Axes, fig, *args):
 Axes.__init__ = _new_ax_init
 
 class Figure(_Fg, Element):
+	"""
+	A Figure is a widget and a matplotlib figure.
+	It can be used as any matplotlib figure and will be integrated into the game's window.
+	"""
 
 	def __init__(
 		self,
@@ -68,8 +71,11 @@ class Figure(_Fg, Element):
 			self.__is_blank_bg = False
 		
 		if dpi is None:
-			dpi = matplotlib.rcParams['figure.dpi']
+			dpi = rcParams['figure.dpi']
 		figsize = size[0]/dpi, size[1]/dpi
+
+		Element.__init__(self, master, background, tooltip, cursor, False, False, None, False)
+
 		_Fg.__init__(self,
 			figsize,
 			dpi,
@@ -83,9 +89,8 @@ class Figure(_Fg, Element):
 			layout=layout,
 			**kwargs
 		)
-
-		Element.__init__(self, master, background, tooltip, cursor, False, False, None, False)
-		self._last_im = None
+		
+		self._last_gb_artist = None
 
 		self.canvas = FigureCanvasAgg(self)
 
@@ -96,9 +101,9 @@ class Figure(_Fg, Element):
 		if not self.__is_blank_bg:
 			# Use the art as background of the figure.
 			arr = pygame.surfarray.pixels3d(self.background.get(None, **self.game.settings)).swapaxes(1, 0)
-			if self._last_im:
-				self._last_im.remove()
-			self._last_im = self.figimage(arr, zorder=-1)
+			if self._last_gb_artist:
+				self._last_gb_artist.remove()
+			self._last_gb_artist = self.figimage(arr, zorder=-1)
 		self.canvas.draw()
 		return pygame.image.frombytes(self.canvas.tostring_argb(), self.background.size, "ARGB")
 
