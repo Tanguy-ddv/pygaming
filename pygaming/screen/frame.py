@@ -1,5 +1,4 @@
 """The frame module contain the Frame class, base of all displayed object."""
-from __future__ import annotations
 from typing import Optional
 import numpy as np
 import pygame
@@ -224,12 +223,12 @@ class Frame(Element, Master):
         return list(filter(lambda elem: not isinstance(elem, Frame) and elem.can_be_focused and not elem.disabled, self.visible_children))
 
     @property
-    def _frame_childern(self) -> list[Frame]:
+    def _frame_childern(self) -> list['Frame']:
         """Return all children that are visible frames."""
         return list(filter(lambda elem: isinstance(elem, Frame), self.visible_children))
 
     @property
-    def _all_frame_children(self) -> list[Frame]:
+    def _all_frame_children(self) -> list['Frame']:
         """Return all children that are frames, visible or not."""
         return list(filter(lambda elem: isinstance(elem, Frame), self.children))
 

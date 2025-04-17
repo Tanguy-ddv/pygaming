@@ -1,5 +1,4 @@
 """the element module contains the Element object, which is a base for every object displayed on the game window."""
-from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional
 import pygame
