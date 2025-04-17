@@ -6,10 +6,9 @@ from .error import PygamingException
 from .game import Game
 from ._base import BaseRunnable, STAY
 from .server import Server
-from .cursor import Cursor
-from .screen._visual import Visual
+from .screen.cursor import Cursor
+from .screen._abstract import Visual, Master
 from .screen.art import Rectangle
-from .screen._master import Master
 
 _TOOLTIP_DELAY = 500 # [ms]
 

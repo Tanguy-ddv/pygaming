@@ -6,7 +6,7 @@ from pygame import Surface
 from ..frame import Frame
 from ..element import Element
 from ..art import Art
-from ...cursor import Cursor
+from ..cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox
 

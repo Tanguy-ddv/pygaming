@@ -17,7 +17,7 @@ from .phase import ServerPhase, GamePhase
 from .server import Server
 from .settings import Settings
 from .color import Color
-from .cursor import Cursor
+from .screen.cursor import Cursor
 
 from .screen.frame import Frame
 from .screen.element import Element

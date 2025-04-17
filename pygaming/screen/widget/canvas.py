@@ -1,8 +1,8 @@
 """the canvas module defined the canvas widget used to draw."""
 
 from pygame.surface import Surface as Surface
-from ...cursor import Cursor
-from .._master import Master
+from ..cursor import Cursor
+from ..frame import Frame
 from ..art.art import Art
 from ..art import transform
 from ..tooltip import Tooltip
@@ -14,7 +14,7 @@ class Canvas(Element):
 
     def __init__(
         self,
-        master: Master,
+        master: Frame,
         background: Art,
         tooltip: Tooltip | None = None,
         cursor: Cursor | None = None,

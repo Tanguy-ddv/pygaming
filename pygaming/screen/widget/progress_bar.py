@@ -11,7 +11,7 @@ from ...color import ColorLike
 from ..art import Art, Rectangle
 from ...database import TextFormatter
 from ..tooltip import Tooltip
-from ...cursor import Cursor
+from ..cursor import Cursor
 
 class ProgressBar(Element):
 

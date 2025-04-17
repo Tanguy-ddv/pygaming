@@ -8,7 +8,7 @@ from .widget import Widget
 from ..art import Art
 from ...color import Color
 from ...database import TextFormatter
-from ...cursor import Cursor
+from ..cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox
 

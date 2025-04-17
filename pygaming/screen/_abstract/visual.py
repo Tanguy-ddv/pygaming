@@ -1,8 +1,8 @@
 """The visual module contains the Visual class, an abstract for all object displayable on the screen."""
 from abc import ABC, abstractmethod
 import pygame
-from .art import Art
-from ..settings import Settings
+from ..art import Art
+from ...settings import Settings
 
 class Visual(ABC):
     """The Visuals are object that can be seen on a screen."""
