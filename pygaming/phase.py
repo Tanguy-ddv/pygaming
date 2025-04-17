@@ -7,8 +7,7 @@ from .game import Game
 from ._base import BaseRunnable, STAY
 from .server import Server
 from .screen.cursor import Cursor
-from .screen._abstract import Graphical, Master
-from .screen.art import Rectangle
+from .screen._abstract import Master, Placable
 
 _TOOLTIP_DELAY = 500 # [ms]
 
@@ -32,7 +31,7 @@ class _BasePhase(ABC):
         - name: The name of the phase
         - runnable: the game or server instance
         """
-        ABC.__init__(self)
+        super().__init__()
         self._name = name
         self.runnable = runnable
         self.runnable.set_phase(name, self)
@@ -123,8 +122,7 @@ class ServerPhase(_BasePhase, ABC):
     """
 
     def __init__(self, name, server: Server) -> None:
-        ABC.__init__(self)
-        _BasePhase.__init__(self, name, server)
+        super().__init__(name, server)
 
     @property
     def server(self) -> Server:
@@ -140,7 +138,7 @@ class ServerPhase(_BasePhase, ABC):
         """Update the phase every loop iteraton."""
         self.update(loop_duration)
 
-class GamePhase(_BasePhase, Graphical, Master):
+class GamePhase(_BasePhase, Master):
     """
     The GamePhase is a phase to be added to the game only.
     Each SeverPhase must implements the `start`, `update`, `end`, `next` and `apply_transition` emthods.
@@ -163,15 +161,12 @@ class GamePhase(_BasePhase, Graphical, Master):
 
     def __init__(self, name: str, game: Game) -> None:
 
-        _BasePhase.__init__(self, name, game)
-        window = pygame.Rect((0, 0, *self.config.dimension))
-        Master.__init__(self, window)
-        self.absolute_rect = window
+        super().__init__(name, game)
 
-        background = Rectangle((0, 0, 0, 0), *self.config.dimension)
-        Graphical.__init__(self, background, False)
-
+        self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
         self.wc_ratio = (1, 1)
+        self._width, self._height = self.config.dimension
+        self.absolute_left = self.absolute_top = 0
 
         # Data about the hovering
         self.current_tooltip = None 
@@ -179,15 +174,22 @@ class GamePhase(_BasePhase, Graphical, Master):
         self.current_cursor = self._default_cursor
         self._tooltip_x, self._tooltip_y = None, None
         self._tooltip_delay = _TOOLTIP_DELAY # [ms], the delay waited before showing the tooltip
+    
+    @property
+    def width(self):
+        return self._width
+    
+    @property
+    def height(self):
+        return self._height
 
     def is_child_on_me(self, child):
         """Return whether the child is visible on the frame or not."""
-        return self.window.colliderect(child.relative_rect)
+        return ((is_placable := isinstance(child, Placable)) and self.absolute_rect.colliderect(child.relative_rect)) or not is_placable
 
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
         # Update the game settings
-        Graphical.begin(self, self.settings)
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
         self.game.update_settings()
 
@@ -206,7 +208,7 @@ class GamePhase(_BasePhase, Graphical, Master):
         self.end()
         for frame in self.children:
             frame.end() # Unload
-        Graphical.finish(self)
+        Master.finish(self)
         gc.collect()
 
     @property
@@ -254,8 +256,9 @@ class GamePhase(_BasePhase, Graphical, Master):
     def notify_change_all(self):
         """Notify the change to everyone."""
         self.notify_change()
-        for frame in self.children:
-            frame.notify_change_all()
+        for child in self.children:
+            if isinstance(child, Master):
+                child.notify_change_all()
 
     def is_visible(self):
         """Return always True as the phase itself can't be hidden. Used for the recursive is_visible method of elements."""
@@ -263,7 +266,7 @@ class GamePhase(_BasePhase, Graphical, Master):
 
     def loop(self, loop_duration: int):
         """Update the phase."""
-        Graphical.loop(self, loop_duration)
+        Master.loop(self, loop_duration)
         self._update_focus()
         self.update(loop_duration)
         for frame in self.children:
@@ -273,7 +276,7 @@ class GamePhase(_BasePhase, Graphical, Master):
         """Update the focus of all the frames."""
         ck1 = self.mouse.get_click(1)
         if ck1:
-            for frame in self.children:
+            for frame in self.master_children:
                 if frame.is_contact(ck1):
                     frame.update_focus(ck1)
                 else:
@@ -287,8 +290,7 @@ class GamePhase(_BasePhase, Graphical, Master):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         x, y = self.mouse.get_position()
         cursor, tooltip = None, None
-        for frame in self.visible_children:
-            
+        for frame in self.master_children:
             if frame.is_contact((x,y)):
                 tooltip, cursor = frame.get_hover()
             else:
@@ -330,7 +332,7 @@ class GamePhase(_BasePhase, Graphical, Master):
     def make_surface(self) -> pygame.Surface:
         """Make the new surface to be returned to his parent."""
         bg = self.background.get(None, **self.settings)
-        for frame in self.visible_children:
+        for frame in self.master_children:
             surf = frame.get_surface()
             bg.blit(surf, (frame.relative_left, frame.relative_top))
 

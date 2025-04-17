@@ -1,9 +1,10 @@
 """The master module defines the Master abstract class implementing methods related to being a master."""
-from abc import abstractmethod, ABC
+from abc import abstractmethod
 from itertools import product
 from dataclasses import dataclass
 from typing import Any
 from pygame import Rect
+from .visual import Visual
 from ...game import Game
 from ..anchors import AnchorLike, Anchor, TOP_LEFT, CENTER_CENTER
 
@@ -170,27 +171,31 @@ class Grid:
         self._update(row, col, obj.rowspan, obj.columnspan)
 
 
-class Master(ABC):
+class Master(Visual):
     """The class Master is an abstract for the classes that can be the master of an Element."""
 
-    def __init__(self, window: Rect):
-        ABC.__init__(self)
-        self.children = []
-        self.window = window
-        self.wc_ratio = (1, 1)
+    def __init__(self):
+        super().__init__()
+        self.children = set()
+        self.wc_ratio: tuple[int, int]
         self.grids: list[Grid] = []
         self.game: Game
         self.absolute_rect: Rect
 
     def add_child(self, child):
-        """Add a new element to the child list."""
-        self.children.append(child)
+        """Add a new element to the child set."""
+        self.children.add(child)
 
     def create_grid(self, x: int, y: int, anchor: AnchorLike = TOP_LEFT):
-        """Create a grid to manage the geomtry of the master."""
+        """Create a grid to manage the geometry of the master."""
         grid = Grid(x, y, Anchor(anchor))
         self.grids.append(grid)
         return grid
+    
+    @abstractmethod
+    def is_child_on_me(self, child):
+        """Return whether the child is on its master."""
+        raise NotImplementedError()
 
     def get_grid(self, idx: int | Grid | None):
         """
@@ -206,32 +211,15 @@ class Master(ABC):
             return self.create_grid(0, 0, TOP_LEFT)
 
     @abstractmethod
-    def notify_change(self):
-        pass
-
-    @abstractmethod
     def notify_change_all(self):
-        pass
-
-    @abstractmethod
-    def is_visible(self):
-        pass
-
-    @abstractmethod
-    def is_child_on_me(self, child):
         pass
 
     @property
     def visible_children(self):
         """Return the list of visible children sorted by increasing layer."""
-        return sorted(filter(lambda ch: ch.visible and ch.on_master, self.children), key= lambda w: w.layer)
+        return sorted(filter(lambda ch: ch.is_visible(), self.children), key= lambda w: w.layer)
 
     @property
-    def absolute_left(self):
-        """Return the absolute left coordinate of the object on the screen."""
-        return self.absolute_rect.left
-    
-    @property
-    def absolute_top(self):
-        """Return the absolute top coordinate of the object on the screen."""
-        return self.absolute_rect.top
+    def master_children(self):
+        """Return the list of visible master children."""
+        return sorted(filter(lambda ch: ch.is_visible() and isinstance(ch, Master), self.children), key= lambda w: w.layer)

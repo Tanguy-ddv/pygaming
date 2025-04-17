@@ -4,7 +4,7 @@ from typing import Optional
 import pygame
 from ._abstract import Master, Graphical, Placable
 from .tooltip import Tooltip
-from .art.art import Art
+from .art import Art
 from ..inputs import Click
 from .cursor import Cursor
 from .hitbox import Hitbox
@@ -15,7 +15,7 @@ class Element(Graphical, Placable):
     def __init__(
         self,
         master: Master,
-        background: Art,
+        art: Art,
         tooltip: Optional[Tooltip] = None,
         cursor: Optional[Cursor] = None,
         can_be_disabled: bool = True,
@@ -39,7 +39,7 @@ class Element(Graphical, Placable):
         - update_if_invisible
         """
 
-        Graphical.__init__(self, background, update_if_invisible)
+        Graphical.__init__(self, master, art, update_if_invisible)
         self.visible = True
         self.can_be_focused = can_be_focused
         self.focused = False
@@ -47,13 +47,17 @@ class Element(Graphical, Placable):
         self.disabled = False
 
         if active_area is None:
-            active_area = Hitbox(0, 0, *self.background.size)
+            active_area = Hitbox(0, 0, *self._art.size)
         self._active_area = active_area
 
-        Placable.__init__(self, master)
+        Placable.__init__(self, master, update_if_invisible)
 
         self._cursor = cursor
         self._tooltip = tooltip
+
+    @property
+    def background(self):
+        return self._art
 
     def is_contact(self, pos: Optional[Click | tuple[int, int]]):
         """Return whether the position, relative to the top left of the master of this element, is in contact with the element."""
@@ -92,7 +96,7 @@ class Element(Graphical, Placable):
         to load the active area and the background before running class-specific start method.
         """
         self._active_area.load(self.game.settings)
-        Graphical.begin(self, self.game.settings)
+        Graphical.begin(self)
         self.start()
 
     def unset_hover(self):

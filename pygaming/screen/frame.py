@@ -39,16 +39,16 @@ class Frame(Element, Master):
         - layer: the layer of the frame on its master. Objects having the same master are blitted on it by increasing layer.
         - continue_animation: bool. If set to False, switching from focused to unfocused will reset the animations.
         """
-        window = pygame.Rect(0, 0, *(background.size if size is None else size))
+        self.window = pygame.Rect(0, 0, *(background.size if size is None else size))
 
         self.has_a_widget_focused = False
 
         if camera is None:
-            camera = Camera(0, 0, *window.size)
+            camera = Camera(0, 0, *self.window.size)
         
         self.camera = camera
 
-        Master.__init__(self, window)
+        Master.__init__(self)
         self._compute_wc_ratio(master=master)
         Element.__init__(
             self,
@@ -66,12 +66,17 @@ class Frame(Element, Master):
         self.focused = False
         self._current_object_focus = None
         if focused_background is None:
-            self.focused_background = self.background
+            self.focused_background = self._art
         else:
             self.focused_background = focused_background
-        
-        self.width = self.window.width
-        self.height = self.window.height
+
+    @property
+    def width(self):
+        return self.window.width
+
+    @property
+    def height(self):
+        return self.window.height
 
     def place(self, x: int, y: int, anchor: AnchorLike = TOP_LEFT, layer: int = 0):
 
@@ -84,7 +89,7 @@ class Frame(Element, Master):
         self.get_on_master()
         if self.on_master:
             self.master.notify_change()
-        
+
         return self
 
     def _compute_wc_ratio(self, master: Master = None):

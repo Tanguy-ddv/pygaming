@@ -2,18 +2,18 @@ from typing import Self
 from pygame import Rect
 from ..anchors import Anchor, AnchorLike, TOP_LEFT, CENTER_CENTER
 from .master import Master
+from .child import Child
 
 
-class Placable:
+class Placable(Child):
     """Object that can be placed."""
     
-    def __init__(self, master: Master):
+    def __init__(self, master: Master, update_if_invisible: bool):
+        super().__init__(master, update_if_invisible)
         self._x = None
         self._y = None
         self.anchor = None
         self.layer = None
-        self.master = master
-        self.master.add_child(self)
         self.on_master = False
         self._current_grid = None # None or a Grid.
         # All placable must have an absolute rect. It can either be based on a background, like most Elements but Frames
@@ -37,7 +37,7 @@ class Placable:
         :return self: Element, the element itself is returned allowing method chaining.
         """
 
-        # Remove the element from the node.
+        # Remove the element from the grid.
         if self._current_grid is not None:
             self._current_grid.remove(self)
             self._current_grid = None
@@ -117,6 +117,7 @@ class Placable:
         if self._x is None:
             return
 
+        # Remove the element from the grid.
         if self._current_grid is not None:
             self._current_grid.remove(self)
             self._current_grid = None
