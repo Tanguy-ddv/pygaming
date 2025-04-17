@@ -6,7 +6,7 @@ from ZOCallable.functions import linear
 from .widget import Widget
 from ..frame import Frame
 from ..art import Art
-from ...cursor import Cursor
+from ..cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox
 from ..anchors import Anchor

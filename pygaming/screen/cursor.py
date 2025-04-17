@@ -3,9 +3,9 @@ from typing import overload
 import os
 from pygame import Cursor as _Cs
 import pygame
-from .screen.art import Art
-from .file import get_file
-from .settings import Settings
+from .art import Art
+from ..file import get_file
+from ..settings import Settings
 
 _pygame_system_cursors = [
     'SYSTEM_CURSOR_ARROW', 'SYSTEM_CURSOR_IBEAM', 'SYSTEM_CURSOR_WAIT', 'SYSTEM_CURSOR_CROSSHAIR',

@@ -6,7 +6,7 @@ from ..anchors import LEFT, AnchorLike, Anchor
 from ..frame import Frame
 from ...color import Color
 from ..art import Art
-from ...cursor import Cursor
+from ..cursor import Cursor
 from ..tooltip import Tooltip
 from ..hitbox import Hitbox
 

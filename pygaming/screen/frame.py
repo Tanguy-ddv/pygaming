@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional
 import numpy as np
 import pygame
-from ._master import Master
+from ._abstract import Master
 from .element import Element
 from .art.art import Art
 from .camera import Camera

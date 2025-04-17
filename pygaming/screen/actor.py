@@ -9,7 +9,7 @@ from .art import Art
 from .hitbox import Hitbox
 from ..inputs.mouse import Click
 from .tooltip import Tooltip
-from ..cursor import Cursor
+from .cursor import Cursor
 
 class Actor(Element):
     """

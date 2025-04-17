@@ -7,7 +7,7 @@ from ...color import Color
 from ..art import Art
 from ...database import TextFormatter
 from ..tooltip import Tooltip
-from ...cursor import Cursor
+from ..cursor import Cursor
 
 class Label(Element):
     """A Label is an element used to display text as a unjustified lines."""

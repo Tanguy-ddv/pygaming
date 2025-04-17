@@ -7,9 +7,9 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 import pygame
 from ..element import Element
 from ..tooltip import Tooltip
-from ...cursor import Cursor
+from ..cursor import Cursor
 from ..art import Art, Rectangle, transform
-from .._master import Master
+from ..frame import Frame
 
 _original_ax_getattribute = Axes.__getattribute__
 
@@ -40,7 +40,7 @@ class Figure(_Fg, Element):
 
 	def __init__(
 		self,
-		master: Master,
+		master: Frame,
 		size: tuple[int, int] = None,
 		background: Art = None,
 		dpi=None,
