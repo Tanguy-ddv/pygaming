@@ -165,9 +165,9 @@ class GamePhase(_BasePhase, Visual, Master):
     def __init__(self, name: str, game: Game) -> None:
 
         _BasePhase.__init__(self, name, game)
-        camera = window = absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
-        Master.__init__(self, camera, window)
-        self.absolute_rect = absolute_rect
+        window = pygame.Rect((0, 0, *self.config.dimension))
+        Master.__init__(self, window)
+        self.absolute_rect = window
 
         background = Rectangle((0, 0, 0, 0), *self.config.dimension)
         Visual.__init__(self, background, False)
@@ -180,6 +180,10 @@ class GamePhase(_BasePhase, Visual, Master):
         self.current_cursor = self._default_cursor
         self._tooltip_x, self._tooltip_y = None, None
         self._tooltip_delay = _TOOLTIP_DELAY # [ms], the delay waited before showing the tooltip
+
+    def is_child_on_me(self, child):
+        """Return whether the child is visible on the frame or not."""
+        return self.window.colliderect(child.relative_rect)
 
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""

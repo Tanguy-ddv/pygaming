@@ -30,7 +30,7 @@ class Frame(Element, Master):
 
         Params:
         ----
-        - master: Another Frame or a phase.
+        - master: Another Frame or a GamePhase.
         - background: The AnimatedSurface or Surface representing the background of the Frame.
         - size: tuple[int, int]. The size of the Frame. If None, the size of the background is used instead.
         - focused_background: The AnimatedSurface or Surface representing the background of the Frame when it is focused.
@@ -46,8 +46,10 @@ class Frame(Element, Master):
 
         if camera is None:
             camera = Camera(0, 0, *window.size)
+        
+        self.camera = camera
 
-        Master.__init__(self, camera, window)
+        Master.__init__(self, window)
         self._compute_wc_ratio(master=master)
         Element.__init__(
             self,
@@ -247,9 +249,8 @@ class Frame(Element, Master):
 
     def move_camera(self, dx, dy):
         """Move the camera on the frame."""
-        dx, dy = int(dx), int(dy)
-        dx = np.clip(dx, - self.camera.left, self.width - self.camera.right)
-        dy = np.clip(dy, - self.camera.top, self.height - self.camera.bottom)
+        dx = np.clip(int(dx), - self.camera.left, self.width - self.camera.right)
+        dy = np.clip(int(dy), - self.camera.top, self.height - self.camera.bottom)
 
         if dx != 0 or dy != 0:
             self.camera.move_ip(dx, dy)
@@ -263,8 +264,8 @@ class Frame(Element, Master):
         anchor = Anchor(anchor)
         new_y = np.clip(int(new_y - anchor[1]*self.camera.height), 0, self.height - self.camera.height)
         new_x = np.clip(int(new_x - anchor[0]*self.camera.width), 0, self.width - self.camera.width)
-        if (new_x, new_y) != self.window.topleft:
 
+        if (new_x, new_y) != self.window.topleft:
             self.camera.move_ip(self.camera.left - new_x, self.camera.top - new_y)
             self._compute_wc_ratio()
             for child in self.children:
@@ -305,6 +306,10 @@ class Frame(Element, Master):
     def unset_hover(self):
         for child in self.children:
             child.unset_hover()
+    
+    def is_child_on_me(self, child):
+        """Return whether the child is visible on the frame or not."""
+        return self.camera.colliderect(child.relative_rect)
 
     @property
     def relative_left(self):

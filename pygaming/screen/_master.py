@@ -2,17 +2,15 @@
 from abc import abstractmethod, ABC
 from ..game import Game
 from pygame import Rect
-from .camera import Camera
 from ._grid import Grid
 from .anchors import AnchorLike, Anchor, TOP_LEFT
 
 class Master(ABC):
     """The class Master is an abstract for the classes that can be the master of an Element."""
 
-    def __init__(self, camera: Camera, window: Rect):
+    def __init__(self, window: Rect):
         super().__init__()
         self.children = []
-        self.camera = camera
         self.window = window
         self.wc_ratio = (1, 1)
         self.grids: list[Grid] = []
@@ -24,7 +22,6 @@ class Master(ABC):
         self.children.append(child)
 
     def create_grid(self, x: int, y: int, anchor: AnchorLike = TOP_LEFT):
-
         """Create a grid to manage the geomtry of the master."""
         grid = Grid(x, y, Anchor(anchor))
         self.grids.append(grid)
@@ -55,9 +52,9 @@ class Master(ABC):
     def is_visible(self):
         pass
 
+    @abstractmethod
     def is_child_on_me(self, child):
-        """Return whether the child is visible on the frame or not."""
-        return self.camera.colliderect(child.relative_rect)
+        pass
 
     @property
     def visible_children(self):
