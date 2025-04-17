@@ -7,7 +7,7 @@ from .game import Game
 from ._base import BaseRunnable, STAY
 from .server import Server
 from .screen.cursor import Cursor
-from .screen._abstract import Visual, Master
+from .screen._abstract import Graphical, Master
 from .screen.art import Rectangle
 
 _TOOLTIP_DELAY = 500 # [ms]
@@ -140,7 +140,7 @@ class ServerPhase(_BasePhase, ABC):
         """Update the phase every loop iteraton."""
         self.update(loop_duration)
 
-class GamePhase(_BasePhase, Visual, Master):
+class GamePhase(_BasePhase, Graphical, Master):
     """
     The GamePhase is a phase to be added to the game only.
     Each SeverPhase must implements the `start`, `update`, `end`, `next` and `apply_transition` emthods.
@@ -169,7 +169,7 @@ class GamePhase(_BasePhase, Visual, Master):
         self.absolute_rect = window
 
         background = Rectangle((0, 0, 0, 0), *self.config.dimension)
-        Visual.__init__(self, background, False)
+        Graphical.__init__(self, background, False)
 
         self.wc_ratio = (1, 1)
 
@@ -187,7 +187,7 @@ class GamePhase(_BasePhase, Visual, Master):
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
         # Update the game settings
-        Visual.begin(self, self.settings)
+        Graphical.begin(self, self.settings)
         self.game.keyboard.load_controls(self.settings, self.config, self._name)
         self.game.update_settings()
 
@@ -206,7 +206,7 @@ class GamePhase(_BasePhase, Visual, Master):
         self.end()
         for frame in self.children:
             frame.end() # Unload
-        Visual.finish(self)
+        Graphical.finish(self)
         gc.collect()
 
     @property
@@ -263,7 +263,7 @@ class GamePhase(_BasePhase, Visual, Master):
 
     def loop(self, loop_duration: int):
         """Update the phase."""
-        Visual.loop(self, loop_duration)
+        Graphical.loop(self, loop_duration)
         self._update_focus()
         self.update(loop_duration)
         for frame in self.children:

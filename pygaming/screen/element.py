@@ -2,14 +2,14 @@
 from abc import abstractmethod
 from typing import Optional
 import pygame
-from ._abstract import Master, Visual, Placable
+from ._abstract import Master, Graphical, Placable
 from .tooltip import Tooltip
 from .art.art import Art
 from ..inputs import Click
 from .cursor import Cursor
 from .hitbox import Hitbox
 
-class Element(Visual, Placable):
+class Element(Graphical, Placable):
     """Element is the abstract class for everything object displayed on the game window: widgets, actors, frames."""
 
     def __init__(
@@ -39,7 +39,7 @@ class Element(Visual, Placable):
         - update_if_invisible
         """
 
-        Visual.__init__(self, background, update_if_invisible)
+        Graphical.__init__(self, background, update_if_invisible)
         self.visible = True
         self.can_be_focused = can_be_focused
         self.focused = False
@@ -83,7 +83,7 @@ class Element(Visual, Placable):
     def loop(self, loop_duration: int):
         """Update the element every loop iteration."""
         if (self.on_master and self.is_visible()) or self._update_if_invisible:
-            Visual.loop(self, loop_duration)
+            Graphical.loop(self, loop_duration)
             self.update(loop_duration)
 
     def begin(self):
@@ -92,7 +92,7 @@ class Element(Visual, Placable):
         to load the active area and the background before running class-specific start method.
         """
         self._active_area.load(self.game.settings)
-        Visual.begin(self, self.game.settings)
+        Graphical.begin(self, self.game.settings)
         self.start()
 
     def unset_hover(self):
@@ -106,7 +106,7 @@ class Element(Visual, Placable):
     def finish(self):
         """Execute this method at the end of the phase, unload the main art and the active area. Call the class-specific end method."""
         self.end()
-        Visual.finish(self)
+        Graphical.finish(self)
         self._active_area.unload()
 
     @abstractmethod

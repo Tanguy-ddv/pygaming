@@ -1,3 +1,3 @@
 from .master import Master
-from .visual import Visual
+from .graphical import Graphical
 from .placable import Placable

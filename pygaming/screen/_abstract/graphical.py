@@ -4,8 +4,8 @@ import pygame
 from ..art import Art
 from ...settings import Settings
 
-class Visual(ABC):
-    """The Visuals are object that can be seen on a screen."""
+class Graphical(ABC):
+    """The Graphicals are object that can be seen on a screen."""
 
     def __init__(self, background: Art, update_if_invisible: bool = False):
         ABC.__init__(self)

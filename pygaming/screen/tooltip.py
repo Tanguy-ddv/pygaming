@@ -5,9 +5,9 @@ from .art.art import Art
 from ..database import TextFormatter
 from ..color import ColorLike
 from .anchors import CENTER_CENTER, AnchorLike, Anchor
-from ._abstract import Visual
+from ._abstract import Graphical
 
-class Tooltip(Visual):
+class Tooltip(Graphical):
     """Tooltip is a graphical overlay displayed on hover."""
 
     def __init__(
@@ -24,7 +24,7 @@ class Tooltip(Visual):
         - background: Art, The image to be displayed
         """
         self.phase = phase
-        Visual.__init__(self, background, False)
+        Graphical.__init__(self, background, False)
 
     @property
     def game(self):
