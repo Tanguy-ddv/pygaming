@@ -8,8 +8,9 @@ from .child import Child
 class Placable(Child):
     """Object that can be placed."""
     
-    def __init__(self, master: Master, update_if_invisible: bool):
-        super().__init__(master, update_if_invisible)
+    def __init__(self, master: Master, update_if_invisible: bool, **kwargs):
+        # **kwargs so that the call of super().__init__(...) in the element class can pass every of its argument to Placable.
+        super().__init__(master=master, update_if_invisible=update_if_invisible, add_to_master=True)
         self._x = None
         self._y = None
         self.anchor = None

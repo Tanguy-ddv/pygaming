@@ -5,10 +5,11 @@ from pygame import Rect
 
 class Child(Visual):
     
-    def __init__(self, master: Master, update_if_invisible) -> None:
+    def __init__(self, master: Master, update_if_invisible: bool = False, add_to_master: bool = True) -> None:
         super().__init__()
         self.master = master
-        self.master.add_child(self)
+        if add_to_master:
+            self.master.add_child(self)
         self._visible = True
         self._update_if_invisible = update_if_invisible
         self.absolute_rect: Rect

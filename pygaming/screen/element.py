@@ -39,7 +39,7 @@ class Element(Graphical, Placable):
         - update_if_invisible
         """
 
-        Graphical.__init__(self, master, art, update_if_invisible)
+        super().__init__(master, art, update_if_invisible)
         self.visible = True
         self.can_be_focused = can_be_focused
         self.focused = False
@@ -49,8 +49,6 @@ class Element(Graphical, Placable):
         if active_area is None:
             active_area = Hitbox(0, 0, *self._art.size)
         self._active_area = active_area
-
-        Placable.__init__(self, master, update_if_invisible)
 
         self._cursor = cursor
         self._tooltip = tooltip

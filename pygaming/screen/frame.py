@@ -48,19 +48,8 @@ class Frame(Element, Master):
         
         self.camera = camera
 
-        Master.__init__(self)
-        self._compute_wc_ratio(master=master)
-        Element.__init__(
-            self,
-            master,
-            background,
-            None,
-            None,
-            False,
-            True,
-            None,
-            update_if_invisible=update_if_invisible
-        )
+        super().__init__(master, background, None, None, False, True, None, update_if_invisible)
+        self._compute_wc_ratio()
         self._continue_animation = continue_animation
 
         self.focused = False

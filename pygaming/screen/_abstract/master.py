@@ -218,8 +218,3 @@ class Master(Visual):
     def visible_children(self):
         """Return the list of visible children sorted by increasing layer."""
         return sorted(filter(lambda ch: ch.is_visible(), self.children), key= lambda w: w.layer)
-
-    @property
-    def master_children(self):
-        """Return the list of visible master children."""
-        return sorted(filter(lambda ch: ch.is_visible() and isinstance(ch, Master), self.children), key= lambda w: w.layer)

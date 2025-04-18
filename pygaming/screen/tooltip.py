@@ -23,7 +23,7 @@ class Tooltip(Graphical):
         - phase: GamePhase, the master of this object.
         - background: Art, The image to be displayed
         """
-        super().__init__(phase, background, False)
+        super().__init__(phase, background, False, add_to_master=False)
 
     @property
     def game(self):

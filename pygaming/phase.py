@@ -256,27 +256,26 @@ class GamePhase(_BasePhase, Master):
     def notify_change_all(self):
         """Notify the change to everyone."""
         self.notify_change()
-        for child in self.children:
-            if isinstance(child, Master):
-                child.notify_change_all()
+        for frame in self.children:
+            frame.notify_change_all()
 
     def is_visible(self):
         """Return always True as the phase itself can't be hidden. Used for the recursive is_visible method of elements."""
         return True
 
-    def loop(self, loop_duration: int):
+    def loop(self, dt: int):
         """Update the phase."""
-        Master.loop(self, loop_duration)
+        Master.loop(self, dt)
         self._update_focus()
-        self.update(loop_duration)
+        self.update(dt)
         for frame in self.children:
-            frame.loop(loop_duration)
+            frame.loop(dt)
 
     def _update_focus(self):
         """Update the focus of all the frames."""
         ck1 = self.mouse.get_click(1)
         if ck1:
-            for frame in self.master_children:
+            for frame in self.visible_children:
                 if frame.is_contact(ck1):
                     frame.update_focus(ck1)
                 else:
@@ -290,7 +289,7 @@ class GamePhase(_BasePhase, Master):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         x, y = self.mouse.get_position()
         cursor, tooltip = None, None
-        for frame in self.master_children:
+        for frame in self.visible_children:
             if frame.is_contact((x,y)):
                 tooltip, cursor = frame.get_hover()
             else:
@@ -332,7 +331,7 @@ class GamePhase(_BasePhase, Master):
     def make_surface(self) -> pygame.Surface:
         """Make the new surface to be returned to his parent."""
         bg = self.background.get(None, **self.settings)
-        for frame in self.master_children:
+        for frame in self.visible_children:
             surf = frame.get_surface()
             bg.blit(surf, (frame.relative_left, frame.relative_top))
 

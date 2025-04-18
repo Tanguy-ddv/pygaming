@@ -3,13 +3,12 @@ import pygame
 from .child import Child
 from .master import Master
 from ..art import Art
-from ...settings import Settings
 
 class Graphical(Child):
     """The Graphicals are visual object having an art as main display."""
 
-    def __init__(self, master: Master, art: Art, update_if_invisible: bool = False):
-        super().__init__(master, update_if_invisible)
+    def __init__(self, master: Master, art: Art, update_if_invisible: bool = False, add_to_master: bool = True):
+        super().__init__(master=master, update_if_invisible=update_if_invisible, add_to_master=add_to_master)
         self._art = art
 
     @property
@@ -39,4 +38,4 @@ class Graphical(Child):
 
     def make_surface(self) -> pygame.Surface:
         """Create the image of the visual as a pygame surface."""
-        return self
+        return self._art.get(None, **self.master.game.settings)
