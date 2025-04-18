@@ -18,7 +18,7 @@ class Screen:
 
     def display_phase(self, phase):
         """Blit the Frame on the screen."""
-        self.screen.blit(phase.get_surface(), (0,0))
+        phase.draw(self.screen)
 
     def update(self):
         """Update the screen."""

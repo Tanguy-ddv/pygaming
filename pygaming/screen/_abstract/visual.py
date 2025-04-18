@@ -23,17 +23,6 @@ class Visual(ABC):
     @property
     def size(self):
         return self.width, self.height
-    
-    @abstractmethod
-    def make_surface(self) -> Surface:
-        raise NotImplementedError()
-
-    def get_surface(self) -> Surface:
-        """Return the surface to be displayed."""
-        if self._surface_changed:
-            self._surface_changed = False
-            self._last_surface = self.make_surface()
-        return self._last_surface
 
     def notify_change(self):
         """Notify a change in the visual."""

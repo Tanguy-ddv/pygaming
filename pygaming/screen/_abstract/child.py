@@ -1,7 +1,8 @@
 """The child module defines the child class that are abstract visual objects with a master."""
+from abc import abstractmethod
+from pygame import Rect, Surface
 from .visual import Visual
 from .master import Master
-from pygame import Rect
 
 class Child(Visual):
     
@@ -13,6 +14,17 @@ class Child(Visual):
         self._visible = True
         self._update_if_invisible = update_if_invisible
         self.absolute_rect: Rect
+
+    @abstractmethod
+    def make_surface(self) -> Surface:
+        raise NotImplementedError()
+
+    def get_surface(self) -> Surface:
+        """Return the surface to be displayed."""
+        if self._surface_changed or self._last_surface is None:
+            self._surface_changed = False
+            self._last_surface = self.make_surface()
+        return self._last_surface
 
     def hide(self):
         self._visible = False

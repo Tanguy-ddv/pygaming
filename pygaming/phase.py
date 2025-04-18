@@ -66,7 +66,7 @@ class _BasePhase(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def loop(self, loop_duration: int):
+    def loop(self, dt: int):
         """This method is called at every loop iteration."""
         raise NotImplementedError()
 
@@ -87,7 +87,7 @@ class _BasePhase(ABC):
         return {}
 
     @abstractmethod
-    def update(self, loop_duration: int):
+    def update(self, dt: int):
         """
         Update the phase based on loop duration, inputs and network (via the game instance)
         This method is called at every loop iteration.
@@ -134,9 +134,9 @@ class ServerPhase(_BasePhase, ABC):
         """Alias for self.server.network"""
         return self.server.network
 
-    def loop(self, loop_duration: int):
+    def loop(self, dt: int):
         """Update the phase every loop iteraton."""
-        self.update(loop_duration)
+        self.update(dt)
 
 class GamePhase(_BasePhase, Master):
     """
@@ -285,7 +285,7 @@ class GamePhase(_BasePhase, Master):
             for frame in self.children:
                 frame.next_object_focus()
 
-    def update_hover(self, loop_duration):
+    def update_hover(self, dt):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         x, y = self.mouse.get_position()
         cursor, tooltip = None, None
@@ -301,7 +301,7 @@ class GamePhase(_BasePhase, Master):
                 self.notify_change()
         else: # We are on a widget requiring a tooltip
             if tooltip is self.current_tooltip: # It is the same as the current tooltip
-                self._tooltip_delay -= loop_duration
+                self._tooltip_delay -= dt
                 if self._tooltip_delay < 0:
                     self.notify_change() # We ask to remake the screen only if the delay is exceeded
             else: # We have a new tooltip
@@ -310,13 +310,13 @@ class GamePhase(_BasePhase, Master):
                 self._tooltip_x, self._tooltip_y = None, None
                 self.current_tooltip.notify_change() # We force its change because the language might have changed.
                 
-            self.current_tooltip.loop(loop_duration)
+            self.current_tooltip.loop(dt)
 
         if cursor is None:
             cursor = self._default_cursor
 
         if cursor is self.current_cursor:
-            has_changed = self.current_cursor.update(loop_duration)
+            has_changed = self.current_cursor.update(dt)
             if has_changed:
                 pygame.mouse.set_cursor(self.current_cursor.get(self.settings))
                 # Trigger the update of the cursor.
@@ -328,16 +328,14 @@ class GamePhase(_BasePhase, Master):
             # Trigger the update of the cursor.
             pygame.mouse.set_pos(x, y)
 
-    def make_surface(self) -> pygame.Surface:
+    def draw(self, screen: pygame.Surface) -> pygame.Surface:
         """Make the new surface to be returned to his parent."""
-        bg = self.background.get(None, **self.settings)
         for frame in self.visible_children:
             surf = frame.get_surface()
-            bg.blit(surf, (frame.relative_left, frame.relative_top))
+            screen.blit(surf, (frame.relative_left, frame.relative_top))
 
         if self.current_tooltip is not None and self._tooltip_delay < 0:
             if self._tooltip_x is None:
                 x, y = self.mouse.get_position() # We set the position of the tooltip with the position of the mouse.
                 self._tooltip_x, self._tooltip_y = x, y
-            bg.blit(self.current_tooltip.get_surface(), (self._tooltip_x, self._tooltip_y - self.current_tooltip.height))
-        return bg
+            screen.blit(self.current_tooltip.get_surface(), (self._tooltip_x, self._tooltip_y - self.current_tooltip.height))
