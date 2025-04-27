@@ -66,21 +66,21 @@ class Game(BaseRunnable):
     def display_image(self) -> bool:
         """Display the image."""
         while self._display_screen:
-            loop_duration = self.screen_clock.tick(self.config.get("max_frame_rate"))
+            dt = self.screen_clock.tick(self.config.get("max_frame_rate"))
             if not self._pause_display:
                 self._screen.display_phase(self.phases[self.current_phase])
                 self._screen.update()
-                self.phases[self.current_phase].update_hover(loop_duration)
+                self.phases[self.current_phase].update_hover(dt)
 
     def update(self) -> bool:
         """Update all the component of the game."""
-        loop_duration = self.clock.tick(self.config.get("game_frequency"))
-        self.logger.update(loop_duration)
-        self._inputs.update(loop_duration)
+        dt = self.clock.tick(self.config.get("game_frequency"))
+        self.logger.update(dt)
+        self._inputs.update(dt)
         self.jukebox.update()
         if self.online:
             self.client.update()
-        is_game_over = self.update_phases(loop_duration)
+        is_game_over = self.update_phases(dt)
         return self._inputs.quit or is_game_over or (
             self.online and self.client.is_server_killed() and self.config.get("stop_game_on_server_killed", False)
         )

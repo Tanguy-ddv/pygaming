@@ -5,15 +5,19 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure as _Fg
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 import pygame
-from ..element import Element
-from ..tooltip import Tooltip
-from ..cursor import Cursor
+from .._abstract import Placeable
 from ..art import Art, Rectangle, transform
 from ..frame import Frame
 
+_initial_fig_update = _Fg.update
+
+_Fg.set_master = lambda self, master: None
+_Fg.set_update_if_invisible = lambda self, update_if_invisible: None
+
+
 _original_ax_getattribute = Axes.__getattribute__
 
-def _new_ax_gettattribute(self: Axes, name:str):
+def _new_ax_gettattribute(self: Axes, name: str):
 	attr = _original_ax_getattribute(self, name)
 	if ((isinstance(attr, Callable) and not isinstance(attr, property))
 	 	and not name.startswith(('get', '_', 'draw', 'stale_callback', 'apply_aspect'))
@@ -32,7 +36,7 @@ def _new_ax_init(self: Axes, fig, *args):
 
 Axes.__init__ = _new_ax_init
 
-class Figure(_Fg, Element):
+class Figure(Placeable, _Fg):
 	"""
 	A Figure is a widget and a matplotlib figure.
 	It can be used as any matplotlib figure and will be integrated into the game's window.
@@ -41,11 +45,9 @@ class Figure(_Fg, Element):
 	def __init__(
 		self,
 		master: Frame,
-		size: tuple[int, int] = None,
 		background: Art = None,
-		dpi=None,
-		tooltip: Tooltip = None,
-		cursor: Cursor = None,
+		size: tuple[int, int] = None,
+		dpi: int = rcParams['figure.dpi'],
 		*,
 		smooth_rescaling=True,
 		facecolor=None,
@@ -58,8 +60,13 @@ class Figure(_Fg, Element):
 		layout=None,
 		**kwargs
 	):
+		"""
+		figure
+		"""
 		if background is None and size is None:
-			raise ValueError("Either background or size must be given, got none of them.")
+			size = rcParams['figure.figsize'][0]*dpi, rcParams['figure.figsize'][1]*dpi
+			background = Rectangle((255, 255, 255, 255), size[0], size[1])
+			self.__is_blank_bg = True
 		elif background is not None and size is None:
 			size = background.size
 			self.__is_blank_bg = False
@@ -70,15 +77,17 @@ class Figure(_Fg, Element):
 			background.transform(transform.Resize(size, smooth_rescaling))
 			self.__is_blank_bg = False
 		
+		self._height = background.height
+		self._width = background.width
+		
 		if dpi is None:
 			dpi = rcParams['figure.dpi']
 		figsize = size[0]/dpi, size[1]/dpi
 
-		Element.__init__(self, master, background, tooltip, cursor, False, False, None, False)
-
-		_Fg.__init__(self,
-			figsize,
-			dpi,
+		super().__init__(
+			master=master,
+			figsize=figsize,
+			dpi=dpi,
 			facecolor=facecolor,
 			edgecolor=edgecolor,
 			linewidth=linewidth,
@@ -86,29 +95,46 @@ class Figure(_Fg, Element):
 			subplotpars=subplotpars,
 			tight_layout=tight_layout,
 			constrained_layout=constrained_layout,
+			update_if_invisible=False,
 			layout=layout,
 			**kwargs
 		)
-		
-		self._last_gb_artist = None
 
+		self._last_bg_artist = None
 		self.canvas = FigureCanvasAgg(self)
+		self.canvas.figure.set_size_inches(figsize)
+		self.canvas.figure.set_dpi(dpi)
+		self._background = background
 
-	def update(self, loop_duration):
-		pass
+	@property
+	def width(self):
+		return self._width
+
+	@property
+	def height(self):
+		return self._height
+	
+	def update_(self, props):
+		"""original matplotlib update method."""
+		_initial_fig_update(self, props)
+
+	def loop(self, dt):
+		if not self.__is_blank_bg and (self.is_visible() or self._update_if_invisible):
+			has_changed = self._background.update(dt)
+			if has_changed:
+				self.notify_change()
+		super().loop(dt)
 
 	def make_surface(self):
 		if not self.__is_blank_bg:
 			# Use the art as background of the figure.
-			arr = pygame.surfarray.pixels3d(self.background.get(None, **self.game.settings)).swapaxes(1, 0)
-			if self._last_gb_artist:
-				self._last_gb_artist.remove()
-			self._last_gb_artist = self.figimage(arr, zorder=-1)
+			arr = pygame.surfarray.pixels3d(self._background.get(None, **self.game.settings)).swapaxes(1, 0)
+			if self._last_bg_artist is not None:
+				self._last_bg_artist.remove()
+			self._last_bg_artist = self.figimage(arr, zorder=-1)
 		self.canvas.draw()
-		return pygame.image.frombytes(self.canvas.tostring_argb(), self.background.size, "ARGB")
+		return pygame.image.frombytes(self.canvas.tostring_argb(), self.canvas.get_width_height(physical=True), "ARGB")
 
-	def end(self):
+	def finish(self):
+		super().finish()
 		self.clear()
-
-	def start(self):
-		pass

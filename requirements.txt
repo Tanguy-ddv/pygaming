@@ -1,5 +1,8 @@
 pygame
 pyinstaller
+gamarts
 numpy
+ZOCallable
 pillow
-opencv-python
+pygame-cv
+ordered-set

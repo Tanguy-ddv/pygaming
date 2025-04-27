@@ -3,10 +3,11 @@ from .button import Button, TextButton
 from .entry import Entry, Text
 from .label import Label, Paragraph
 from .slider import Slider, TextSlider
-from .widget import Widget
+from .widget import Widget, TextualWidget
 from .progress_bar import ProgressBar, TextProgressBar
 from .canvas import Canvas
 from .figure import Figure
+from .view import View
 
-__all__ = ['Button', 'TextButton', 'Entry', 'Label', 'Slider', 'Widget', 'Paragraph',
-           'ProgressBar', 'TextProgressBar', 'TextSlider', 'Text', 'Canvas', 'Figure']
+__all__ = ['Button', 'TextButton', 'Entry', 'Label', 'Slider', 'Widget', 'Paragraph', 'View',
+           'ProgressBar', 'TextProgressBar', 'TextSlider', 'Text', 'Canvas', 'Figure', 'TextualWidget']

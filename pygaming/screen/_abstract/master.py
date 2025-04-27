@@ -1,9 +1,12 @@
 """The master module defines the Master abstract class implementing methods related to being a master."""
-from abc import abstractmethod, ABC
+from abc import abstractmethod
 from itertools import product
 from dataclasses import dataclass
 from typing import Any
+from functools import lru_cache
 from pygame import Rect
+from ordered_set import OrderedSet
+from .visual import Visual
 from ...game import Game
 from ..anchors import AnchorLike, Anchor, TOP_LEFT, CENTER_CENTER
 
@@ -170,27 +173,56 @@ class Grid:
         self._update(row, col, obj.rowspan, obj.columnspan)
 
 
-class Master(ABC):
+class Master(Visual):
     """The class Master is an abstract for the classes that can be the master of an Element."""
 
-    def __init__(self, window: Rect):
-        ABC.__init__(self)
-        self.children = []
-        self.window = window
-        self.wc_ratio = (1, 1)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.children = set()
+        self.focusable_children = OrderedSet()
+        self.disableable_children = set()
+        self.hoverable_children = set()
+        self.collideable_children = set()
+        self.placeable_children = set()
+        self.frame_children = set()
+        self.wc_ratio: tuple[int, int]
         self.grids: list[Grid] = []
         self.game: Game
         self.absolute_rect: Rect
+        self.absolute_left: int
+        self.absolute_top: int
 
-    def add_child(self, child):
-        """Add a new element to the child list."""
-        self.children.append(child)
+    def add_child(self, child, focusable: bool, disableable: bool, collideable: bool, hoverable: bool, frame: bool, placeable: bool):
+        """Add a new element to the child set."""
+        self.children.add(child)
+        if focusable:
+            self.focusable_children.add(child)
+            if disableable:
+                self.disableable_children.add(child)
+        if placeable:
+            self.placeable_children.add(child)
+            if collideable:
+                self.collideable_children.add(child)
+                if hoverable:
+                    self.hoverable_children.add(child)
+        if frame:
+            self.frame_children.add(child)
 
     def create_grid(self, x: int, y: int, anchor: AnchorLike = TOP_LEFT):
-        """Create a grid to manage the geomtry of the master."""
+        """Create a grid to manage the geometry of the master."""
         grid = Grid(x, y, Anchor(anchor))
         self.grids.append(grid)
         return grid
+    
+    @abstractmethod
+    def is_visible(self) -> bool:
+        """Return whether the object is visible on the screen."""
+        raise NotImplementedError()
+    
+    @abstractmethod
+    def is_child_on_me(self, child) -> bool:
+        """Return whether the child is on its master."""
+        raise NotImplementedError()
 
     def get_grid(self, idx: int | Grid | None):
         """
@@ -206,32 +238,25 @@ class Master(ABC):
             return self.create_grid(0, 0, TOP_LEFT)
 
     @abstractmethod
-    def notify_change(self):
+    def notify_change_all(self) -> None:
         pass
 
-    @abstractmethod
-    def notify_change_all(self):
-        pass
-
-    @abstractmethod
-    def is_visible(self):
-        pass
-
-    @abstractmethod
-    def is_child_on_me(self, child):
-        pass
-
-    @property
+    @lru_cache(1)
     def visible_children(self):
         """Return the list of visible children sorted by increasing layer."""
-        return sorted(filter(lambda ch: ch.visible and ch.on_master, self.children), key= lambda w: w.layer)
+        return sorted(filter(lambda ch: ch.is_visible(), self.children), key= lambda w: w.layer)
 
-    @property
-    def absolute_left(self):
-        """Return the absolute left coordinate of the object on the screen."""
-        return self.absolute_rect.left
-    
-    @property
-    def absolute_top(self):
-        """Return the absolute top coordinate of the object on the screen."""
-        return self.absolute_rect.top
+    def _clear_cache(self):
+        self.visible_children.cache_clear()
+
+    def begin(self, **kwargs):
+        """Execute this method at the beginning of the phase."""
+        super().begin(**kwargs)
+        for child in self.children:
+            child.begin()
+
+    def end(self):
+        """Execute this method at the end of the phase, unload all the arts."""
+        super().finish()
+        for child in self.children:
+            child.finish()

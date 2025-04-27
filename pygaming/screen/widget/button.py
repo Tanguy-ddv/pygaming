@@ -1,18 +1,90 @@
 """The button module contains buttons. They are widgets used to get a user click."""
 
 from typing import Optional, Callable, Any
-from pygame import Surface
 from ..frame import Frame
-from ..anchors import CENTER, Anchor, AnchorLike
-from .widget import Widget
+from ..anchors import CENTER, AnchorLike
+from ..states import WidgetStates
+from .widget import Widget, TextualWidget
 from ..art import Art
 from ...color import Color
 from ...database import TextFormatter
-from ..cursor import Cursor
-from ..tooltip import Tooltip
+from ..hover import Tooltip, Cursor
 from ..hitbox import Hitbox
 
-class Button(Widget):
+class _Button(Widget):
+    """Base class for buttons."""
+
+    def __init__(
+        self,
+        master: Frame,
+        art: Art,
+        active_background: Optional[Art] = None,
+        focused_art: Optional[Art] = None,
+        disabled_art: Optional[Art] = None,
+        hovered_art: Optional[Art] = None,
+        hitbox: Optional[Hitbox] = None,
+        tooltip: Optional[Tooltip] = None,
+        cursor: Cursor | None = None,
+        continue_animation: bool = False,
+        on_click_command: Optional[Callable[[],Any]] = None,
+        on_unclick_command: Optional[Callable[[],Any]] = None,
+        update_if_invisible: bool = False,
+        **kwargs
+    ) -> None:
+        
+        super().__init__(
+            master,
+            art=art,
+            focused_art=focused_art,
+            disabled_art=disabled_art,
+            hovered_art=hovered_art,
+            hitbox=hitbox,
+            tooltip=tooltip,
+            cursor=cursor,
+            continue_animation=continue_animation,
+            update_if_invisible=update_if_invisible,
+            **kwargs
+        )
+        self._arts.add(WidgetStates.ACTIVE, active_background)
+        self._on_click_command = on_click_command
+        self._on_unclick_command = on_unclick_command
+
+    def get(self):
+        """Return true if the button is clicked, false otherwise."""
+        return self.state == WidgetStates.ACTIVE
+
+    def update(self, dt: int):
+        """Update the button every loop iteration if it is visible."""
+        if not self.state == WidgetStates.DISABLED:
+            ck1 = self.game.mouse.get_click(1)
+
+            if (
+                (   # This means the user is pressing 'return' while the button is focused
+                    self.state == WidgetStates.FOCUSED
+                    and self.game.keyboard.actions_down['return']
+                )
+                or ( # This means the user is clicking on the button
+                    self.is_contact(ck1)
+                    and self.is_contact((ck1.start_x, ck1.start_y)))
+            ):
+                # We verify if the user just clicked or if it is a long click.
+                if not self.state == WidgetStates.ACTIVE:
+                    self.notify_change()
+                    if self._on_click_command is not None:
+                        self._on_click_command()
+
+                    self._previous_state = self.state
+                    self.state = WidgetStates.ACTIVE
+
+            else:
+                if self.state == WidgetStates.ACTIVE:
+                    self.notify_change()
+                    if self._on_unclick_command is not None:
+                        self._on_unclick_command()
+                    self.state = self._previous_state
+
+
+class Button(_Button):
     """A Button is a basic widget used to get a player click."""
 
     def __init__(
@@ -23,7 +95,7 @@ class Button(Widget):
         focused_background: Optional[Art] = None,
         disabled_background: Optional[Art] = None,
         hovered_background: Optional[Art] = None,
-        active_area: Optional[Hitbox] = None,
+        hitbox: Optional[Hitbox] = None,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
         continue_animation: bool = False,
@@ -51,155 +123,21 @@ class Button(Widget):
         """
         super().__init__(
             master,
-            normal_background,
-            focused_background,
-            disabled_background,
-            hovered_background,
-            active_area,
-            tooltip,
-            cursor,
-            continue_animation,
-            update_if_invisible
+            art=normal_background,
+            focused_art=focused_background,
+            disabled_art=disabled_background,
+            hovered_art=hovered_background,
+            active_background=active_background,
+            hitbox=hitbox,
+            tooltip=tooltip,
+            cursor=cursor,
+            continue_animation=continue_animation,
+            update_if_invisible=update_if_invisible,
+            on_click_command=on_click_command,
+            on_unclick_command=on_unclick_command,
         )
-        self.active_background = active_background if active_background else normal_background
-        self._is_clicked = False
-        self._on_click_command = on_click_command
-        self._on_unclick_command = on_unclick_command
 
-    def get(self):
-        """Return true if the button is clicked, false otherwise."""
-        return self._is_clicked
-
-    def _make_disabled_surface(self) -> Surface:
-        return self.disabled_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
-
-    def _make_normal_surface(self) -> Surface:
-        return self.normal_background.get(**self.game.settings, match=None)
-
-    def _make_focused_surface(self) -> Surface:
-        return self.focused_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
-
-    def _make_active_surface(self) -> Surface:
-        return self.active_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
-
-    def _make_hovered_surface(self) -> Surface:
-        return self.hovered_background.get(**self.game.settings, match=self.background if self._continue_animation else None)
-
-    def make_surface(self):
-        """Return the surface of the widget."""
-        if self.disabled:
-            return self._make_disabled_surface()
-        elif self.focused:
-            return self._make_focused_surface()
-        elif self._hovered:
-            return self._make_hovered_surface()
-        elif self._is_clicked:
-            return self._make_active_surface()
-        else:
-            return self._make_normal_surface()
-
-    def loop(self, loop_duration: int):
-        """Call this method every loop iteration."""
-        if (self.on_master and self.is_visible()) or self._update_if_invisible:
-            if not self._continue_animation:
-                if self.disabled:
-                    has_changed = self.disabled_background.update(loop_duration)
-                elif self.focused:
-                    has_changed = self.focused_background.update(loop_duration)
-                elif self._hovered:
-                    has_changed = self.hovered_background.update(loop_duration)
-                elif self._is_clicked:
-                    has_changed = self.active_background.update(loop_duration)
-                else:
-                    has_changed = self.normal_background.update(loop_duration)
-                if has_changed:
-                    self.notify_change()
-            else:
-                has_changed = self.normal_background.update(loop_duration)
-                if has_changed:
-                    self.notify_change()
-            if self.is_visible():
-                self.update(loop_duration)
-
-    def switch_background(self):
-        """Switch to the disabled, focused or normal background."""
-        if not self._continue_animation:
-            if self.disabled:
-                self.active_background.reset()
-                self.focused_background.reset()
-                self.normal_background.reset()
-                self.hovered_background.reset()
-            elif self.focused:
-                self.active_background.reset()
-                self.normal_background.reset()
-                self.disabled_background.reset()
-                self.hovered_background.reset()
-            elif self._hovered:
-                self.active_background.reset()
-                self.normal_background.reset()
-                self.disabled_background.reset()
-                self.focused_background.reset()
-            elif self._is_clicked:
-                self.normal_background.reset()
-                self.disabled_background.reset()
-                self.focused_background.reset()
-                self.hovered_background.reset()
-            else:
-                self.active_background.reset()
-                self.disabled_background.reset()
-                self.focused_background.reset()
-                self.hovered_background.reset()                
-
-        self.notify_change()
-
-    def start(self):
-        """Execute this method at the beginning of the phase, load the arts that are set to force_load."""
-        self.normal_background.start(**self.game.settings)
-        self.focused_background.start(**self.game.settings)
-        self.disabled_background.start(**self.game.settings)
-        self.hovered_background.start(**self.game.settings)
-        self.active_background.start(**self.game.settings)
-
-    def end(self):
-        """Execute this method at the end of the phase, unload all the arts."""
-        self.normal_background.end()
-        self.focused_background.end()
-        self.disabled_background.end()
-        self.hovered_background.end()
-        self.active_background.end()
-
-    def update(self, loop_duration: int):
-        """Update the button every loop iteration if it is visible."""
-        if not self.disabled:
-            ck1 = self.game.mouse.get_click(1)
-
-            if (
-                (   # This means the user is pressing 'return' while the button is focused
-                    self.focused
-                    and self.game.keyboard.actions_down['return']
-                )
-                or ( # This means the user is clicking on the button
-                    self.is_contact(ck1)
-                    and self.is_contact((ck1.start_x, ck1.start_y)))
-            ):
-                # We verify if the user just clicked or if it is a long click.
-                if not self._is_clicked:
-                    self.notify_change()
-                    if self._on_click_command is not None:
-                        self._on_click_command()
-                else:
-                    self.notify_change()
-
-                self._is_clicked = True
-
-            else:
-                if self._is_clicked:
-                    self.notify_change()
-                    if self._on_unclick_command is not None:
-                        self._on_unclick_command()
-                self._is_clicked = False
-
-class TextButton(Button):
+class TextButton(_Button, TextualWidget):
     """
     A Button is a basic widget used to get a player click.
     A text is displayed on this button.
@@ -224,83 +162,42 @@ class TextButton(Button):
         hovered_background: Optional[str] = None,
         hovered_font: Optional[str] = None,
         hovered_font_color: Optional[Color] = None,
-        active_area: Optional[Hitbox] = None,
+        hitbox: Optional[Hitbox] = None,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
         continue_animation: bool = False,
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
-        jusitfy: AnchorLike = CENTER,
+        justify: AnchorLike = CENTER,
         update_if_invisible: bool = False
     ) -> None:
+        
         super().__init__(
-            master,
-            normal_background,
-            active_background,
-            focused_background,
-            disabled_background,
-            hovered_background,
-            active_area,
-            tooltip,
-            cursor,
-            continue_animation,
-            on_click_command,
-            on_unclick_command,
-            update_if_invisible
+            master=master,
+            art=normal_background,
+            focused_art=focused_background,
+            disabled_art=disabled_background,
+            hovered_art=hovered_background,
+            active_background=active_background,
+            hitbox=hitbox,
+            tooltip=tooltip,
+            cursor=cursor,
+            continue_animation=continue_animation,
+            update_if_invisible=update_if_invisible,
+            font=normal_font,
+            color=normal_font_color,
+            text_or_loc=localization_or_text,
+            focused_font=focused_font,
+            focused_font_color=focused_font_color,
+            disabled_font=disabled_font,
+            disabled_font_color=disabled_font_color,
+            hovered_font=hovered_font,
+            hovered_font_color=hovered_font_color,
+            justify=justify,
+            on_click_command=on_click_command,
+            on_unclick_command=on_unclick_command
         )
-        self.text = localization_or_text
-        self.justify = Anchor(jusitfy)
-
-        self._normal_font = normal_font
-
-        if focused_font is None:
-            focused_font = normal_font
-        self._focused_font = focused_font
-        if disabled_font is None:
-            disabled_font = normal_font
-        self._disabled_font = disabled_font
-        if hovered_font is None:
-            hovered_font = normal_font
-        self._hovered_font = hovered_font
-        if active_font is None:
-            active_font = normal_font
-        self._active_font = active_font
-
-        self._normal_font_color = normal_font_color
-        if focused_font_color is None:
-            focused_font_color = normal_font_color
-        self._focused_font_color = focused_font_color
-        if disabled_font_color is None:
-            disabled_font_color = normal_font_color
-        self._disabled_font_color = disabled_font_color
-        if hovered_font_color is None:
-            hovered_font_color = normal_font_color
-        self._hovered_font_color = hovered_font_color
-        if active_font_color is None:
-            active_font_color = normal_font_color
-        self._active_font_color = active_font_color
+        self._fonts.add(WidgetStates.ACTIVE, active_font, active_font_color)
 
     def make_surface(self):
-        bg = super().make_surface()
-        if self.disabled:
-            rendered_text = self.game.typewriter.render(self._disabled_font, self.text, self._disabled_font_color, None, self.justify)
-        elif self.focused:
-            rendered_text = self.game.typewriter.render(self._focused_font, self.text, self._focused_font_color, None, self.justify)
-        elif self._hovered:
-            rendered_text = self.game.typewriter.render(self._hovered_font, self.text, self._hovered_font_color, None, self.justify)
-        elif self._is_clicked:
-            rendered_text = self.game.typewriter.render(self._active_font, self.text, self._active_font_color, None, self.justify)
-        else:
-            rendered_text = self.game.typewriter.render(self._normal_font, self.text, self._normal_font_color, None, self.justify)
-
-        text_width, text_height = rendered_text.get_size()
-        just_x = self.justify[0]*(bg.get_width() - text_width)
-        just_y = self.justify[1]*(bg.get_height() - text_height)
-        bg.blit(rendered_text, (just_x, just_y))
-        return bg
-
-    def set_localization_or_text(self, localization_or_text: str):
-        """Set the button text to a new value."""
-        if self.text != localization_or_text:
-            self.text = str(localization_or_text)
-            self.notify_change()
+        return self._render_text_on_bg(self.game.settings, self.game.typewriter)
