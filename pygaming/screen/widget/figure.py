@@ -10,7 +10,10 @@ from ..art import Art, Rectangle, transform
 from ..frame import Frame
 
 _initial_fig_update = _Fg.update
-# del _Fg.update
+
+_Fg.set_master = lambda self, master: None
+_Fg.set_update_if_invisible = lambda self, update_if_invisible: None
+
 
 _original_ax_getattribute = Axes.__getattribute__
 
@@ -33,7 +36,7 @@ def _new_ax_init(self: Axes, fig, *args):
 
 Axes.__init__ = _new_ax_init
 
-class Figure(_Fg, Placeable):
+class Figure(Placeable, _Fg):
 	"""
 	A Figure is a widget and a matplotlib figure.
 	It can be used as any matplotlib figure and will be integrated into the game's window.
@@ -61,7 +64,8 @@ class Figure(_Fg, Placeable):
 		figure
 		"""
 		if background is None and size is None:
-			size = rcParams['figure.figsize'][0]/dpi, rcParams['figure.figsize'][1]/dpi
+			size = rcParams['figure.figsize'][0]*dpi, rcParams['figure.figsize'][1]*dpi
+			background = Rectangle((255, 255, 255, 255), size[0], size[1])
 			self.__is_blank_bg = True
 		elif background is not None and size is None:
 			size = background.size
@@ -73,11 +77,14 @@ class Figure(_Fg, Placeable):
 			background.transform(transform.Resize(size, smooth_rescaling))
 			self.__is_blank_bg = False
 		
+		self._height = background.height
+		self._width = background.width
+		
 		if dpi is None:
 			dpi = rcParams['figure.dpi']
 		figsize = size[0]/dpi, size[1]/dpi
 
-		super().__init__(self,
+		super().__init__(
 			master=master,
 			figsize=figsize,
 			dpi=dpi,
@@ -88,14 +95,24 @@ class Figure(_Fg, Placeable):
 			subplotpars=subplotpars,
 			tight_layout=tight_layout,
 			constrained_layout=constrained_layout,
+			update_if_invisible=False,
 			layout=layout,
 			**kwargs
 		)
-		
-		self._last_bg_artist = None
 
+		self._last_bg_artist = None
 		self.canvas = FigureCanvasAgg(self)
+		self.canvas.figure.set_size_inches(figsize)
+		self.canvas.figure.set_dpi(dpi)
 		self._background = background
+
+	@property
+	def width(self):
+		return self._width
+
+	@property
+	def height(self):
+		return self._height
 	
 	def update_(self, props):
 		"""original matplotlib update method."""
@@ -116,7 +133,8 @@ class Figure(_Fg, Placeable):
 				self._last_bg_artist.remove()
 			self._last_bg_artist = self.figimage(arr, zorder=-1)
 		self.canvas.draw()
-		return pygame.image.frombytes(self.canvas.tostring_argb(), self._background.size, "ARGB")
+		print(self.canvas.get_width_height(physical=True), self.size)
+		return pygame.image.frombytes(self.canvas.tostring_argb(), self.canvas.get_width_height(physical=True), "ARGB")
 
 	def finish(self):
 		super().finish()
