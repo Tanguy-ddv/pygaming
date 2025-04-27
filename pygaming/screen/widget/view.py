@@ -2,13 +2,13 @@
 from pygame import Surface, transform
 from ...error import PygamingException
 from ..camera import Camera
-from .._abstract import Placeable, Master
+from .._abstract import Placeable
 from ..art import Art
 from ..frame import Frame
 
 class View(Placeable):
 
-    def __init__(self, master: Master, camera: Camera, target: Frame, foreground: Art | None = None, width: int = None, height: int = None, **kwargs):
+    def __init__(self, master: Frame, camera: Camera, target: Frame, foreground: Art | None = None, width: int = None, height: int = None, **kwargs):
         super().__init__(master, False, **kwargs)
         if master is target:
             raise PygamingException("A view cannot target its own master.")
@@ -18,7 +18,7 @@ class View(Placeable):
             else:
                 width = foreground.width
 
-        self.width = width
+        self._width = width
 
         if height is None:
             if foreground is None:
@@ -26,10 +26,26 @@ class View(Placeable):
             else:
                 height = foreground.height
 
-        self.height = height
+        self._height = height
         self.camera = camera
         self.target = target
         self.foreground = foreground
+
+        target.views.add(self)
+
+    def notify_change(self):
+        """Notify a change in the visual."""
+        self._surface_changed = True
+        if self.is_visible():
+            self.master.notify_change()
+    
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def height(self):
+        return self._height
 
     def loop(self, dt: int):
         super().loop(dt)

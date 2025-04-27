@@ -62,7 +62,7 @@ class Frame(Focusable, Collideable, Master):
         self.master.add_child(self, False, False, False, False, True, False)
         self._compute_wc_ratio()
 
-        self.is_visible()
+        self.views = set()
 
     @property
     def width(self):
@@ -124,6 +124,14 @@ class Frame(Focusable, Collideable, Master):
 
         for frame in self.frame_children:
             frame.notify_change_all()
+
+    def notify_change(self):
+        """Notify a change in the visual."""
+        self._surface_changed = True
+        for view in self.views:
+            view.notify_change()
+        if self.is_visible():
+            self.master.notify_change()
 
     def unfocus(self):
         """Unfocus the Frame by unfocusing itself and its children"""
@@ -258,7 +266,14 @@ class Frame(Focusable, Collideable, Master):
     
     def is_child_on_me(self, child):
         """Return whether the child is visible on the frame or not."""
-        return child in self.placeable_children and child._x is not None and self.camera.colliderect(child.relative_rect)
+        return (child in self.placeable_children
+            and child._x is not None
+            and (
+                self.camera.colliderect(child.relative_rect) or any(
+                    view.camera.collierect(child.relative_rect) for view in self.views
+                )
+            )
+        )
 
 
     def place(self, x: int, y: int, anchor: AnchorLike = TOP_LEFT, layer=0) -> Self:
