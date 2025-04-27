@@ -12,12 +12,7 @@ from .hover import Tooltip, Cursor
 
 class Actor(Hoverable):
     """
-    An actor is an object that is made to move and possibly rotate in a frame.
-    
-    Methods to define:
-    - start()
-    - end()
-    - update()
+    An actor is an object that is made to move and possibly rotate and zoom in a frame.
     """
 
     def __init__(

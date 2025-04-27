@@ -133,7 +133,6 @@ class Figure(Placeable, _Fg):
 				self._last_bg_artist.remove()
 			self._last_bg_artist = self.figimage(arr, zorder=-1)
 		self.canvas.draw()
-		print(self.canvas.get_width_height(physical=True), self.size)
 		return pygame.image.frombytes(self.canvas.tostring_argb(), self.canvas.get_width_height(physical=True), "ARGB")
 
 	def finish(self):
