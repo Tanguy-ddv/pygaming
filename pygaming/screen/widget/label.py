@@ -69,28 +69,12 @@ class Label(Textual, Hoverable):
                 self._time_since_last_blink = 0
                 self.notify_change()
 
-    def _render_text(self):
-        return self._fonts.render(
-            self.game.typewriter,
-            self.state,
-            self.text,
-            None,
-            self.justify,
-            True,
-            self.wrap,
-            self.width
-        )
-
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the Label."""
-        bg = self._arts.get(self.state, **self.game.settings).copy()
         if self._show_text:
-            rendered_text = self._render_text()
-            text_width, text_height = rendered_text.get_size()
-            just_x = self.justify[0]*(bg.get_width() - text_width)
-            just_y = self.justify[1]*(bg.get_height() - text_height)
-            bg.blit(rendered_text, (just_x, just_y))
-        return bg
+            return self._render_text_on_bg(self.game.settings, self.game.typewriter)
+        else:
+            return self._arts.get(self.state, **self.game.settings)
 
 class Paragraph(Label):
     """A Paragraph is used to display a piece of a text as a justified paragraph."""
