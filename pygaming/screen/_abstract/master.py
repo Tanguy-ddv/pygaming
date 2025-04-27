@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 from functools import lru_cache
 from pygame import Rect
+from ordered_set import OrderedSet
 from .visual import Visual
 from ...game import Game
 from ..anchors import AnchorLike, Anchor, TOP_LEFT, CENTER_CENTER
@@ -178,7 +179,7 @@ class Master(Visual):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.children = set()
-        self.focusable_children = set()
+        self.focusable_children = OrderedSet()
         self.disableable_children = set()
         self.hoverable_children = set()
         self.collideable_children = set()
