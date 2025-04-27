@@ -2,16 +2,15 @@
 import math
 from typing import Optional
 from pygame import transform as tf
-from ..phase import GamePhase
-from .element import Element
+from .frame import Frame
 from .anchors import AnchorLike, TOP_LEFT, Anchor
+from .hover import Hoverable
 from .art import Art
 from .hitbox import Hitbox
 from ..inputs.mouse import Click
-from .tooltip import Tooltip
-from .cursor import Cursor
+from .hover import Tooltip, Cursor
 
-class Actor(Element):
+class Actor(Hoverable):
     """
     An actor is an object that is made to move and possibly rotate in a frame.
     
@@ -23,26 +22,23 @@ class Actor(Element):
 
     def __init__(
         self,
-        master: GamePhase | Element,
+        master: Frame,
         main_art: Art,
         hitbox: Hitbox = None,
         tooltip: Tooltip = None,
         cursor: Cursor = None,
-        update_if_invisible: bool = False
+        update_if_invisible: bool = False,
+        continue_animation: bool = False
     ) -> None:
         super().__init__(
-            master,
-            main_art,
-            tooltip,
-            cursor,
-            False,
-            False,
-            hitbox,
+            master=master,
+            art=main_art,
+            hitbox=hitbox,
+            tooltip=tooltip,
+            cursor=cursor,
+            continue_animation=continue_animation,
             update_if_invisible=update_if_invisible
         )
-
-        self._arts = {"main" : self.background}
-        self._current_art = "main"
         self._angle = 0
         self._zoom = 1
         self._initial_size = self.width, self.height
@@ -54,32 +50,20 @@ class Actor(Element):
         self._zoom = zoom
         return super().place(x, y, anchor, layer)
 
-    @property
-    def main_art(self):
-        """Alias for the main art. Represent the main art of the object."""
-        return self.background
-
-    def update_animation(self, loop_duration):
-        """Update the animation of the main surface."""
-        self._arts[self._current_art].update(loop_duration)
-
-    def loop(self, loop_duration):
-        """Update the frame at every loop."""
-        self.update_animation(loop_duration)
-        self.update(loop_duration)
-
     def translate(self, dx, dy):
         """Translate the actor in the frame by a given value."""
-        self._x += dx
-        self._y += dy
+        if self._x is not None:
+            self._x += dx
+            self._y += dy
 
-        self.get_on_master()
-        if self.on_master:
-            self.master.notify_change()
+            self.on_master = self.get_on_master()
+            if self.on_master:
+                self.master.notify_change()
 
     def make_surface(self):
         """Create the current surface."""
-        surface = self._arts[self._current_art].get(None, **self.game.settings, copy=False)
+
+        surface = self._arts.get(self.state, **self.game.settings)
         if self._angle or self._zoom != 1:
             surface = tf.rotozoom(surface, self._angle, self._zoom)
         return surface
@@ -111,10 +95,10 @@ class Actor(Element):
             orig_y = sin_a * rel_x + cos_a * rel_y
 
             pos = orig_x + self._initial_size[0]/2, orig_y + self._initial_size[1]/2
-        return self._active_area.is_contact(pos)
+        return self.hitbox.is_contact(pos)
 
     def _find_new_anchor(self):
-        w, h = self.main_art.width, self.main_art.height # the size before any rotation
+        w, h = self.width, self.height # the size before any rotation
 
         theta = math.radians(-self._angle)
         self.width = int(w * abs(math.cos(theta)) + h * abs(math.sin(theta)))

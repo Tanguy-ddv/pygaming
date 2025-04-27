@@ -1,15 +1,15 @@
 """The label module contains the Label Element used to display text."""
 import pygame
-from ..element import Element
+from .._abstract import Textual
+from ..hover import Hoverable
 from ..frame import Frame
 from ..anchors import CENTER, AnchorLike, Anchor
 from ...color import Color
 from ..art import Art
 from ...database import TextFormatter
-from ..tooltip import Tooltip
-from ..cursor import Cursor
+from ..hover import Cursor, Tooltip
 
-class Label(Element):
+class Label(Textual, Hoverable):
     """A Label is an element used to display text as a unjustified lines."""
 
     def __init__(
@@ -23,6 +23,7 @@ class Label(Element):
         cursor: Cursor = None,
         justify: AnchorLike = CENTER,
         blinking_period: int = None,
+        wrap: bool = False
     ) -> None:
         """
         Create the label
@@ -32,17 +33,23 @@ class Label(Element):
         - font: Font, the font to be used to display the text.
         - localization_or_text: The text, localization or TextFormatter to be displayed, can be modify with set_localization_or_text(new_text).
         - justify: the position of the text in the label, should be an anchor (i.e a tuple[x, y] with 0 <= x, y <= 1, or an Anchor2D from pygaming.anchor)
-        - justify: the position of the text in the label, should be an anchor (i.e a tuple[x, y] with 0 <= x, y <= 1, or an Anchor2D from pygaming.anchor)
         - blinking_period: int [ms]. If an integer is specified, the text will blink with the given period.
         """
-        self.font = font
-        self.text = localization_or_text
-        super().__init__(master, background, tooltip, cursor, False, False, None, False)
+        super().__init__(
+            master=master,
+            art=background,
+            tooltip=tooltip,
+            cursor=cursor,
+            font=font,
+            color=font_color,
+            text_or_loc=localization_or_text,
+            jusitfy=justify,
+            wrap=wrap
+        )
         self.justify = Anchor(justify)
         self._blinking_period = blinking_period
         self._time_since_last_blink = 0
         self._show_text = True
-        self.font_color = font_color
 
     def set_localization_or_text(self, localization_or_text: str):
         """Set the label text to a new value."""
@@ -63,27 +70,31 @@ class Label(Element):
                 self.notify_change()
 
     def _render_text(self):
-        return self.game.typewriter.render(self.font, self.text, self.font_color, None, self.justify)
+        return self._fonts.render(
+            self.game.typewriter,
+            self.state,
+            self.text,
+            None,
+            self.justify,
+            True,
+            self.wrap,
+            self.width
+        )
 
     def make_surface(self) -> pygame.Surface:
         """Return the surface of the Label."""
-        bg = self.background.get(None, **self.game.settings)
+        bg = self._arts.get(self.state, **self.game.settings).copy()
         if self._show_text:
             rendered_text = self._render_text()
             text_width, text_height = rendered_text.get_size()
-            just_x = self.justify[0]*(self.background.width - text_width)
-            just_y = self.justify[1]*(self.background.height - text_height)
+            just_x = self.justify[0]*(bg.get_width() - text_width)
+            just_y = self.justify[1]*(bg.get_height() - text_height)
             bg.blit(rendered_text, (just_x, just_y))
         return bg
-
-    def start(self):
-        """Nothing to do at start."""
-
-    def end(self):
-        """Nothing to do at the end."""
 
 class Paragraph(Label):
     """A Paragraph is used to display a piece of a text as a justified paragraph."""
 
     def _render_text(self):
-        return self.game.typewriter.render_paragraphs(self.font, self.text, self.font_color, self.background, None)
+        font, color = self._fonts.get(self.state)
+        return self.game.typewriter.render_paragraphs(font, self.text, color, self._arts.get(self.state), None)

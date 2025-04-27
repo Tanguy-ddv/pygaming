@@ -1,13 +1,15 @@
 """A phase is one step of the game."""
 from abc import ABC, abstractmethod
+from functools import lru_cache
 import gc
 import pygame
 from .error import PygamingException
 from .game import Game
 from ._base import BaseRunnable, STAY
 from .server import Server
-from .screen.cursor import Cursor
-from .screen._abstract import Master, Placable
+from .screen.hover import Cursor
+from .screen.frame import Frame
+from .screen._abstract import Master
 
 _TOOLTIP_DELAY = 500 # [ms]
 
@@ -163,6 +165,7 @@ class GamePhase(_BasePhase, Master):
 
         super().__init__(name, game)
 
+        self.frame_children: set[Frame]
         self.absolute_rect = pygame.Rect((0, 0, *self.config.dimension))
         self.wc_ratio = (1, 1)
         self._width, self._height = self.config.dimension
@@ -175,6 +178,9 @@ class GamePhase(_BasePhase, Master):
         self._tooltip_x, self._tooltip_y = None, None
         self._tooltip_delay = _TOOLTIP_DELAY # [ms], the delay waited before showing the tooltip
     
+    def __hash__(self) -> int:
+        return hash(self._name)
+
     @property
     def width(self):
         return self._width
@@ -185,7 +191,7 @@ class GamePhase(_BasePhase, Master):
 
     def is_child_on_me(self, child):
         """Return whether the child is visible on the frame or not."""
-        return ((is_placable := isinstance(child, Placable)) and self.absolute_rect.colliderect(child.relative_rect)) or not is_placable
+        return child in self.placeable_children and self.absolute_rect.colliderect(child.relative_rect)
 
     def begin(self, **kwargs):
         """This method is called at the beginning of the phase."""
@@ -275,7 +281,7 @@ class GamePhase(_BasePhase, Master):
         """Update the focus of all the frames."""
         ck1 = self.mouse.get_click(1)
         if ck1:
-            for frame in self.visible_children:
+            for frame in self.frame_children:
                 if frame.is_contact(ck1):
                     frame.update_focus(ck1)
                 else:
@@ -287,13 +293,14 @@ class GamePhase(_BasePhase, Master):
 
     def update_hover(self, dt):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
-        x, y = self.mouse.get_position()
+        pos = self.mouse.get_position()
         cursor, tooltip = None, None
-        for frame in self.visible_children:
-            if frame.is_contact((x,y)):
-                tooltip, cursor = frame.get_hover()
-            else:
-                frame.unset_hover()
+        for frame in self.visible_children():
+            frame_tooltip, frame_cursor = frame.get_hover(pos)
+            if frame_tooltip is not None:
+                tooltip = frame_tooltip
+            if frame_cursor is not None:
+                cursor = frame_cursor
 
         if tooltip is None: # We are not on a widget requiring a tooltip
             if self.current_tooltip is not None:
@@ -301,10 +308,15 @@ class GamePhase(_BasePhase, Master):
                 self.notify_change()
         else: # We are on a widget requiring a tooltip
             if tooltip is self.current_tooltip: # It is the same as the current tooltip
-                self._tooltip_delay -= dt
-                if self._tooltip_delay < 0:
-                    self.notify_change() # We ask to remake the screen only if the delay is exceeded
+                tooltip.loop(dt)
+                if tooltip._surface_changed: # need to go like this as tooltip's internal notify change do not call the phase
+                    self.notify_change()
+                if self._tooltip_delay > 0:
+                    self._tooltip_delay -= dt
+                    if self._tooltip_delay < 0:
+                        self.notify_change() # We ask to remake the screen only if the delay is exceeded
             else: # We have a new tooltip
+                tooltip.begin(self.settings)
                 self.current_tooltip = tooltip
                 self._tooltip_delay = _TOOLTIP_DELAY
                 self._tooltip_x, self._tooltip_y = None, None
@@ -320,17 +332,21 @@ class GamePhase(_BasePhase, Master):
             if has_changed:
                 pygame.mouse.set_cursor(self.current_cursor.get(self.settings))
                 # Trigger the update of the cursor.
-                pygame.mouse.set_pos(x, y)
+                pygame.mouse.set_pos(*pos)
         else:
             self.current_cursor.reset()
             self.current_cursor = cursor
             pygame.mouse.set_cursor(self.current_cursor.get(self.settings))
             # Trigger the update of the cursor.
-            pygame.mouse.set_pos(x, y)
+            pygame.mouse.set_pos(*pos)
+    
+    @lru_cache()
+    def visible_children(self) -> list[Frame]:
+        return sorted(filter(lambda ch: (ch.is_visible() and ch._x is not None), self.frame_children), key=lambda ch: ch.layer)
 
-    def draw(self, screen: pygame.Surface) -> pygame.Surface:
-        """Make the new surface to be returned to his parent."""
-        for frame in self.visible_children:
+    def draw(self, screen: pygame.Surface):
+        """Draw the phase's surface on the screen."""
+        for frame in self.visible_children():
             surf = frame.get_surface()
             screen.blit(surf, (frame.relative_left, frame.relative_top))
 
@@ -338,4 +354,7 @@ class GamePhase(_BasePhase, Master):
             if self._tooltip_x is None:
                 x, y = self.mouse.get_position() # We set the position of the tooltip with the position of the mouse.
                 self._tooltip_x, self._tooltip_y = x, y
-            screen.blit(self.current_tooltip.get_surface(), (self._tooltip_x, self._tooltip_y - self.current_tooltip.height))
+            screen.blit(self.current_tooltip.get_surface(self), (self._tooltip_x, max(0, self._tooltip_y - self.current_tooltip.height)))
+
+    def make_surface(self) -> pygame.Surface:
+        pass

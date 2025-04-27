@@ -1,45 +1,57 @@
 """The child module defines the child class that are abstract visual objects with a master."""
 from abc import abstractmethod
+from typing import Self
 from pygame import Rect, Surface
 from .visual import Visual
 from .master import Master
+from ..states import WidgetStates
 
 class Child(Visual):
     
-    def __init__(self, master: Master, update_if_invisible: bool = False, add_to_master: bool = True) -> None:
-        super().__init__()
+    def __init__(self, master: Master, update_if_invisible: bool = False, **kwargs) -> None:
+        super().__init__(**kwargs)
         self.master = master
-        if add_to_master:
-            self.master.add_child(self)
+        self.master.add_child(self, False, False, False, False, False, False)
         self._visible = True
         self._update_if_invisible = update_if_invisible
         self.absolute_rect: Rect
+        # self.state = WidgetStates.NORMAL
 
     @abstractmethod
     def make_surface(self) -> Surface:
         raise NotImplementedError()
 
-    def get_surface(self) -> Surface:
-        """Return the surface to be displayed."""
-        if self._surface_changed or self._last_surface is None:
-            self._surface_changed = False
-            self._last_surface = self.make_surface()
-        return self._last_surface
-
-    def hide(self):
+    def hide(self) -> Self:
+        """Hide the object."""
         self._visible = False
+        self.master._clear_cache()
+        self.master.notify_change()
+        return self
 
-    def show(self):
+    def show(self) -> Self:
+        """Show the object."""
         self._visible = True
+        self.master._clear_cache()
+        self.master.notify_change()
+        return self
 
-    def toggle_visibility(self):
+    def toggle_visibility(self) -> Self:
+        """Toggle the object visibility."""
         self._visible = not self._visible
+        self.master._clear_cache()
+        self.master.notify_change()
+        return self
 
     def get_visibility(self):
         return self._visible
 
     def is_visible(self):
         return self.get_visibility() and self.master.is_child_on_me(self)
+
+    @property
+    def game(self):
+        """Return the game."""
+        return self.master.game
 
     def notify_change(self):
         """Notify a change in the visual."""
@@ -49,16 +61,4 @@ class Child(Visual):
 
     def loop(self, dt: int):
         if self.is_visible() or self._update_if_invisible:
-            self.update(dt)
-
-    def start(self):
-        pass
-
-    def begin(self):
-        self.start()
-
-    def end(self):
-        pass
-
-    def finish(self):
-        self.end()
+            super().loop(dt)

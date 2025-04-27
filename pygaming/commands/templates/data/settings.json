@@ -3,11 +3,12 @@
         "playground": {
             "K_LEFT": "left",
             "K_RIGHT": "right",
-            "K_ESCAPE": "pause"
+            "K_ESCAPE": "pause",
+            "K_SPACE" : "space"
         },
         "lobby": {}
     },
-    "current_language": "fr_FR", 
+    "current_language": "fr_FR",
     "fullscreen": false,
     "volumes": {
         "main": 1,

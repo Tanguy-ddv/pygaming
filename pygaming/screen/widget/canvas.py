@@ -1,37 +1,32 @@
 """the canvas module defined the canvas widget used to draw."""
 
 from pygame.surface import Surface as Surface
-from ..cursor import Cursor
+from .._abstract import GraphicalChild, Placeable
 from ..frame import Frame
 from ..art.art import Art
 from ..art import transform
-from ..tooltip import Tooltip
-from ..element import Element
 from ...file import get_file
 
-class Canvas(Element):
+class Canvas(GraphicalChild, Placeable):
     """A Widged used to draw objects on."""
 
     def __init__(
         self,
         master: Frame,
         background: Art,
-        tooltip: Tooltip | None = None,
-        cursor: Cursor | None = None,
     ) -> None:
         super().__init__(
-            master,
-            background,
-            tooltip,
-            cursor,
-            False,
-            False,
-            None,
-            False
+            master=master,
+            art=background,
+            update_if_invisible=False
         )
         self._transfos = []
         self._index = 0
-        self._background_copy = self.background.copy()
+        self._background_copy = background.copy()
+    
+    def begin(self):
+        self._background_copy.start(**self.game.settings)
+        super().begin()
 
     def previous(self):
         if self._index > 0:
@@ -40,7 +35,7 @@ class Canvas(Element):
                 pipeline = transform.Pipeline(*self._transfos[:self._index])
             else:
                 pipeline = None
-            self._background_copy = self.background.copy(pipeline)
+            self._background_copy = self._arts.main.copy(pipeline)
             self.notify_change()
             return True
         return False
@@ -52,15 +47,6 @@ class Canvas(Element):
             self.notify_change()
             return True
         return False
-
-    def update(self, loop_duration):
-        pass
-
-    def start(self):
-        pass
-
-    def end(self):
-        pass
 
     def transform(self, transfo: transform.Transformation):
         self._transfos = self._transfos[:self._index] # discard the undone transformations
@@ -98,7 +84,7 @@ class Canvas(Element):
         self.transform(transfo)
 
     def make_surface(self) -> Surface:
-        return self._background_copy.get(self.background, **self.game.settings)
+        return self._background_copy.get(self._arts.main, **self.game.settings)
 
     def save(self, path):
         self._background_copy.save(get_file('image'), path)

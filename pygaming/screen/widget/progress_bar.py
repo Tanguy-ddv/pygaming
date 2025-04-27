@@ -1,19 +1,17 @@
 """The progess_bar module contains the ProgressBar."""
-from pygame.transform import scale, smoothscale
 from typing import Literal, Callable
+from pygame.transform import scale, smoothscale
 from ZOCallable import ZOCallable, verify_ZOCallable
 from ZOCallable.functions import linear
 from pygame.surface import Surface as Surface
-from ..element import Element
 from ..frame import Frame
 from ..anchors import Anchor
 from ...color import ColorLike
 from ..art import Art, Rectangle
 from ...database import TextFormatter
-from ..tooltip import Tooltip
-from ..cursor import Cursor
+from .._abstract import Placeable, GraphicalChild
 
-class ProgressBar(Element):
+class ProgressBar(Placeable, GraphicalChild):
 
     def __init__(
         self,
@@ -27,8 +25,6 @@ class ProgressBar(Element):
         # rescale the bar, move the bar the opposite of the extending side, hide the extending side.
         transition_function: ZOCallable = linear,
         transition_duration: int = 300, # [ms]
-        tooltip: Tooltip = None,
-        cursor: Cursor = None,
     ):
 
         if background is None:
@@ -37,7 +33,12 @@ class ProgressBar(Element):
         if foreground is None:
             foreground = Rectangle((0, 0, 0, 0), *bar.size)
 
-        super().__init__(master, background, tooltip, cursor, False, False, None, False)
+        super().__init__(
+            master=master,
+            art=background,
+            continue_animation=True,
+            update_if_invisible=False
+        )
 
         self.foreground = foreground
         self.bar = bar
@@ -57,13 +58,15 @@ class ProgressBar(Element):
         self._value = new_value
         self._current_transition = (self._current_position, self._value)
 
-    def start(self):
+    def begin(self, **kwargs):
         self.foreground.start(**self.game.settings)
         self.bar.start(**self.game.settings)
+        super().begin(**kwargs)
 
-    def end(self):
+    def finish(self):
         self.foreground.end()
         self.bar.end()
+        super().finish()
 
     def update(self, loop_duration):
         """Update the progress bar."""
@@ -90,7 +93,7 @@ class ProgressBar(Element):
                 self._current_position = self._value
 
     def make_surface(self) -> Surface:
-        background = self.background.get(None, copy=True, **self.game.settings)
+        background = self._arts.get(self.state, **self.game.settings).copy()
         foreground = self.foreground.get(None, copy=False, **self.game.settings)
         bar = self.bar.get(None, copy=False, **self.game.settings)
         # For each case, find the blitting coordinate and the perhaps transformed bar.
@@ -171,8 +174,6 @@ class TextProgressBar(ProgressBar):
         displaying: Literal['scaling', 'sliding', 'hiding', 'smooth_scaling'] = 'sliding',
         transition_function: ZOCallable = linear,
         transition_duration: int = 300,
-        tooltip: Tooltip = None,
-        cursor: Cursor = None,
         justify: Anchor = Anchor.CENTER,
         text_factory: Callable[[float], str | TextFormatter] = lambda value: str(int(value*100)) + '%',
         use_virtual_value: bool = False
@@ -187,8 +188,6 @@ class TextProgressBar(ProgressBar):
             displaying,
             transition_function,
             transition_duration,
-            tooltip,
-            cursor
         )
 
         self._justify = justify
@@ -206,7 +205,7 @@ class TextProgressBar(ProgressBar):
         bg = ProgressBar.make_surface(self)
         rendered_text = self._render_text()
         text_width, text_height = rendered_text.get_size()
-        just_x = self._justify[0]*(self.background.width - text_width)
-        just_y = self._justify[1]*(self.background.height - text_height)
+        just_x = self._justify[0]*(self._arts.width - text_width)
+        just_y = self._justify[1]*(self._arts.height - text_height)
         bg.blit(rendered_text, (just_x, just_y))
         return bg
