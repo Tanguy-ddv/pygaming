@@ -55,11 +55,11 @@ class Canvas(GraphicalChild, Placeable):
         self._background_copy.transform(transfo)
         self.notify_change()
     
-    def draw_line(self, color, p1, p2, thickness: int = 0, allow_antialias: bool = True):
+    def draw_line(self, color, p1, p2, thickness: int = 1, allow_antialias: bool = True):
         transfo = transform.DrawLine(color, p1, p2, thickness, allow_antialias)
         self.transform(transfo)
 
-    def draw_lines(self, color, points, thickness: int = 0, closed: bool=False, allow_antialias: bool = True):
+    def draw_lines(self, color, points, thickness: int = 1, closed: bool=False, allow_antialias: bool = True):
         transfo = transform.DrawLines(color, points, thickness, closed, allow_antialias)
         self.transform(transfo)
 
@@ -87,4 +87,4 @@ class Canvas(GraphicalChild, Placeable):
         return self._background_copy.get(self._arts.main, **self.game.settings)
 
     def save(self, path):
-        self._background_copy.save(get_file('image'), path)
+        self._background_copy.save(path)
