@@ -3,14 +3,14 @@ from typing import Optional, Self
 import numpy as np
 import pygame
 from functools import lru_cache
-from ._abstract import Master, Focusable, Child, Collideable
+from ._abstract import Master, GraphicalFocusable, Focusable, Child, Collideable
 from .art.art import Art
 from .camera import Camera
 from .anchors import CENTER_CENTER, TOP_LEFT, Anchor, AnchorLike
 from ..inputs import Click
-from .hover import Cursor, Tooltip, Hoverable
+from .hover import Cursor, Tooltip
 from .states import WidgetStates
-class Frame(Focusable, Collideable, Master):
+class Frame(GraphicalFocusable, Collideable, Master):
     """
     The Frame represent a fraction of the screen.
     It has backgrounds and can contain many elements, including other frames, widgets and actors.
@@ -145,7 +145,7 @@ class Frame(Focusable, Collideable, Master):
         if self.state == WidgetStates.FOCUSED and self.has_a_widget_focused:
             widget_children: list[Focusable] = list(
                 filter(
-                    lambda child: child.state in [WidgetStates.NORMAL, WidgetStates.HOVERED, WidgetStates.FOCUSED],
+                    lambda child: child.state != WidgetStates.DISABLED,
                     self.focusable_children
                 )
             )

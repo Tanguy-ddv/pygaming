@@ -9,8 +9,31 @@ from .textual import Textual
 from ..hitbox import Hitbox
 from ..states import WidgetStates
 
+class Focusable(Collideable):
 
-class Focusable(GraphicalChild, Collideable):
+    def __init__(
+        self,
+        master: Master,
+        update_if_invisible: bool,
+        hitbox: Hitbox | None,
+        **kwargs
+    ):
+        super().__init__(master, update_if_invisible, hitbox, **kwargs)
+        self.master.add_child(self, True, False, False, False, False, False)
+
+    def focus(self):
+        """Focus the object."""
+        if self.state in [WidgetStates.NORMAL, WidgetStates.HOVERED]:
+            self.state = WidgetStates.FOCUSED
+            self.notify_change()
+
+    def unfocus(self):
+        """Unfocus the object."""
+        if self.state == WidgetStates.FOCUSED:
+            self.state = WidgetStates.NORMAL
+            self.notify_change()
+
+class GraphicalFocusable(GraphicalChild, Focusable):
 
     def __init__(
         self,
@@ -25,7 +48,6 @@ class Focusable(GraphicalChild, Collideable):
         super().__init__(master=master, art=art, hitbox=hitbox, update_if_invisible=update_if_invisible, **kwargs)
         self._arts.set_continue_animation(continue_animation)
         self._arts.add(WidgetStates.FOCUSED, focused_art)
-        self.master.add_child(self, True, False, False, False, False, False)
 
     def focus(self):
         """Focus the object."""
@@ -41,7 +63,7 @@ class Focusable(GraphicalChild, Collideable):
             self._arts.new_state()
             self.notify_change()
 
-class TextualFocusable(Focusable, Textual):
+class TextualFocusable(GraphicalFocusable, Textual):
 
     def __init__(
         self,

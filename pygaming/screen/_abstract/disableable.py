@@ -1,17 +1,34 @@
 from .master import Master
 from ..art import Art
-from .focusable import Focusable, TextualFocusable
+from .focusable import Focusable, TextualFocusable, GraphicalFocusable
 from ..states import WidgetStates
 from ...color import Color
 from ...database.texts import TextFormatter
 from ..anchors import CENTER, Anchor
 from .master import Master
 from ..art import Art
-from .textual import Textual
 from ..hitbox import Hitbox
 from ..states import WidgetStates
 
 class Disableable(Focusable):
+
+    def __init__(self, master: Master, update_if_invisible: bool, hitbox: Hitbox | None, **kwargs):
+        super().__init__(master, update_if_invisible, hitbox, **kwargs)
+        self.master.add_child(self, True, True, False, False, False, False)
+
+    def disable(self):
+        """Disable the object."""
+        if self.state != WidgetStates.DISABLED:
+            self.state = WidgetStates.DISABLED
+            self.notify_change()
+
+    def enable(self):
+        """Enable the object."""
+        if self.state == WidgetStates.DISABLED:
+            self.state = WidgetStates.NORMAL
+            self.notify_change()
+
+class GraphicalDisableable(GraphicalFocusable, Disableable):
 
     def __init__(
         self,
@@ -34,13 +51,13 @@ class Disableable(Focusable):
             **kwargs
         )
         self._arts.add(WidgetStates.DISABLED, disabled_art)
-        self.master.add_child(self, True, True, False, False, False, False)
 
     def disable(self):
         """Disable the object."""
-        self.state = WidgetStates.DISABLED
-        self._arts.new_state()
-        self.notify_change()
+        if self.state != WidgetStates.DISABLED:
+            self.state = WidgetStates.DISABLED
+            self._arts.new_state()
+            self.notify_change()
 
     def enable(self):
         """Enable the object."""
@@ -49,7 +66,7 @@ class Disableable(Focusable):
             self._arts.new_state()
             self.notify_change()
 
-class TextualDisableable(Disableable, TextualFocusable):
+class TextualDisableable(GraphicalDisableable, TextualFocusable):
 
     def __init__(
         self,

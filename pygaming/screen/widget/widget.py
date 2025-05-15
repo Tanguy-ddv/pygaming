@@ -1,16 +1,18 @@
 """The widget module contains the widget class, which is a base for all widgets."""
-
 from abc import abstractmethod
 from ..frame import Frame
-from .._abstract import Disableable, TextualDisableable
+from .._abstract import Disableable, TextualDisableable, GraphicalDisableable, Placeable, Focusable
 from ..art import Art
 from ..hover import Cursor, Tooltip, Hoverable, TextualHoverable
 from ..hitbox import Hitbox
+from ..states import WidgetStates
 from ...color import Color
 from ...database import TextFormatter
 from ..anchors import Anchor, CENTER
+from ...error import PygamingException
 
-class Widget(Hoverable, Disableable):
+class Widget(Hoverable, GraphicalDisableable):
+    """Base class for hoverable and disableable widgets."""
 
     def __init__(
         self,
@@ -47,6 +49,7 @@ class Widget(Hoverable, Disableable):
         raise NotImplementedError()
 
 class TextualWidget(TextualHoverable, TextualDisableable):
+    """Base class for hoverable, disableable and textual widgets."""
 
     def __init__(
         self,
@@ -101,3 +104,53 @@ class TextualWidget(TextualHoverable, TextualDisableable):
     def get(self):
         """Return the value of the widget input."""
         raise NotImplementedError()
+
+class CompositeWidget(Disableable, Placeable):
+    """A Composite widget is a widget composed of several widgets."""
+    
+    def __init__(self, master: Frame, update_if_invisible: bool = True, **kwargs):
+        super().__init__(master, update_if_invisible, None, **kwargs)
+        self._widgets: set[Placeable] = set()
+        self._linked_focus_widget: Focusable | None = None
+    
+    def add_widget(self, widget: Placeable, link_focus: bool):
+        self._widgets.add(widget)
+        if link_focus and isinstance(widget, Focusable):
+            self._linked_focus_widget = widget
+
+    def disable(self):
+        """Disable the object."""
+        if self.state != WidgetStates.DISABLED:
+            for widget in self._widgets:
+                if isinstance(widget, Disableable):
+                    widget.disable()
+            self.state = WidgetStates.DISABLED
+            self.notify_change()
+
+    def enable(self):
+        """Enable the object."""
+        if self.state == WidgetStates.DISABLED:
+            for widget in self._widgets:
+                if isinstance(widget, Disableable):
+                    widget.enable()
+            self.state = WidgetStates.NORMAL
+            self.notify_change()
+
+    def focus(self):
+        """Focus the object."""
+        for widget in self._widgets: # make sure every subwidget is unfocused.
+            if isinstance(widget, Focusable):
+                widget.unfocus()
+        if self.state == WidgetStates.NORMAL:
+            self._linked_focus_widget.focus()
+            self.state = WidgetStates.FOCUSED
+            self.notify_change()
+
+    def unfocus(self):
+        """Unfocus the object."""
+        if self.state == WidgetStates.FOCUSED:
+            for widget in self._widgets:
+                if isinstance(widget, Focusable):
+                    widget.unfocus()
+            self.state = WidgetStates.NORMAL
+            self.notify_change()

@@ -4,7 +4,6 @@ from typing import Self
 from pygame import Rect, Surface
 from .visual import Visual
 from .master import Master
-from ..states import WidgetStates
 
 class Child(Visual):
     
@@ -15,7 +14,6 @@ class Child(Visual):
         self._visible = True
         self._update_if_invisible = update_if_invisible
         self.absolute_rect: Rect
-        # self.state = WidgetStates.NORMAL
 
     @abstractmethod
     def make_surface(self) -> Surface:
