@@ -19,7 +19,7 @@ class Focusable(Collideable):
         **kwargs
     ):
         super().__init__(master, update_if_invisible, hitbox, **kwargs)
-        self.master.add_child(self, True, False, False, False, False, False)
+        self.master.add_child(self, True, False, False, False, False)
 
     def focus(self):
         """Focus the object."""

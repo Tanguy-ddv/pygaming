@@ -59,7 +59,7 @@ class Frame(GraphicalFocusable, Collideable, Master):
             update_if_invisible=update_if_invisible,
             continue_animation=continue_animation
         )
-        self.master.add_child(self, False, False, False, False, True, False)
+        self.master.add_child(self, False, False, False, True, False)
         self._compute_wc_ratio()
 
         self.views = set()
@@ -98,7 +98,7 @@ class Frame(GraphicalFocusable, Collideable, Master):
             self.focus()
         one_is_clicked = False
 
-        for (i,child) in enumerate(self.collideable_children.intersection(self.focusable_children)):
+        for (i,child) in enumerate(self.focusable_children):
             if child.is_contact(click) and child.state != WidgetStates.DISABLED:
                 child.focus()
                 self._current_object_focus = i

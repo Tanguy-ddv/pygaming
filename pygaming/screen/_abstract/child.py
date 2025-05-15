@@ -10,7 +10,7 @@ class Child(Visual):
     def __init__(self, master: Master, update_if_invisible: bool = False, **kwargs) -> None:
         super().__init__(**kwargs)
         self.master = master
-        self.master.add_child(self, False, False, False, False, False, False)
+        self.master.add_child(self, False, False, False, False, False)
         self._visible = True
         self._update_if_invisible = update_if_invisible
         self.absolute_rect: Rect

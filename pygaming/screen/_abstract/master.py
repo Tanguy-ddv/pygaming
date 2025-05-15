@@ -182,7 +182,6 @@ class Master(Visual):
         self.focusable_children = OrderedSet()
         self.disableable_children = set()
         self.hoverable_children = set()
-        self.collideable_children = set()
         self.placeable_children = set()
         self.frame_children = set()
         self.wc_ratio: tuple[int, int]
@@ -192,7 +191,7 @@ class Master(Visual):
         self.absolute_left: int
         self.absolute_top: int
 
-    def add_child(self, child, focusable: bool, disableable: bool, collideable: bool, hoverable: bool, frame: bool, placeable: bool):
+    def add_child(self, child, focusable: bool, disableable: bool, hoverable: bool, frame: bool, placeable: bool):
         """Add a new element to the child set."""
         self.children.add(child)
         if focusable:
@@ -201,10 +200,8 @@ class Master(Visual):
                 self.disableable_children.add(child)
         if placeable:
             self.placeable_children.add(child)
-            if collideable:
-                self.collideable_children.add(child)
-                if hoverable:
-                    self.hoverable_children.add(child)
+            if hoverable:
+                self.hoverable_children.add(child)
         if frame:
             self.frame_children.add(child)
 

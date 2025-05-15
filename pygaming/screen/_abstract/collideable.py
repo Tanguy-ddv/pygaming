@@ -8,7 +8,6 @@ class Collideable(Placeable):
 
     def __init__(self, master: Master, update_if_invisible: bool, hitbox: Hitbox | None, **kwargs):
         super().__init__(master=master, update_if_invisible=update_if_invisible, **kwargs)
-        self.master.add_child(self, False, False, True, False, False, True)
         if hitbox is None:
             hitbox = Hitbox(0, 0, *self.size)
         self.hitbox = hitbox

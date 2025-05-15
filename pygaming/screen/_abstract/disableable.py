@@ -14,7 +14,7 @@ class Disableable(Focusable):
 
     def __init__(self, master: Master, update_if_invisible: bool, hitbox: Hitbox | None, **kwargs):
         super().__init__(master, update_if_invisible, hitbox, **kwargs)
-        self.master.add_child(self, True, True, False, False, False, False)
+        self.master.add_child(self, True, True, False, False, False)
 
     def disable(self):
         """Disable the object."""

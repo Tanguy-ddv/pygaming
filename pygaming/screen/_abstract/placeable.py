@@ -11,7 +11,7 @@ class Placeable(Child):
     def __init__(self, master: Master, update_if_invisible: bool, **kwargs):
         # **kwargs so that the call of super().__init__(...) in the element class can pass every of its argument to Placable.
         super().__init__(master=master, update_if_invisible=update_if_invisible, **kwargs)
-        self.master.add_child(self, False, False, False, False, False, True)
+        self.master.add_child(self, False, False, False, False, True)
         self._x = None
         self._y = None
         self.anchor = None
