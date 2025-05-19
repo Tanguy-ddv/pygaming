@@ -220,26 +220,32 @@ class _MultiStateButton(CompositeWidget):
         super().__init__(master, size, update_if_invisible, **kwargs)
         self.__reset_on_start = reset_on_start
         self.__current_button_idx = 0
-        self.focusable_children[0].show()
-        self.set_link_focus(self.focusable_children[0])
 
     def begin(self):
         if self.__reset_on_start:
-            self._linked_focus_widget.hide()
+            if self._linked_focus_widget is not None:
+                self._linked_focus_widget.hide()
             self.__current_button_idx = 0
             current_button = self.focusable_children[self.__current_button_idx]
             current_button.show()
+            current_button.enable()
             self.set_link_focus(current_button)
         super().begin()
 
     def _next(self):
         self.__current_button_idx += 1
         self.__current_button_idx %= len(self.focusable_children)
-        self._linked_focus_widget.hide()
+        if self._linked_focus_widget is not None:
+            self._linked_focus_widget.hide()
+            self._linked_focus_widget.disable()
         current_button = self.focusable_children[self.__current_button_idx]
         current_button.show()
+        current_button.enable()
         self.set_link_focus(current_button)
         self.notify_change()
+    
+    def get(self):
+        return self.__current_button_idx
 
 class MultiStateButton(_MultiStateButton):
 
@@ -262,6 +268,9 @@ class MultiStateButton(_MultiStateButton):
     ):
         self.focusable_children: OrderedSet[_Button]
         length = len(normal_background)
+
+        super().__init__(master, normal_background[0].size, update_if_invisible, reset_on_start)
+
         for nbg, abg, fbg, dbg, hbg, hbx, tt, curs, oncc, onuc in zip(
             _make_list(normal_background, length),
             _make_list(active_background, length),
@@ -285,9 +294,8 @@ class MultiStateButton(_MultiStateButton):
                 continue_animation, oncc, new_on_unclick, update_if_invisible
             )
             _b.place(0, 0)
+            _b.disable()
             _b.hide()
-        
-        super().__init__(master, normal_background[0].size, update_if_invisible, reset_on_start)
 
 class TextMultiStateButton(_MultiStateButton):
 
@@ -322,6 +330,9 @@ class TextMultiStateButton(_MultiStateButton):
     ):
         self.focusable_children: OrderedSet[_Button]
         length = len(normal_background)
+
+        super().__init__(master, normal_background[0].size, update_if_invisible, reset_on_start)
+
         for nbg, nf, nfc, loc, abg, af, afc, fbg, ff, ffc, dbg, df, dfc, hbg, hf, hfc, hbx, tt, curs, oncc, onuc, just in zip(
             _make_list(normal_background, length),
             _make_list(normal_font, length),
@@ -358,6 +369,5 @@ class TextMultiStateButton(_MultiStateButton):
                 oncc, new_on_unclick, just, continue_animation, update_if_invisible
             )
             _b.place(0, 0)
+            _b.disable()
             _b.hide()
-        
-        super().__init__(master, normal_background[0].size, update_if_invisible, reset_on_start)

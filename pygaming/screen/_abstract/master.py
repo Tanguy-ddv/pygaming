@@ -9,6 +9,8 @@ from ordered_set import OrderedSet
 from .visual import Visual
 from ...game import Game
 from ..anchors import AnchorLike, Anchor, TOP_LEFT, CENTER_CENTER
+from ..states import WidgetStates
+from ...inputs import Click
 
 @dataclass
 class _GridObject:
@@ -191,6 +193,40 @@ class Master(Visual):
         self.absolute_left: int
         self.absolute_top: int
 
+    def update_focus(self, click: Click | None):
+        """Update the focus of all the children in the frame."""
+        if not self.state == WidgetStates.FOCUSED:
+            self.notify_change()
+            self.focus()
+        one_is_clicked = False
+
+        for (i,child) in enumerate(self.focusable_children):
+            if child.is_contact(click) and child.state != WidgetStates.DISABLED:
+                child.focus()
+                self._current_object_focus = i
+                one_is_clicked = True
+                self.has_a_widget_focused = True
+            else:
+                if self.state == WidgetStates.FOCUSED:
+                    child.unfocus()
+
+        for child in self.frame_children:
+            if child.is_contact(click):
+                child.update_focus(click)
+        if not one_is_clicked:
+            self._current_object_focus = None
+            self.has_a_widget_focused = False
+
+    def notify_change_all(self):
+        """Force the change notification to remake every surface."""
+        self.notify_change()
+
+        for child in self.children:
+            child.notify_change()
+
+        for frame in self.frame_children:
+            frame.notify_change_all()
+
     def add_child(self, child, focusable: bool, disableable: bool, hoverable: bool, frame: bool, placeable: bool):
         """Add a new element to the child set."""
         self.children.add(child)
@@ -233,10 +269,6 @@ class Master(Visual):
             return self.grids[idx]
         else:
             return self.create_grid(0, 0, TOP_LEFT)
-
-    @abstractmethod
-    def notify_change_all(self) -> None:
-        pass
 
     @lru_cache(1)
     def visible_children(self):

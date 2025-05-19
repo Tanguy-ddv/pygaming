@@ -1,6 +1,7 @@
 """The visual module define the Visual class, a base class for everything that is displayed on the screen."""
 from abc import ABC, abstractmethod
 from pygame import Surface
+from ..states import WidgetStates
 
 class Visual(ABC):
     """The Visual class is the most abstract class representing anything on the screen."""
@@ -9,6 +10,7 @@ class Visual(ABC):
         super().__init__()
         self._last_surface: Surface | None = None
         self._surface_changed = True
+        self.state = WidgetStates.NORMAL # default value for everything on screen
 
     @property
     @abstractmethod

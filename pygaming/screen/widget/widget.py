@@ -106,15 +106,25 @@ class TextualWidget(TextualHoverable, TextualDisableable):
         """Return the value of the widget input."""
         raise NotImplementedError()
 
-class CompositeWidget(Master, Disableable):
+class CompositeWidget(Disableable, Master):
     """A Composite widget is a widget composed of several widgets."""
     
     def __init__(self, master: Frame, size: tuple[int, int], update_if_invisible: bool = True, **kwargs):
         self._width, self._height = size
         super().__init__(master=master, update_if_invisible=update_if_invisible, hitbox=None, **kwargs)
         self._linked_focus_widget: Focusable | None = None
+        self.wc_ratio = (1, 1)
         self.master.add_child(self, False, False, False, True, False)
-    
+
+    def loop(self, dt: int):
+        """Update the frame every loop iteration."""
+        # Update the widget
+        self.update(dt)
+
+        # Update the children
+        for element in self.children:
+            element.loop(dt)
+
     @property
     def width(self):
         return self._width
@@ -181,6 +191,5 @@ class CompositeWidget(Master, Disableable):
     def notify_change_all(self):
         """Force the change notification to remake every surface."""
         self.notify_change()
-
         for child in self.children:
             child.notify_change()

@@ -45,6 +45,15 @@ class Placeable(Child):
         on_screen = self.absolute_rect.colliderect((0, 0, *self.master.game.config.dimension))
         return on_screen and self.master.is_child_on_me(self)
 
+    def begin(self, **kwargs):
+        self.on_master = self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()
+        return super().begin(**kwargs)
+
+    def is_placed(self):
+        return self._x is not None
+
     def place(self, x: int, y: int, anchor: AnchorLike = TOP_LEFT, layer=0) -> Self:
         """
         Place the element on its master.
@@ -66,10 +75,6 @@ class Placeable(Child):
         self._y = y
         self.anchor = Anchor(anchor)
         self.layer = layer
-
-        self.on_master = self.get_on_master()
-        if self.on_master:
-            self.master.notify_change()
         
         return self
 

@@ -91,40 +91,6 @@ class Frame(GraphicalFocusable, Collideable, Master):
             return tooltip, cursor
         return None, None
 
-    def update_focus(self, click: Click | None):
-        """Update the focus of all the children in the frame."""
-        if not self.state == WidgetStates.FOCUSED:
-            self.notify_change()
-            self.focus()
-        one_is_clicked = False
-
-        for (i,child) in enumerate(self.focusable_children):
-            if child.is_contact(click) and child.state != WidgetStates.DISABLED:
-                child.focus()
-                self._current_object_focus = i
-                one_is_clicked = True
-                self.has_a_widget_focused = True
-            else:
-                if self.state == WidgetStates.FOCUSED:
-                    child.unfocus()
-
-        for child in self.frame_children:
-            if child.is_contact(click):
-                child.update_focus(click)
-        if not one_is_clicked:
-            self._current_object_focus = None
-            self.has_a_widget_focused = False
-
-    def notify_change_all(self):
-        """Force the change notification to remake every surface."""
-        self.notify_change()
-
-        for child in self.children:
-            child.notify_change()
-
-        for frame in self.frame_children:
-            frame.notify_change_all()
-
     def notify_change(self):
         """Notify a change in the visual."""
         self._surface_changed = True
