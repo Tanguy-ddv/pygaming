@@ -237,12 +237,12 @@ class _Slider(Widget):
                         but got {self._direction}.
                         """)
             
-            if self.game.keyboard.actions_down[decrease] and self._index > 0:
+            if self.game.keyboard.actions_down_or_repeated[decrease] and self._index > 0:
                 self._start_transition(max(0, self._index - self._step_wth_arrow))
                 if self._command is not None:
                     self._command()
             
-            if self.game.keyboard.actions_down[increase] and self._index < len(self._values) - 1:
+            if self.game.keyboard.actions_down_or_repeated[increase] and self._index < len(self._values) - 1:
                 self._start_transition(min(self._index + self._step_wth_arrow, len(self._values) - 1))
                 if self._command is not None:
                     self._command()

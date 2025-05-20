@@ -31,6 +31,8 @@ class _Button(Widget):
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
         update_if_invisible: bool = False,
+        repeat_command_delay: int | None = None, # [ms] similar to pygame.key.set_repeat
+        repeat_command_interval: int = 0, # [ms]
         **kwargs
     ) -> None:
         
@@ -50,6 +52,10 @@ class _Button(Widget):
         self._arts.add(WidgetStates.ACTIVE, active_background)
         self._on_click_command = on_click_command
         self._on_unclick_command = on_unclick_command
+
+        self._repeat_command_delay = repeat_command_delay
+        self._repeat_command_interval = repeat_command_interval if repeat_command_interval else repeat_command_delay
+        self._dt_before_repeat = 0
 
     def get(self):
         """Return true if the button is clicked, false otherwise."""
@@ -77,6 +83,15 @@ class _Button(Widget):
 
                     self._previous_state = self.state
                     self.state = WidgetStates.ACTIVE
+                    if self._repeat_command_delay is not None:
+                        self._dt_before_repeat = self._repeat_command_delay
+
+                elif self._repeat_command_delay is not None and self._on_click_command is not None:
+                    self._dt_before_repeat -= dt
+                    if self._dt_before_repeat < 0:
+                        self._on_click_command()
+                        self._dt_before_repeat = self._repeat_command_interval
+
 
             else:
                 if self.state == WidgetStates.ACTIVE:
@@ -102,6 +117,8 @@ class Button(_Button):
         cursor: Optional[Cursor] = None,
         on_click_command: Optional[Callable[[], Any]] = None,
         on_unclick_command: Optional[Callable[[], Any]] = None,
+        repeat_command_delay: int | None = None, # [ms]
+        repeat_command_interval: int = 0, # [ms]
         continue_animation: bool = False,
         update_if_invisible: bool = False
     ) -> None:
@@ -137,6 +154,8 @@ class Button(_Button):
             update_if_invisible=update_if_invisible,
             on_click_command=on_click_command,
             on_unclick_command=on_unclick_command,
+            repeat_command_delay=repeat_command_delay,
+            repeat_command_interval=repeat_command_interval
         )
 
 class TextButton(_Button, TextualWidget):
@@ -169,6 +188,8 @@ class TextButton(_Button, TextualWidget):
         cursor: Cursor | None = None,
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
+        repeat_command_delay: int | None = None, # [ms]
+        repeat_command_interval: int = 0, # [ms]
         justify: AnchorLike = CENTER,
         continue_animation: bool = False,
         update_if_invisible: bool = False
@@ -197,7 +218,9 @@ class TextButton(_Button, TextualWidget):
             hovered_font_color=hovered_font_color,
             justify=justify,
             on_click_command=on_click_command,
-            on_unclick_command=on_unclick_command
+            on_unclick_command=on_unclick_command,
+            repeat_command_delay=repeat_command_delay,
+            repeat_command_interval=repeat_command_interval
         )
         self._fonts.add(WidgetStates.ACTIVE, active_font, active_font_color)
 

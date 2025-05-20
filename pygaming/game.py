@@ -22,6 +22,7 @@ class Game(BaseRunnable):
     def __init__(self, first_phase: str, debug: bool = False) -> None:
         BaseRunnable.__init__(self, debug, GAME, first_phase)
         pygame.init()
+        pygame.key.set_repeat(self.config.get('repeat_delay'), self.config.get('repeat_interval'))
 
         self.settings = Settings(self.config)
 

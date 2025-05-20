@@ -175,12 +175,12 @@ class Entry(TextualWidget):
                 self._command()
 
             # Move the caret if an arrow is pressed.
-            if self.game.keyboard.actions_down['left']:
+            if self.game.keyboard.actions_down_or_repeated['left']:
                 self.move_to_the_left()
-            if self.game.keyboard.actions_down['right']:
+            if self.game.keyboard.actions_down_or_repeated['right']:
                 self.move_to_the_right()
 
-            if self.game.keyboard.actions_down['backspace']: # Delete one caracter.
+            if self.game.keyboard.actions_down_or_repeated['backspace']: # Delete one caracter.
                 self.del_one()
                 if self._command is not None and not command_called:
                     self._command()
@@ -432,19 +432,19 @@ class Text(TextualWidget):
                     self._command()
 
             # Move the caret if an arrow is pressed.
-            if self.game.keyboard.actions_down['left']:
+            if self.game.keyboard.actions_down_or_repeated['left']:
                 self.move_to_the_left()
                 self.__reset_caret(True)
-            if self.game.keyboard.actions_down['right']:
+            if self.game.keyboard.actions_down_or_repeated['right']:
                 self.move_to_the_right()
                 self.__reset_caret(True)
-            if self.game.keyboard.actions_down['up']:
+            if self.game.keyboard.actions_down_or_repeated['up']:
                 self.move_to_the_top()
                 self.__reset_caret(True)
-            if self.game.keyboard.actions_down['down']:
+            if self.game.keyboard.actions_down_or_repeated['down']:
                 self.move_to_the_bottom()
                 self.__reset_caret(True)
-            if self.game.keyboard.actions_down['backspace']: # Delete one caracter.
+            if self.game.keyboard.actions_down_or_repeated['backspace']: # Delete one caracter.
                 self.del_one()
                 self.__reset_caret(True)
                 if self._command is not None and not command_called:
