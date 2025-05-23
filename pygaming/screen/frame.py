@@ -291,19 +291,19 @@ class Frame(GraphicalFocusable, Collideable, Master):
     @property
     def absolute_left(self):
         """The absolute coordinates of the frame depends on the camera."""
-        return int(self.master.absolute_left + self.relative_left - self.camera.left*self.wc_ratio[0])
+        return int(self.master.absolute_left + self.relative_left)
 
     @property
     def absolute_top(self):
         """The absolute coordinates of the frame depends on the camera."""
-        return int(self.master.absolute_top + self.relative_top - self.camera.top*self.wc_ratio[1])
+        return int(self.master.absolute_top + self.relative_top)
 
     @property
     def absolute_right(self):
         """The absolute coordinates of the frame depends on the camera."""
-        return self.absolute_left + self.window.width*self.wc_ratio[0]
+        return self.absolute_left + self.window.width*self.master.wc_ratio[0]
 
     @property
     def absolute_bottom(self):
         """The absolute coordinates of the frame depends on the camera."""
-        return self.absolute_top + self.window.height*self.wc_ratio[1]
+        return self.absolute_top + self.window.height*self.master.wc_ratio[1]
