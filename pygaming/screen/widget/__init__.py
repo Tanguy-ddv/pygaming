@@ -8,6 +8,7 @@ from .progress_bar import ProgressBar, TextProgressBar
 from .canvas import Canvas
 from .figure import Figure
 from .view import View
+from .scrollbar import ScrollBar
 
 __all__ = ['Button', 'TextButton', 'Entry', 'Label', 'Slider', 'Widget', 'Paragraph', 'View', 'MultiStateButton', 'TextMultiStateButton',
-           'ProgressBar', 'TextProgressBar', 'TextSlider', 'Text', 'Canvas', 'Figure', 'TextualWidget']
+           'ProgressBar', 'TextProgressBar', 'TextSlider', 'Text', 'Canvas', 'Figure', 'TextualWidget', 'ScrollBar']
