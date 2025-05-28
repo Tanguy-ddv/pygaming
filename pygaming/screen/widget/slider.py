@@ -37,7 +37,7 @@ class _Slider(Widget):
         transition_function: ZOCallable = linear,
         transition_duration: int = 300, # [ms]
         update_if_invisible: bool = True,
-        step_wth_arrow: int = 1,
+        step_with_arrow: int = 1,
         direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
         command: Optional[Callable[[], Any]] = None,
         **kwargs
@@ -80,7 +80,7 @@ class _Slider(Widget):
         self._current_transition_delta = 0
         self._cursor_position = None
 
-        self._step_wth_arrow = step_wth_arrow
+        self._step_with_arrow = step_with_arrow
 
         self._direction = direction
         self._command = command
@@ -238,12 +238,12 @@ class _Slider(Widget):
                         """)
             
             if self.game.keyboard.actions_down_or_repeated[decrease] and self._index > 0:
-                self._start_transition(max(0, self._index - self._step_wth_arrow))
+                self._start_transition(max(0, self._index - self._step_with_arrow))
                 if self._command is not None:
                     self._command()
             
             if self.game.keyboard.actions_down_or_repeated[increase] and self._index < len(self._values) - 1:
-                self._start_transition(min(self._index + self._step_wth_arrow, len(self._values) - 1))
+                self._start_transition(min(self._index + self._step_with_arrow, len(self._values) - 1))
                 if self._command is not None:
                     self._command()
 
@@ -288,7 +288,7 @@ class Slider(_Slider):
         transition_function: ZOCallable = linear,
         transition_duration: int = 300,
         update_if_invisible: bool = True,
-        step_wth_arrow: int = 1,
+        step_wtih_arrow: int = 1,
         direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
         command: Callable[[], Any] | None = None,
         **kwargs
@@ -340,7 +340,7 @@ class Slider(_Slider):
             transition_function,
             transition_duration,
             update_if_invisible,
-            step_wth_arrow,
+            step_wtih_arrow,
             direction,
             command,
             **kwargs
@@ -379,7 +379,7 @@ class TextSlider(_Slider, TextualWidget):
         update_if_invisible: bool = True,
         text_factory: Callable[[Any], str] = str,
         justify: Anchor = Anchor.CENTER_CENTER,
-        step_wth_arrow: int = 1,
+        step_wtih_arrow: int = 1,
         direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
         command: Optional[Callable[[], Any]] = None,
     ) -> None:
@@ -431,7 +431,7 @@ class TextSlider(_Slider, TextualWidget):
             transition_function=transition_function,
             transition_duration=transition_duration,
             update_if_invisible=update_if_invisible,
-            step_wth_arrow=step_wth_arrow,
+            step_wtih_arrow=step_wtih_arrow,
             direction=direction,
             command=command,
             font=normal_font,
