@@ -14,10 +14,10 @@ class ScrollBar(CompositeWidget):
     def __init__(
         self,
         master: Frame,
+        target: Frame,
         up_button_normal_background: Art,
         down_button_normal_background: Art,
         slider_normal_background: Art,
-        target: Frame,
         slider_normal_cursor: Art,
         slider_focused_background: Art = None,
         slider_disabled_background: Art = None,
