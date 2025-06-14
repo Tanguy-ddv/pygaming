@@ -262,10 +262,10 @@ class MultiStateButton(MultiWidgetBase):
             _make_list(on_click_command, length),
             _make_list(on_unclick_command, length)
         ):
-            def new_on_unclick():
+            def new_on_unclick(onuc = onuc):
                 if onuc is not None:
                     onuc()
-                self._change(self.__current_idx + 1)
+                self._change(self._current_idx + 1)
 
             _b = _Button(
                 self,
@@ -307,7 +307,6 @@ class TextMultiStateButton(MultiWidgetBase):
         update_if_invisible: bool = False,
         reset_on_start: bool = True,
     ):
-        self.focusable_children: OrderedSet[_Button]
         length = len(normal_background)
 
         super().__init__(master, normal_background[0].size, update_if_invisible, reset_on_start)
@@ -336,10 +335,10 @@ class TextMultiStateButton(MultiWidgetBase):
             _make_list(on_unclick_command, length),
             _make_list(justify, length)
         ):
-            def new_on_unclick():
+            def new_on_unclick(onuc = onuc):
                 if onuc is not None:
                     onuc()
-                self._change(self.__current_idx + 1)
+                self._change(self._current_idx + 1)
 
             _b = TextButton(
                 self,
