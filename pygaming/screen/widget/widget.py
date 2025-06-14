@@ -3,8 +3,10 @@ from abc import abstractmethod
 
 from typing import TypeVar, List
 from pygame import Surface, SRCALPHA
+from ordered_set import OrderedSet
+
 from ..frame import Frame
-from .._abstract import Disableable, TextualDisableable, GraphicalDisableable, Placeable, Focusable, Master
+from .._abstract import Disableable, TextualDisableable, GraphicalDisableable, Focusable, Master
 from ..art import Art
 from ..hover import Cursor, Tooltip, Hoverable, TextualHoverable
 from ..hitbox import Hitbox
@@ -187,7 +189,7 @@ class CompositeWidget(Disableable, Master):
         """Return whether the child is visible on the frame or not."""
         return (child in self.placeable_children
             and child._x is not None
-            and self.relative_rect.colliderect(child.relative_rect)
+            and child.relative_rect.colliderect((0, 0, *self.relative_rect.size))
             )
     
     def notify_change_all(self):
@@ -212,30 +214,31 @@ class MultiWidgetBase(CompositeWidget):
     def __init__(self, master: Frame, size: tuple[int, int], update_if_invisible: bool = True, reset_on_start: bool = True, **kwargs):
         super().__init__(master, size, update_if_invisible, **kwargs)
         self.__reset_on_start = reset_on_start
-        self.__current_idx = 0
+        self._current_idx = 0
+        self.focusable_children: OrderedSet[Widget]
+
+    def _reset(self):
+        current_widget = self.focusable_children[self._current_idx]
+        current_widget.show()
+        current_widget.enable()
+        self.set_link_focus(current_widget)
+        self.notify_change()
 
     def begin(self):
         if self.__reset_on_start:
+            self._current_idx = 0
             if self._linked_focus_widget is not None:
                 self._linked_focus_widget.hide()
-            self.__current_idx = 0
-            current_button = self.focusable_children[self.__current_idx]
-            current_button.show()
-            current_button.enable()
-            self.set_link_focus(current_button)
+            self._reset()
         super().begin()
 
     def _change(self, new_idx):
-        self.__current_idx = new_idx
-        self.__current_idx %= len(self.focusable_children)
+        self._current_idx = new_idx
+        self._current_idx %= len(self.focusable_children)
         if self._linked_focus_widget is not None:
             self._linked_focus_widget.hide()
             self._linked_focus_widget.disable()
-        current_button = self.focusable_children[self.__current_idx]
-        current_button.show()
-        current_button.enable()
-        self.set_link_focus(current_button)
-        self.notify_change()
+        self._reset()
     
     def get(self):
-        return self.__current_idx
+        return self._current_idx
