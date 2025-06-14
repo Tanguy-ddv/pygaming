@@ -1,11 +1,11 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
-from typing import Optional, Sequence, Any, Literal, Callable
+from typing import Optional, Sequence, Any, Literal, Callable, List
 from pygame import Surface
 from ZOCallable import ZOCallable, verify_ZOCallable
 from ZOCallable.functions import linear
 from .._abstract import Arts
 from ..states import WidgetStates
-from .widget import Widget, TextualWidget
+from .widget import Widget, TextualWidget, MultiWidgetBase, _ListOrObject, _make_list
 from ..frame import Frame
 from ..art import Art
 from ..hover import Cursor, Tooltip
@@ -128,6 +128,8 @@ class _Slider(Widget):
             self._index = new_index
             self._current_transition = (self._cursor_position, self._positions[self._index])
             self._current_transition_delta = 0
+        if self._command is not None:
+            self._command()
 
     def update(self, dt: int):
         """Update the slider based on the inputs."""
@@ -143,8 +145,6 @@ class _Slider(Widget):
 
         # If the user is clicking:
         if self.is_contact(ck1) and not self.state == WidgetStates.DISABLED:
-            if self._command is not None:
-                self._command()
 
             if self._direction in [Anchor.LEFT, Anchor.RIGHT]:
 
@@ -457,3 +457,64 @@ class TextSlider(_Slider, TextualWidget):
         just_y = self._justify[1]*(self._arts.height - text_height)
         bg.blit(rendered_text, (just_x, just_y))
         return bg
+
+class MultiAspectSlider(MultiWidgetBase):
+
+    def __init__(
+        self, master: Frame,
+        values: Sequence,
+        normal_background: List[Art],
+        normal_cursor: List[Art],
+        initial_value: Optional[Any] = None,
+        focused_background: _ListOrObject[Optional[Art]] = None,
+        focused_cursor: _ListOrObject[Optional[Art]] = None,
+        disabled_background: _ListOrObject[Optional[Art]] = None,
+        disabled_cursor: _ListOrObject[Optional[Art]] = None,
+        hovered_background: _ListOrObject[Optional[Art]] = None,
+        hovered_cursor: _ListOrObject[Optional[Art]] = None,
+        hitbox: _ListOrObject[Optional[Hitbox]] = None,
+        tooltip: _ListOrObject[Optional[Tooltip]] = None,
+        cursor: Optional[Cursor] = None,
+        continue_animation: bool = False,
+        transition_function: ZOCallable = linear,
+        transition_duration: int = 300, # [ms]
+        update_if_invisible: bool = True,
+        step_with_arrow: int = 1,
+        direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
+        command: _ListOrObject[Optional[Callable[[], Any]]] = None,
+        reset_on_start: bool = False
+    ):
+        length = len(normal_background)
+
+        super().__init__(master, normal_background[0].size, update_if_invisible, reset_on_start)
+
+        for nbg, nc, fbg, fc, dbg, dc, hbg, hc, hbx, ttip, cmd in zip(
+            _make_list(normal_background, length),
+            _make_list(normal_cursor, length),
+            _make_list(focused_background, length),
+            _make_list(focused_cursor, length),
+            _make_list(disabled_background, length),
+            _make_list(disabled_cursor, length),
+            _make_list(hovered_background, length),
+            _make_list(hovered_cursor, length),
+            _make_list(hitbox, length),
+            _make_list(tooltip, length),
+            _make_list(command, length),
+        ):
+            def new_on_click(cmd=cmd):
+                if cmd is not None:
+                    cmd()
+                new_idx = self.focusable_children[self._current_object_focus]._index
+                self._change(new_idx)
+
+            _s = _Slider(
+                self, values, nbg, nc, initial_value, fbg, fc, dbg, dc, hbg, hc, hbx, ttip, cursor,
+                continue_animation, transition_function, transition_duration, True, step_with_arrow,
+                direction, new_on_click
+            )
+            _s.place(0, 0)
+            _s.disable()
+            _s.hide()
+
+    def get(self):
+        return self.focusable_children[self._current_object_focus]._index

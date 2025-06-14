@@ -190,7 +190,7 @@ class CompositeWidget(Disableable, Master):
         return (child in self.placeable_children
             and child._x is not None
             and child.relative_rect.colliderect((0, 0, *self.relative_rect.size))
-            )
+        )
     
     def notify_change_all(self):
         """Force the change notification to remake every surface."""
@@ -229,7 +229,7 @@ class MultiWidgetBase(CompositeWidget):
             self._current_idx = 0
             if self._linked_focus_widget is not None:
                 self._linked_focus_widget.hide()
-            self._reset()
+        self._reset()
         super().begin()
 
     def _change(self, new_idx):
