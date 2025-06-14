@@ -1,6 +1,7 @@
 """The widget module contains the widget class, which is a base for all widgets."""
 from abc import abstractmethod
 
+from typing import TypeVar, List
 from pygame import Surface, SRCALPHA
 from ..frame import Frame
 from .._abstract import Disableable, TextualDisableable, GraphicalDisableable, Placeable, Focusable, Master
@@ -11,6 +12,7 @@ from ..states import WidgetStates
 from ...color import Color
 from ...database import TextFormatter
 from ..anchors import Anchor, CENTER
+from ...error import PygamingException
 
 class Widget(Hoverable, GraphicalDisableable):
     """Base class for hoverable and disableable widgets."""
@@ -193,3 +195,13 @@ class CompositeWidget(Disableable, Master):
         self.notify_change()
         for child in self.children:
             child.notify_change()
+
+_T = TypeVar("T")
+_ListOrObject = _T | List[_T]
+
+def _make_list(loo: _ListOrObject[_T], expected_length: int) -> List[_T]:
+    if isinstance(loo, List):
+        if len(loo) != expected_length:
+            raise PygamingException(f"{loo} should have a length of {expected_length}, but got {len(loo)}")
+        return loo
+    return [loo]*expected_length

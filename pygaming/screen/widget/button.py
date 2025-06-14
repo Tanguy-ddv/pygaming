@@ -1,17 +1,16 @@
 """The button module contains buttons. They are widgets used to get a user click."""
 
-from typing import Optional, Callable, Any, TypeVar, List
+from typing import Optional, Callable, Any, List
 from ordered_set import OrderedSet
 from ..frame import Frame
 from ..anchors import CENTER, AnchorLike
 from ..states import WidgetStates
-from .widget import Widget, TextualWidget, CompositeWidget
+from .widget import Widget, TextualWidget, CompositeWidget, _ListOrObject, _make_list
 from ..art import Art
 from ...color import Color
 from ...database import TextFormatter
 from ..hover import Tooltip, Cursor
 from ..hitbox import Hitbox
-from ...error import PygamingException
 
 class _Button(Widget):
     """Base class for buttons."""
@@ -226,16 +225,6 @@ class TextButton(_Button, TextualWidget):
 
     def make_surface(self):
         return self._render_text_on_bg(self.game.settings, self.game.typewriter)
-
-_T = TypeVar("T")
-_ListOrObject = _T | List[_T]
-
-def _make_list(loo: _ListOrObject[_T], expected_length: int) -> List[_T]:
-    if isinstance(loo, List):
-        if len(loo) != expected_length:
-            raise PygamingException(f"{loo} should have a length of {expected_length}, but got {len(loo)}")
-        return loo
-    return [loo]*expected_length
 
 class _MultiStateButton(CompositeWidget):
 
