@@ -5,7 +5,7 @@ from ordered_set import OrderedSet
 from ..frame import Frame
 from ..anchors import CENTER, AnchorLike
 from ..states import WidgetStates
-from .widget import Widget, TextualWidget, CompositeWidget, _ListOrObject, _make_list
+from .widget import Widget, TextualWidget, _ListOrObject, _make_list, MultiWidgetBase
 from ..art import Art
 from ...color import Color
 from ...database import TextFormatter
@@ -226,40 +226,7 @@ class TextButton(_Button, TextualWidget):
     def make_surface(self):
         return self._render_text_on_bg(self.game.settings, self.game.typewriter)
 
-class _MultiStateButton(CompositeWidget):
-
-    def __init__(self, master: Frame, size: tuple[int, int], update_if_invisible: bool = True, reset_on_start: bool = True, **kwargs):
-        super().__init__(master, size, update_if_invisible, **kwargs)
-        self.__reset_on_start = reset_on_start
-        self.__current_button_idx = 0
-
-    def begin(self):
-        if self.__reset_on_start:
-            if self._linked_focus_widget is not None:
-                self._linked_focus_widget.hide()
-            self.__current_button_idx = 0
-            current_button = self.focusable_children[self.__current_button_idx]
-            current_button.show()
-            current_button.enable()
-            self.set_link_focus(current_button)
-        super().begin()
-
-    def _next(self):
-        self.__current_button_idx += 1
-        self.__current_button_idx %= len(self.focusable_children)
-        if self._linked_focus_widget is not None:
-            self._linked_focus_widget.hide()
-            self._linked_focus_widget.disable()
-        current_button = self.focusable_children[self.__current_button_idx]
-        current_button.show()
-        current_button.enable()
-        self.set_link_focus(current_button)
-        self.notify_change()
-    
-    def get(self):
-        return self.__current_button_idx
-
-class MultiStateButton(_MultiStateButton):
+class MultiStateButton(MultiWidgetBase):
 
     def __init__(
         self,
@@ -298,7 +265,7 @@ class MultiStateButton(_MultiStateButton):
             def new_on_unclick():
                 if onuc is not None:
                     onuc()
-                self._next()
+                self._change(self.__current_idx + 1)
 
             _b = _Button(
                 self,
@@ -309,7 +276,7 @@ class MultiStateButton(_MultiStateButton):
             _b.disable()
             _b.hide()
 
-class TextMultiStateButton(_MultiStateButton):
+class TextMultiStateButton(MultiWidgetBase):
 
     def __init__(
         self,
@@ -372,7 +339,7 @@ class TextMultiStateButton(_MultiStateButton):
             def new_on_unclick():
                 if onuc is not None:
                     onuc()
-                self._next()
+                self._change(self.__current_idx + 1)
 
             _b = TextButton(
                 self,

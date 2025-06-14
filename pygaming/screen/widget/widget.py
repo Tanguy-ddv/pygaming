@@ -205,3 +205,37 @@ def _make_list(loo: _ListOrObject[_T], expected_length: int) -> List[_T]:
             raise PygamingException(f"{loo} should have a length of {expected_length}, but got {len(loo)}")
         return loo
     return [loo]*expected_length
+
+
+class MultiWidgetBase(CompositeWidget):
+
+    def __init__(self, master: Frame, size: tuple[int, int], update_if_invisible: bool = True, reset_on_start: bool = True, **kwargs):
+        super().__init__(master, size, update_if_invisible, **kwargs)
+        self.__reset_on_start = reset_on_start
+        self.__current_idx = 0
+
+    def begin(self):
+        if self.__reset_on_start:
+            if self._linked_focus_widget is not None:
+                self._linked_focus_widget.hide()
+            self.__current_idx = 0
+            current_button = self.focusable_children[self.__current_idx]
+            current_button.show()
+            current_button.enable()
+            self.set_link_focus(current_button)
+        super().begin()
+
+    def _change(self, new_idx):
+        self.__current_idx = new_idx
+        self.__current_idx %= len(self.focusable_children)
+        if self._linked_focus_widget is not None:
+            self._linked_focus_widget.hide()
+            self._linked_focus_widget.disable()
+        current_button = self.focusable_children[self.__current_idx]
+        current_button.show()
+        current_button.enable()
+        self.set_link_focus(current_button)
+        self.notify_change()
+    
+    def get(self):
+        return self.__current_idx
