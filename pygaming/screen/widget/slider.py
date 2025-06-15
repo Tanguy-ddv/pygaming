@@ -505,6 +505,9 @@ class MultiAspectSlider(MultiWidgetBase):
                 if cmd is not None:
                     cmd()
                 new_idx = self.focusable_children[self._current_object_focus]._index
+                self.focusable_children[self._current_object_focus]._cursor_position = self.focusable_children[self._current_idx]._cursor_position
+                for child in self.focusable_children:
+                    child._cursor_position = self.focusable_children[self._current_object_focus]._cursor_position
                 self._change(new_idx)
 
             _s = _Slider(
