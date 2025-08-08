@@ -189,9 +189,9 @@ class CompositeWidget(Disableable, Master):
         """Return whether the child is visible on the frame or not."""
         return (child in self.placeable_children
             and child._x is not None
-            and child.relative_rect.colliderect((0, 0, *self.relative_rect.size))
+            and child.relative_rect.colliderect((0, 0, *self.size))
         )
-    
+
     def notify_change_all(self):
         """Force the change notification to remake every surface."""
         self.notify_change()

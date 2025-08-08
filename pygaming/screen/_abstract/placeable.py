@@ -42,8 +42,8 @@ class Placeable(Child):
 
     def get_on_master(self) -> bool:
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
-        on_screen = self.absolute_rect.colliderect((0, 0, *self.master.game.config.dimension))
-        return on_screen and self.master.is_child_on_me(self)
+        # on_screen = self.absolute_rect.colliderect((0, 0, *self.master.game.config.dimension))
+        return self.master.is_child_on_me(self)
 
     def begin(self, **kwargs):
         self.on_master = self.get_on_master()
