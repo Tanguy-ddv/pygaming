@@ -65,7 +65,7 @@ class HScrollBar(CompositeWidget):
             continue_animation, transition_duration=0, update_if_invisible=update_if_invisible,
             direction=Anchor.RIGHT,
             step_with_arrow=step_with_button_or_arrow
-        ).place(left_button_normal_background.width, 0)
+        ).grid(0, 1)
 
         self._target = target
 
@@ -96,7 +96,7 @@ class HScrollBar(CompositeWidget):
             update_if_invisible,
             repeat_delay,
             repeat_interval
-        ).place(0, 0)
+        ).grid(0, 0)
 
         self._right_button = _Button(
             self,
@@ -112,7 +112,7 @@ class HScrollBar(CompositeWidget):
             update_if_invisible,
             repeat_delay,
             repeat_interval
-        ).place(left_button_normal_background.width + slider_normal_background.width, 0)
+        ).grid(0, 2)
 
     def update(self, dt):
 
@@ -182,7 +182,7 @@ class VScrollBar(CompositeWidget):
             continue_animation, transition_duration=0, update_if_invisible=update_if_invisible,
             direction=Anchor.BOTTOM,
             step_with_arrow=step_with_button_or_arrow
-        ).place(0, up_button_normal_background.height)
+        ).grid(1, 0)
 
         self._target = target
 
@@ -213,7 +213,7 @@ class VScrollBar(CompositeWidget):
             update_if_invisible,
             repeat_delay,
             repeat_interval
-        ).place(0, 0)
+        ).grid(0, 0)
 
         self._down_button = _Button(
             self,
@@ -229,7 +229,7 @@ class VScrollBar(CompositeWidget):
             update_if_invisible,
             repeat_delay,
             repeat_interval
-        ).place(0, up_button_normal_background.height + slider_normal_background.height)
+        ).grid(2, 0)
 
     def update(self, dt):
 
