@@ -284,7 +284,7 @@ class Slider(_Slider):
         transition_function: ZOCallable = linear,
         transition_duration: int = 300,
         update_if_invisible: bool = True,
-        step_wtih_arrow: int = 1,
+        step_with_arrow: int = 1,
         direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
         command: Callable[[], Any] | None = None,
         **kwargs
@@ -336,7 +336,7 @@ class Slider(_Slider):
             transition_function,
             transition_duration,
             update_if_invisible,
-            step_wtih_arrow,
+            step_with_arrow,
             direction,
             command,
             **kwargs
@@ -375,7 +375,7 @@ class TextSlider(_Slider, TextualWidget):
         update_if_invisible: bool = True,
         text_factory: Callable[[Any], str] = str,
         justify: Anchor = Anchor.CENTER_CENTER,
-        step_wtih_arrow: int = 1,
+        step_with_arrow: int = 1,
         direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
         command: Optional[Callable[[], Any]] = None,
     ) -> None:
@@ -427,7 +427,7 @@ class TextSlider(_Slider, TextualWidget):
             transition_function=transition_function,
             transition_duration=transition_duration,
             update_if_invisible=update_if_invisible,
-            step_wtih_arrow=step_wtih_arrow,
+            step_with_arrow=step_with_arrow,
             direction=direction,
             command=command,
             font=normal_font,
