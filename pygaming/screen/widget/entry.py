@@ -1,8 +1,8 @@
 """Then entry module contains the entry widget."""
-from typing import Optional, Callable, Any, Literal
+from typing import Optional, Callable, Any
 from pygame import Surface, draw, Rect
 from .widget import TextualWidget
-from ..anchors import LEFT, AnchorLike, Anchor
+from ..anchors import LEFT, AnchorLike
 from ..frame import Frame
 from ...color import Color
 from ..art import Art
@@ -49,6 +49,10 @@ class Entry(TextualWidget):
         empty_text_or_loc: str = "",
         empty_font: Optional[str] = None,
         empty_font_color: Optional[str] = None,
+        invalid_background: Optional[str] = None,
+        invalid_font: Optional[str] = None,
+        invalid_font_color: Optional[Color] = None,
+        validation_func: Callable[[str], bool] = lambda s: True,
         command: Optional[Callable[[], Any]] = None,
         password: bool = False,
         **kwargs
@@ -121,10 +125,17 @@ class Entry(TextualWidget):
 
         self._empty_text_or_loc = empty_text_or_loc
         self._fonts.add(WidgetStates.EMPTY, empty_font, empty_font_color)
+        self._fonts.add(WidgetStates.INVALID, invalid_font, invalid_font_color)
+        self._arts.add(WidgetStates.INVALID, invalid_background)
+
+        self._validation_func = validation_func
 
     def get(self):
         """Return the textual value currently entered."""
         return self.text
+    
+    def is_valid(self):
+        return self._validation_func(self.get())
 
     def __make_text_to_display(self):
         if self.password and self.text:
@@ -185,7 +196,7 @@ class Entry(TextualWidget):
                 if self._command is not None and not command_called:
                     self._command()
         else:
-            self._show_caret = True
+            self._show_caret = False
 
     def _add_new_characters(self, new_characters):
         """Add new characters to the value. Return True if some new characters have been added."""
@@ -217,6 +228,25 @@ class Entry(TextualWidget):
         """Move the caret to the left."""
         if self._caret_index > 0:
             self._caret_index -= 1
+            self.notify_change()
+    
+    def unfocus(self):
+        """Unfocus the object."""
+        # Overload the function to set the proper state in case of invalidity of the input.
+        if self.state == WidgetStates.FOCUSED:
+            if self.is_valid():
+                self.state = WidgetStates.NORMAL
+            else:
+                self.state = WidgetStates.INVALID
+            self._arts.new_state()
+            self.notify_change()
+    
+    def focus(self):
+        """Focus the object."""
+        # Overload the function to set the proper state in case of invalidity of the input.
+        if self.state in [WidgetStates.NORMAL, WidgetStates.HOVERED, WidgetStates.INVALID]:
+            self.state = WidgetStates.FOCUSED
+            self._arts.new_state()
             self.notify_change()
 
 class Text(TextualWidget):

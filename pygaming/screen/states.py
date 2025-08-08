@@ -14,4 +14,5 @@ class WidgetStates(States):
     DISABLED = auto()
     HOVERED = auto()
     ACTIVE = auto() # for button currently active
-    EMPTY = auto() # for entries current empty
+    EMPTY = auto() # for entries currently empty
+    INVALID = auto() # for entries with a non-valid input.
