@@ -50,16 +50,19 @@ class SpinBox(CompositeWidget):
         down_button_disabled_background: Art = None, 
         down_button_hovered_background: Art = None,
         down_button_hitbox: Hitbox | None = None,
-
         justify: AnchorLike = LEFT,
         accept_float: bool = True,
         update_if_invisible: bool = True,
         up_button_on_click_command: Callable[[], Any] | None = None,
         up_button_on_unclick_command: Callable[[], Any] | None = None,
         down_button_on_click_command: Callable[[], Any] | None = None,
-        down_button_on_unclick_command: Callable[[], Any] | None = None
+        down_button_on_unclick_command: Callable[[], Any] | None = None,
+        vertical_arrows: bool = True # Tkinter like, other option is left and right
     ):
-        size = (entry_normal_background.width + up_button_normal_background.width, max(entry_normal_background.height, up_button_normal_background.height + down_button_normal_background.height))
+        if vertical_arrows:
+            size = (entry_normal_background.width + up_button_normal_background.width, max(entry_normal_background.height, up_button_normal_background.height + down_button_normal_background.height))
+        else:
+            size = (entry_normal_background.width + up_button_normal_background.width + down_button_normal_background.width,  max(entry_normal_background.height, up_button_normal_background.height, down_button_normal_background.height))
         super().__init__(master, size, update_if_invisible)
         self._values = list(values)
         if initial_value is None:
@@ -108,7 +111,11 @@ class SpinBox(CompositeWidget):
             vfunc,
             None,
             False
-        ).grid(0, 0, None, rowspan=2)
+        )
+        if vertical_arrows:
+            self._entry.grid(0, 0, None, rowspan=2)
+        else:
+            self._entry.grid(0, 1)
 
 
         def up_func():
@@ -143,7 +150,12 @@ class SpinBox(CompositeWidget):
             False,
             repeat_delay,
             repeat_interval,
-        ).grid(0, 1)
+        )
+
+        if vertical_arrows:
+            self._button_up.grid(0, 1)
+        else:
+            self._button_up.grid(0, 2)
     
         def down_func():
             if down_button_on_click_command is not None:
@@ -175,8 +187,10 @@ class SpinBox(CompositeWidget):
             False,
             repeat_delay,
             repeat_interval,
-        ).grid(1, 1)
+        )
 
-    def update(self, dt):
-        return super().update(dt)
+        if vertical_arrows:
+            self._button_up.grid(1, 1)
+        else:
+            self._button_up.grid(0, 0)
         
