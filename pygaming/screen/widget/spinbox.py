@@ -57,7 +57,8 @@ class SpinBox(CompositeWidget):
         up_button_on_unclick_command: Callable[[], Any] | None = None,
         down_button_on_click_command: Callable[[], Any] | None = None,
         down_button_on_unclick_command: Callable[[], Any] | None = None,
-        vertical_arrows: bool = True # Tkinter like, other option is left and right
+        vertical_arrows: bool = True, # Tkinter like, other option is left and right
+        ciclable: bool = False
     ):
         if vertical_arrows:
             size = (entry_normal_background.width + up_button_normal_background.width, max(entry_normal_background.height, up_button_normal_background.height + down_button_normal_background.height))
@@ -130,6 +131,11 @@ class SpinBox(CompositeWidget):
                 idx = self._values.index(v)
                 if idx < len(self._values)-1:
                     self._entry.text = str(self._values[idx+1])
+                elif ciclable:
+                    self._entry.text = str(self._values[(idx+1)%len(self._values)])
+            else:
+                 self._entry.text = str(self._values[0])
+                
             self._entry.notify_change()
 
         repeat_delay, repeat_interval = self.game.config.get('repeat_delay', None), self.game.config.get('repeat_interval', None)
@@ -169,6 +175,10 @@ class SpinBox(CompositeWidget):
                 idx = self._values.index(v)
                 if idx > 0:
                     self._entry.text = str(self._values[idx-1])
+                elif ciclable:
+                    self._entry.text = str(self._values[(idx-1)%len(self._values)])
+            else:
+                 self._entry.text = str(self._values[-1])
             self._entry.notify_change()
 
         self._button_down = _Button(
