@@ -200,7 +200,7 @@ class SpinBox(CompositeWidget):
         )
 
         if vertical_arrows:
-            self._button_up.grid(1, 1)
+            self._button_down.grid(1, 1)
         else:
-            self._button_up.grid(0, 0)
+            self._button_down.grid(0, 0)
         
