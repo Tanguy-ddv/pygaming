@@ -218,13 +218,29 @@ class MultiWidgetBase(CompositeWidget):
         self.focusable_children: OrderedSet[Widget]
 
     def _reset(self, set_focus: bool):
+
+        # for widget in self.focusable_children:
+        #     print(widget.state)
+
         current_widget = self.focusable_children[self._current_idx]
-        current_widget.show()
+
+        for ch in self.focusable_children:
+            ch.disable()
+            ch.hide()
+
         current_widget.enable()
+        current_widget.show()
+
         if set_focus:
             current_widget.focus()
+
         self.set_link_focus(current_widget)
         self.notify_change()
+
+        # for widget in self.focusable_children:
+        #     print(widget.state)
+
+        # print(self._linked_focus_widget)
 
     def begin(self):
         if self.__reset_on_start:
@@ -234,13 +250,10 @@ class MultiWidgetBase(CompositeWidget):
         self._reset(False)
         super().begin()
 
-    def _change(self, new_idx):
+    def _change(self, new_idx: int, reset_focus: bool = True):
         self._current_idx = new_idx
         self._current_idx %= len(self.focusable_children)
-        if self._linked_focus_widget is not None:
-            self._linked_focus_widget.hide()
-            self._linked_focus_widget.disable()
-        self._reset(True)
+        self._reset(reset_focus)
 
     def get(self):
         return self._current_idx
