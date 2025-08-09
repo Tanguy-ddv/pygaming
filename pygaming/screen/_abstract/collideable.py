@@ -22,7 +22,7 @@ class Collideable(Placeable):
     
     def is_contact(self, pos: Optional[Click | tuple[int, int]]):
         """Return whether the position, relative to the top left of the master of this element, is in contact with the element."""
-        if pos is None or not self.on_master:
+        if pos is None or not self.on_master or not self.is_visible():
             return False
         ck = Click(*pos).make_local_click(self.absolute_left, self.absolute_top, self.master.wc_ratio)
         return self.hitbox.is_contact((ck.x, ck.y))

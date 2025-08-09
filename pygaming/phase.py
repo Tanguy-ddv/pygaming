@@ -295,12 +295,13 @@ class GamePhase(_BasePhase, Master):
         """Update the cursor and the over hover surface based on whether we are above one element or not."""
         pos = self.mouse.get_position()
         cursor, tooltip = None, None
-        for frame in self.visible_children():
-            frame_tooltip, frame_cursor = frame.get_hover(pos)
-            if frame_tooltip is not None:
-                tooltip = frame_tooltip
-            if frame_cursor is not None:
-                cursor = frame_cursor
+        for frame in self.frame_children:
+            if frame.is_visible():
+                frame_tooltip, frame_cursor = frame.get_hover(pos)
+                if frame_tooltip is not None:
+                    tooltip = frame_tooltip
+                if frame_cursor is not None:
+                    cursor = frame_cursor
 
         if tooltip is None: # We are not on a widget requiring a tooltip
             if self.current_tooltip is not None:
