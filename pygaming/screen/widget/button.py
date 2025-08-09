@@ -307,6 +307,7 @@ class TextMultiStateButton(MultiWidgetBase):
         update_if_invisible: bool = False,
         reset_on_start: bool = True,
     ):
+        
         length = len(normal_background)
 
         super().__init__(master, normal_background[0].size, update_if_invisible, reset_on_start)
@@ -344,7 +345,7 @@ class TextMultiStateButton(MultiWidgetBase):
                 self,
                 nbg, nf, nfc, loc, abg, af, afc,
                 fbg, ff, ffc, dbg, df, dfc, hbg, hf, hfc, hbx, tt, curs,
-                oncc, new_on_unclick, just, continue_animation, update_if_invisible
+                oncc, new_on_unclick, None, None, just, continue_animation, update_if_invisible
             )
             _b.place(0, 0)
             _b.disable()
