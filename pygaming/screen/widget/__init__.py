@@ -9,7 +9,8 @@ from .figure import Figure
 from .view import View
 from .scrollbar import HScrollBar, VScrollBar
 from .spinbox import SpinBox
-from .checkbox import CheckBox
+from .checkbox import CheckBox, RadioButtons
 
-__all__ = ['Button', 'TextButton', 'Entry', 'Label', 'Slider', 'Paragraph', 'View', 'MultiStateButton', 'TextMultiStateButton', 'SpinBox',
-           'ProgressBar', 'TextProgressBar', 'TextSlider', 'Text', 'Canvas', 'Figure', 'HScrollBar', 'VScrollBar', 'MultiAspectSlider', 'CheckBox']
+__all__ = ['Button', 'TextButton', 'Entry', 'Label', 'Slider', 'Paragraph', 'View', 'MultiStateButton', 'TextMultiStateButton',
+           'SpinBox', 'RadioButtons', 'ProgressBar', 'TextProgressBar', 'TextSlider',
+           'Text', 'Canvas', 'Figure', 'HScrollBar', 'VScrollBar', 'MultiAspectSlider', 'CheckBox']
