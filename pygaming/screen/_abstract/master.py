@@ -45,6 +45,15 @@ class Grid:
         self._objects: dict[tuple[int, int], _GridObject] = {}
         self._heights: dict[int, int] = {} # the height of each row
         self._widths: dict[int, int] = {} # the width of each column
+    
+    @property
+    def size(self):
+        max_col = max(col for (_, col) in self._dupl_objects)
+        max_row = max(row for (row, _) in self._dupl_objects)
+        grid_width = sum(self._widths.get(col, 0) for col in range(0, max_col + 1))
+        grid_height = sum(self._heights.get(row, 0) for row in range(0, max_row + 1))
+
+        return grid_width, grid_height
 
     def _update(self, row, column, rowspan, columnspan):
         for rw in range(row, row + rowspan):

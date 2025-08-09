@@ -10,7 +10,8 @@ from .view import View
 from .scrollbar import HScrollBar, VScrollBar
 from .spinbox import SpinBox
 from .checkbox import CheckBox, RadioButtons
+from .grid_selector import ToggleGridSelector
 
 __all__ = ['Button', 'TextButton', 'Entry', 'Label', 'Slider', 'Paragraph', 'View', 'MultiStateButton', 'TextMultiStateButton',
-           'SpinBox', 'RadioButtons', 'ProgressBar', 'TextProgressBar', 'TextSlider',
+           'SpinBox', 'RadioButtons', 'ProgressBar', 'TextProgressBar', 'TextSlider', 'ToggleGridSelector'
            'Text', 'Canvas', 'Figure', 'HScrollBar', 'VScrollBar', 'MultiAspectSlider', 'CheckBox']
