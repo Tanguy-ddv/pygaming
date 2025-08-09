@@ -263,9 +263,9 @@ class MultiStateButton(MultiWidgetBase):
             _make_list(on_unclick_command, length)
         ):
             def new_on_unclick(onuc = onuc):
+                self._change(self._current_idx + 1)
                 if onuc is not None:
                     onuc()
-                self._change(self._current_idx + 1)
 
             _b = _Button(
                 self,
