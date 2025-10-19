@@ -3,7 +3,7 @@ from pygaming.screen.frame import Frame
 from .widget import CompositeWidget
 from ..art import Art
 from ..hitbox import Hitbox
-from .button import MultiStateButton, TextMultiStateButton
+from .button import MultiStateButton, TextMultiStateButton, Button, TextButton
 from ..hover import Tooltip, Cursor
 from ...color import ColorLike, Color
 from ...database import TextFormatter
@@ -256,3 +256,61 @@ class TextToggleGridSelector(_ToggleGridSelector):
 
         self._width, self._height = self.grids[0].size
         self.grids[0]._update(0, 0, 0, 0)
+
+class _OverlayGridSelector(CompositeWidget):
+    
+    def __init__(
+        self,
+        master: Frame,
+        normal_background: List[List[Art]],
+        overlays: List[Art], # as much overlays as selectors.
+        active_background: List[List[Art | None]] | None = None,
+        focused_background: List[List[Art | None]] | None = None,
+        disabled_background: List[List[Art | None]] | None = None,
+        hovered_background: List[List[Art | None]] | None = None,
+        hitbox: List[List[Hitbox]] | None = None,
+        update_if_invisible: bool = True,
+        tooltips: List[List[Tooltip]] | None  = None,
+        cursor: Cursor | None = None,
+        padx: int = 0,
+        pady: int = 0,
+        
+        **kwargs
+    ):
+        super().__init__(master, (1, 1), update_if_invisible, **kwargs)
+        
+        self._selecor_idx = 0
+
+        count = 0
+
+        self._overlays = overlays
+
+        def new_on_click(count=count):
+            self.select(self.selecor_idx, count)
+
+
+        for i in range(len(normal_background)):
+            for j in range(len(normal_background[i])):
+
+                Button(
+                    self,
+                    normal_background[i][j],
+                    _get_obj_or_none(active_background, i, j),
+                    _get_obj_or_none(focused_background, i, j),
+                    _get_obj_or_none(disabled_background, i, j),
+                    _get_obj_or_none(hovered_background, i, j),
+                    _get_obj_or_none(hitbox, i, j),
+                    _get_obj_or_none(tooltips, i, j),
+                    cursor,
+
+                ).grid(i,j, None, 1, 1, padx, pady)
+
+
+        self._width, self._height = self.grids[0].size
+        self.grids[0]._update(0, 0, 0, 0)
+
+class OverlayGridSelector(_OverlayGridSelector):
+    pass
+
+class TextualOverlayGridSelector(_OverlayGridSelector):
+    pass
