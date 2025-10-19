@@ -3,14 +3,14 @@ from typing import Optional, Self
 import numpy as np
 import pygame
 from functools import lru_cache
-from ._abstract import Master, Focusable, Child, Collideable
+from ._abstract import Master, GraphicalFocusable, Focusable, Child, Collideable
 from .art.art import Art
 from .camera import Camera
 from .anchors import CENTER_CENTER, TOP_LEFT, Anchor, AnchorLike
 from ..inputs import Click
-from .hover import Cursor, Tooltip, Hoverable
+from .hover import Cursor, Tooltip
 from .states import WidgetStates
-class Frame(Focusable, Collideable, Master):
+class Frame(GraphicalFocusable, Collideable, Master):
     """
     The Frame represent a fraction of the screen.
     It has backgrounds and can contain many elements, including other frames, widgets and actors.
@@ -59,7 +59,7 @@ class Frame(Focusable, Collideable, Master):
             update_if_invisible=update_if_invisible,
             continue_animation=continue_animation
         )
-        self.master.add_child(self, False, False, False, False, True, False)
+        self.master.add_child(self, False, False, False, True, False)
         self._compute_wc_ratio()
 
         self.views = set()
@@ -91,40 +91,6 @@ class Frame(Focusable, Collideable, Master):
             return tooltip, cursor
         return None, None
 
-    def update_focus(self, click: Click | None):
-        """Update the focus of all the children in the frame."""
-        if not self.state == WidgetStates.FOCUSED:
-            self.notify_change()
-            self.focus()
-        one_is_clicked = False
-
-        for (i,child) in enumerate(self.collideable_children.intersection(self.focusable_children)):
-            if child.is_contact(click) and child.state != WidgetStates.DISABLED:
-                child.focus()
-                self._current_object_focus = i
-                one_is_clicked = True
-                self.has_a_widget_focused = True
-            else:
-                if self.state == WidgetStates.FOCUSED:
-                    child.unfocus()
-
-        for child in self.frame_children:
-            if child.is_contact(click):
-                child.update_focus(click)
-        if not one_is_clicked:
-            self._current_object_focus = None
-            self.has_a_widget_focused = False
-
-    def notify_change_all(self):
-        """Force the change notification to remake every surface."""
-        self.notify_change()
-
-        for child in self.children:
-            child.notify_change()
-
-        for frame in self.frame_children:
-            frame.notify_change_all()
-
     def notify_change(self):
         """Notify a change in the visual."""
         self._surface_changed = True
@@ -145,7 +111,7 @@ class Frame(Focusable, Collideable, Master):
         if self.state == WidgetStates.FOCUSED and self.has_a_widget_focused:
             widget_children: list[Focusable] = list(
                 filter(
-                    lambda child: child.state in [WidgetStates.NORMAL, WidgetStates.HOVERED, WidgetStates.FOCUSED],
+                    lambda child: child.state != WidgetStates.DISABLED,
                     self.focusable_children
                 )
             )
@@ -325,19 +291,19 @@ class Frame(Focusable, Collideable, Master):
     @property
     def absolute_left(self):
         """The absolute coordinates of the frame depends on the camera."""
-        return int(self.master.absolute_left + self.relative_left - self.camera.left*self.wc_ratio[0])
+        return int(self.master.absolute_left + self.relative_left)
 
     @property
     def absolute_top(self):
         """The absolute coordinates of the frame depends on the camera."""
-        return int(self.master.absolute_top + self.relative_top - self.camera.top*self.wc_ratio[1])
+        return int(self.master.absolute_top + self.relative_top)
 
     @property
     def absolute_right(self):
         """The absolute coordinates of the frame depends on the camera."""
-        return self.absolute_left + self.window.width*self.wc_ratio[0]
+        return self.absolute_left + self.window.width*self.master.wc_ratio[0]
 
     @property
     def absolute_bottom(self):
         """The absolute coordinates of the frame depends on the camera."""
-        return self.absolute_top + self.window.height*self.wc_ratio[1]
+        return self.absolute_top + self.window.height*self.master.wc_ratio[1]

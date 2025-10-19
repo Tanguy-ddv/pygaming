@@ -1,11 +1,11 @@
 """The Slider is Widget used to enter a numeric value within an interval."""
-from typing import Optional, Sequence, Any, Literal, Callable
+from typing import Optional, Sequence, Any, Literal, Callable, List
 from pygame import Surface
 from ZOCallable import ZOCallable, verify_ZOCallable
 from ZOCallable.functions import linear
 from .._abstract import Arts
 from ..states import WidgetStates
-from .widget import Widget, TextualWidget
+from .widget import Widget, TextualWidget, MultiWidgetBase, _ListOrObject, _make_list
 from ..frame import Frame
 from ..art import Art
 from ..hover import Cursor, Tooltip
@@ -37,7 +37,7 @@ class _Slider(Widget):
         transition_function: ZOCallable = linear,
         transition_duration: int = 300, # [ms]
         update_if_invisible: bool = True,
-        step_wth_arrow: int = 1,
+        step_with_arrow: int = 1,
         direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
         command: Optional[Callable[[], Any]] = None,
         **kwargs
@@ -80,7 +80,7 @@ class _Slider(Widget):
         self._current_transition_delta = 0
         self._cursor_position = None
 
-        self._step_wth_arrow = step_wth_arrow
+        self._step_with_arrow = step_with_arrow
 
         self._direction = direction
         self._command = command
@@ -128,6 +128,8 @@ class _Slider(Widget):
             self._index = new_index
             self._current_transition = (self._cursor_position, self._positions[self._index])
             self._current_transition_delta = 0
+        if self._command is not None:
+            self._command()
 
     def update(self, dt: int):
         """Update the slider based on the inputs."""
@@ -143,8 +145,6 @@ class _Slider(Widget):
 
         # If the user is clicking:
         if self.is_contact(ck1) and not self.state == WidgetStates.DISABLED:
-            if self._command is not None:
-                self._command()
 
             if self._direction in [Anchor.LEFT, Anchor.RIGHT]:
 
@@ -236,16 +236,12 @@ class _Slider(Widget):
                         Anchor.LEFT, Anchor.RIGHT, Anchor.TOP, Anchor.BOTTOM
                         but got {self._direction}.
                         """)
+
+            if self.game.keyboard.actions_down_or_repeated[decrease] and self._index > 0:
+                self._start_transition(max(0, self._index - self._step_with_arrow))
             
-            if self.game.keyboard.actions_down[decrease] and self._index > 0:
-                self._start_transition(max(0, self._index - self._step_wth_arrow))
-                if self._command is not None:
-                    self._command()
-            
-            if self.game.keyboard.actions_down[increase] and self._index < len(self._values) - 1:
-                self._start_transition(min(self._index + self._step_wth_arrow, len(self._values) - 1))
-                if self._command is not None:
-                    self._command()
+            if self.game.keyboard.actions_down_or_repeated[increase] and self._index < len(self._values) - 1:
+                self._start_transition(min(self._index + self._step_with_arrow, len(self._values) - 1))
 
     def _get_index_of_click(self, x):
         """Get the index the closest to the click"""
@@ -288,7 +284,7 @@ class Slider(_Slider):
         transition_function: ZOCallable = linear,
         transition_duration: int = 300,
         update_if_invisible: bool = True,
-        step_wth_arrow: int = 1,
+        step_with_arrow: int = 1,
         direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
         command: Callable[[], Any] | None = None,
         **kwargs
@@ -340,7 +336,7 @@ class Slider(_Slider):
             transition_function,
             transition_duration,
             update_if_invisible,
-            step_wth_arrow,
+            step_with_arrow,
             direction,
             command,
             **kwargs
@@ -379,7 +375,7 @@ class TextSlider(_Slider, TextualWidget):
         update_if_invisible: bool = True,
         text_factory: Callable[[Any], str] = str,
         justify: Anchor = Anchor.CENTER_CENTER,
-        step_wth_arrow: int = 1,
+        step_with_arrow: int = 1,
         direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
         command: Optional[Callable[[], Any]] = None,
     ) -> None:
@@ -431,7 +427,7 @@ class TextSlider(_Slider, TextualWidget):
             transition_function=transition_function,
             transition_duration=transition_duration,
             update_if_invisible=update_if_invisible,
-            step_wth_arrow=step_wth_arrow,
+            step_with_arrow=step_with_arrow,
             direction=direction,
             command=command,
             font=normal_font,
@@ -457,3 +453,67 @@ class TextSlider(_Slider, TextualWidget):
         just_y = self._justify[1]*(self._arts.height - text_height)
         bg.blit(rendered_text, (just_x, just_y))
         return bg
+
+class MultiAspectSlider(MultiWidgetBase):
+
+    def __init__(
+        self, master: Frame,
+        values: Sequence,
+        normal_background: List[Art],
+        normal_cursor: List[Art],
+        initial_value: Optional[Any] = None,
+        focused_background: _ListOrObject[Optional[Art]] = None,
+        focused_cursor: _ListOrObject[Optional[Art]] = None,
+        disabled_background: _ListOrObject[Optional[Art]] = None,
+        disabled_cursor: _ListOrObject[Optional[Art]] = None,
+        hovered_background: _ListOrObject[Optional[Art]] = None,
+        hovered_cursor: _ListOrObject[Optional[Art]] = None,
+        hitbox: _ListOrObject[Optional[Hitbox]] = None,
+        tooltip: _ListOrObject[Optional[Tooltip]] = None,
+        cursor: Optional[Cursor] = None,
+        continue_animation: bool = False,
+        transition_function: ZOCallable = linear,
+        transition_duration: int = 300, # [ms]
+        update_if_invisible: bool = True,
+        step_with_arrow: int = 1,
+        direction: Literal[Anchor.TOP, Anchor.RIGHT, Anchor.LEFT, Anchor.BOTTOM] = Anchor.RIGHT,
+        command: _ListOrObject[Optional[Callable[[], Any]]] = None,
+        reset_on_start: bool = False
+    ):
+        length = len(normal_background)
+
+        super().__init__(master, normal_background[0].size, update_if_invisible, reset_on_start)
+
+        for nbg, nc, fbg, fc, dbg, dc, hbg, hc, hbx, ttip, cmd in zip(
+            _make_list(normal_background, length),
+            _make_list(normal_cursor, length),
+            _make_list(focused_background, length),
+            _make_list(focused_cursor, length),
+            _make_list(disabled_background, length),
+            _make_list(disabled_cursor, length),
+            _make_list(hovered_background, length),
+            _make_list(hovered_cursor, length),
+            _make_list(hitbox, length),
+            _make_list(tooltip, length),
+            _make_list(command, length),
+        ):
+            def new_on_click(cmd=cmd):
+                if cmd is not None:
+                    cmd()
+                new_idx = self.focusable_children[self._current_object_focus]._index
+                self.focusable_children[self._current_object_focus]._cursor_position = self.focusable_children[self._current_idx]._cursor_position
+                for child in self.focusable_children:
+                    child._cursor_position = self.focusable_children[self._current_object_focus]._cursor_position
+                self._change(new_idx)
+
+            _s = _Slider(
+                self, values, nbg, nc, initial_value, fbg, fc, dbg, dc, hbg, hc, hbx, ttip, cursor,
+                continue_animation, transition_function, transition_duration, True, step_with_arrow,
+                direction, new_on_click
+            )
+            _s.place(0, 0)
+            _s.disable()
+            _s.hide()
+
+    def get(self):
+        return self.focusable_children[self._current_object_focus]._index

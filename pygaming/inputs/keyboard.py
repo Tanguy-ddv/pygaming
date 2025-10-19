@@ -18,12 +18,14 @@ class Keyboard:
         self._control_mapping = {}
         self.actions_pressed = {}
         self.actions_down = {}
+        self.actions_down_or_repeated = {}
         self.actions_up = {}
 
     def load_controls(self, settings: Settings, config: Config, phase_name: str):
         """Load the new controls"""
         self.controls = Controls(settings, config, phase_name)
         self.update_settings(settings)
+        self.udpate_actions_down_or_repeat()
         self.udpate_actions_down()
         self.update_actions_up()
         self.actions_pressed = self.actions_down.copy()
@@ -36,6 +38,7 @@ class Keyboard:
         """Update the keyboard with the event list."""
         self.event_list = event_list
         self.update_actions_up()
+        self.udpate_actions_down_or_repeat()
         self.udpate_actions_down()
         self.update_actions_pressed()
 
@@ -63,8 +66,17 @@ class Keyboard:
         Return a dict of str: bool specifying if the action is triggered or not.
         The action is triggered if the user just pressed the key.
         """
-        types = [event.key for event in self.event_list if event.type == pygame.KEYDOWN]
         self.actions_down = {
+            action : down and not self.actions_pressed[action]
+            for action, down in self.actions_down_or_repeated.items()}
+
+    def udpate_actions_down_or_repeat(self):
+        """
+        Return a dict of str: bool specifying if the action is triggered or not.
+        The action is triggered if the user just pressed the key.
+        """
+        types = [event.key for event in self.event_list if event.type == pygame.KEYDOWN]
+        self.actions_down_or_repeated = {
             action : any(int(key) in types for key in keys)
             for action, keys in self._control_mapping.items()}
 

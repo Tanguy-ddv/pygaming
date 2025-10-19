@@ -11,7 +11,7 @@ class Placeable(Child):
     def __init__(self, master: Master, update_if_invisible: bool, **kwargs):
         # **kwargs so that the call of super().__init__(...) in the element class can pass every of its argument to Placable.
         super().__init__(master=master, update_if_invisible=update_if_invisible, **kwargs)
-        self.master.add_child(self, False, False, False, False, False, True)
+        self.master.add_child(self, False, False, False, False, True)
         self._x = None
         self._y = None
         self.anchor = None
@@ -40,10 +40,19 @@ class Placeable(Child):
         self.master.notify_change()
         return self
 
-    def get_on_master(self) -> None:
+    def get_on_master(self) -> bool:
         """Reassign the on_screen argument to whether the object is inside the screen or outside."""
-        on_screen = self.absolute_rect.colliderect((0, 0, *self.master.game.config.dimension))
-        return on_screen and self.master.is_child_on_me(self)
+        # on_screen = self.absolute_rect.colliderect((0, 0, *self.master.game.config.dimension))
+        return self.master.is_child_on_me(self)
+
+    def begin(self, **kwargs):
+        self.on_master = self.get_on_master()
+        if self.on_master:
+            self.master.notify_change()
+        return super().begin(**kwargs)
+
+    def is_placed(self):
+        return self._x is not None
 
     def place(self, x: int, y: int, anchor: AnchorLike = TOP_LEFT, layer=0) -> Self:
         """
@@ -66,10 +75,6 @@ class Placeable(Child):
         self._y = y
         self.anchor = Anchor(anchor)
         self.layer = layer
-
-        self.on_master = self.get_on_master()
-        if self.on_master:
-            self.master.notify_change()
         
         return self
 

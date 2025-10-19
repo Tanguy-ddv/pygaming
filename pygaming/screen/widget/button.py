@@ -1,10 +1,11 @@
 """The button module contains buttons. They are widgets used to get a user click."""
 
-from typing import Optional, Callable, Any
+from typing import Optional, Callable, Any, List
+from ordered_set import OrderedSet
 from ..frame import Frame
 from ..anchors import CENTER, AnchorLike
 from ..states import WidgetStates
-from .widget import Widget, TextualWidget
+from .widget import Widget, TextualWidget, _ListOrObject, _make_list, MultiWidgetBase
 from ..art import Art
 from ...color import Color
 from ...database import TextFormatter
@@ -29,6 +30,8 @@ class _Button(Widget):
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
         update_if_invisible: bool = False,
+        repeat_command_delay: int | None = None, # [ms] similar to pygame.key.set_repeat
+        repeat_command_interval: int = 0, # [ms]
         **kwargs
     ) -> None:
         
@@ -48,6 +51,10 @@ class _Button(Widget):
         self._arts.add(WidgetStates.ACTIVE, active_background)
         self._on_click_command = on_click_command
         self._on_unclick_command = on_unclick_command
+
+        self._repeat_command_delay = repeat_command_delay
+        self._repeat_command_interval = repeat_command_interval if repeat_command_interval else repeat_command_delay
+        self._dt_before_repeat = 0
 
     def get(self):
         """Return true if the button is clicked, false otherwise."""
@@ -75,6 +82,15 @@ class _Button(Widget):
 
                     self._previous_state = self.state
                     self.state = WidgetStates.ACTIVE
+                    if self._repeat_command_delay is not None:
+                        self._dt_before_repeat = self._repeat_command_delay
+
+                elif self._repeat_command_delay is not None and self._on_click_command is not None:
+                    self._dt_before_repeat -= dt
+                    if self._dt_before_repeat < 0:
+                        self._on_click_command()
+                        self._dt_before_repeat = self._repeat_command_interval
+
 
             else:
                 if self.state == WidgetStates.ACTIVE:
@@ -97,10 +113,12 @@ class Button(_Button):
         hovered_background: Optional[Art] = None,
         hitbox: Optional[Hitbox] = None,
         tooltip: Optional[Tooltip] = None,
-        cursor: Cursor | None = None,
+        cursor: Optional[Cursor] = None,
+        on_click_command: Optional[Callable[[], Any]] = None,
+        on_unclick_command: Optional[Callable[[], Any]] = None,
+        repeat_command_delay: int | None = None, # [ms]
+        repeat_command_interval: int = 0, # [ms]
         continue_animation: bool = False,
-        on_click_command: Optional[Callable[[],Any]] = None,
-        on_unclick_command: Optional[Callable[[],Any]] = None,
         update_if_invisible: bool = False
     ) -> None:
         """
@@ -135,6 +153,8 @@ class Button(_Button):
             update_if_invisible=update_if_invisible,
             on_click_command=on_click_command,
             on_unclick_command=on_unclick_command,
+            repeat_command_delay=repeat_command_delay,
+            repeat_command_interval=repeat_command_interval
         )
 
 class TextButton(_Button, TextualWidget):
@@ -165,10 +185,12 @@ class TextButton(_Button, TextualWidget):
         hitbox: Optional[Hitbox] = None,
         tooltip: Optional[Tooltip] = None,
         cursor: Cursor | None = None,
-        continue_animation: bool = False,
         on_click_command: Optional[Callable[[],Any]] = None,
         on_unclick_command: Optional[Callable[[],Any]] = None,
+        repeat_command_delay: int | None = None, # [ms]
+        repeat_command_interval: int = 0, # [ms]
         justify: AnchorLike = CENTER,
+        continue_animation: bool = False,
         update_if_invisible: bool = False
     ) -> None:
         
@@ -195,9 +217,136 @@ class TextButton(_Button, TextualWidget):
             hovered_font_color=hovered_font_color,
             justify=justify,
             on_click_command=on_click_command,
-            on_unclick_command=on_unclick_command
+            on_unclick_command=on_unclick_command,
+            repeat_command_delay=repeat_command_delay,
+            repeat_command_interval=repeat_command_interval
         )
         self._fonts.add(WidgetStates.ACTIVE, active_font, active_font_color)
 
     def make_surface(self):
         return self._render_text_on_bg(self.game.settings, self.game.typewriter)
+
+class MultiStateButton(MultiWidgetBase):
+
+    def __init__(
+        self,
+        master: Frame,
+        normal_background: List[Art],
+        active_background: _ListOrObject[Optional[Art]] = None,
+        focused_background: _ListOrObject[Optional[Art]] = None,
+        disabled_background: _ListOrObject[Optional[Art]] = None,
+        hovered_background: _ListOrObject[Optional[Art]] = None,
+        hitbox: _ListOrObject[Optional[Hitbox]] = None,
+        tooltip: _ListOrObject[Optional[Tooltip]] = None,
+        cursor: _ListOrObject[Optional[Cursor]] = None,
+        on_click_command: _ListOrObject[Optional[Callable[[], Any]]] = None,
+        on_unclick_command: _ListOrObject[Optional[Callable[[], Any]]] = None,
+        continue_animation: bool = False,
+        update_if_invisible: bool = False,
+        reset_on_start: bool = True,
+    ):
+        self.focusable_children: OrderedSet[_Button]
+        length = len(normal_background)
+
+        super().__init__(master, normal_background[0].size, update_if_invisible, reset_on_start)
+
+        for nbg, abg, fbg, dbg, hbg, hbx, tt, curs, oncc, onuc in zip(
+            _make_list(normal_background, length),
+            _make_list(active_background, length),
+            _make_list(focused_background, length),
+            _make_list(disabled_background, length),
+            _make_list(hovered_background, length),
+            _make_list(hitbox, length),
+            _make_list(tooltip, length),
+            _make_list(cursor, length),
+            _make_list(on_click_command, length),
+            _make_list(on_unclick_command, length)
+        ):
+            def new_on_unclick(onuc = onuc):
+                self._change(self._current_idx + 1)
+                if onuc is not None:
+                    onuc()
+
+            _b = _Button(
+                self,
+                nbg, abg, fbg, dbg, hbg, hbx, tt, curs,
+                continue_animation, oncc, new_on_unclick, update_if_invisible
+            )
+            _b.place(0, 0)
+            _b.disable()
+            _b.hide()
+
+class TextMultiStateButton(MultiWidgetBase):
+
+    def __init__(
+        self,
+        master: Frame,
+        normal_background: List[Art],
+        normal_font: _ListOrObject[str],
+        normal_font_color: _ListOrObject[Color],
+        localization_or_text: _ListOrObject[str | TextFormatter],
+        active_background: _ListOrObject[Optional[Art]] = None,
+        active_font: _ListOrObject[Optional[str]] = None,
+        active_font_color: _ListOrObject[Optional[Color]] = None,
+        focused_background: _ListOrObject[Optional[Art]] = None,
+        focused_font: _ListOrObject[Optional[str]] = None,
+        focused_font_color: _ListOrObject[Optional[Color]] = None,
+        disabled_background: _ListOrObject[Optional[Art]] = None,
+        disabled_font: _ListOrObject[Optional[str]] = None,
+        disabled_font_color: _ListOrObject[Optional[Color]] = None,
+        hovered_background: _ListOrObject[Optional[str]] = None,
+        hovered_font: _ListOrObject[Optional[str]] = None,
+        hovered_font_color: _ListOrObject[Optional[Color]] = None,
+        hitbox: _ListOrObject[Optional[Hitbox]] = None,
+        tooltip: _ListOrObject[Optional[Tooltip]] = None,
+        cursor: _ListOrObject[Optional[Cursor]] = None,
+        on_click_command: _ListOrObject[Optional[Callable[[], Any]]] = None,
+        on_unclick_command: _ListOrObject[Optional[Callable[[], Any]]] = None,
+        justify: _ListOrObject[AnchorLike] = CENTER,
+        continue_animation: bool = False,
+        update_if_invisible: bool = False,
+        reset_on_start: bool = True,
+    ):
+        
+        length = len(normal_background)
+
+        super().__init__(master, normal_background[0].size, update_if_invisible, reset_on_start)
+
+        for nbg, nf, nfc, loc, abg, af, afc, fbg, ff, ffc, dbg, df, dfc, hbg, hf, hfc, hbx, tt, curs, oncc, onuc, just in zip(
+            _make_list(normal_background, length),
+            _make_list(normal_font, length),
+            _make_list(normal_font_color, length),
+            _make_list(localization_or_text, length),
+            _make_list(active_background, length),
+            _make_list(active_font, length),
+            _make_list(active_font_color, length),
+            _make_list(focused_background, length),
+            _make_list(focused_font, length),
+            _make_list(focused_font_color, length),
+            _make_list(disabled_background, length),
+            _make_list(disabled_font, length),
+            _make_list(disabled_font_color, length),
+            _make_list(hovered_background, length),
+            _make_list(hovered_font, length),
+            _make_list(hovered_font_color, length),
+            _make_list(hitbox, length),
+            _make_list(tooltip, length),
+            _make_list(cursor, length),
+            _make_list(on_click_command, length),
+            _make_list(on_unclick_command, length),
+            _make_list(justify, length)
+        ):
+            def new_on_unclick(onuc = onuc):
+                if onuc is not None:
+                    onuc()
+                self._change(self._current_idx + 1)
+
+            _b = TextButton(
+                self,
+                nbg, nf, nfc, loc, abg, af, afc,
+                fbg, ff, ffc, dbg, df, dfc, hbg, hf, hfc, hbx, tt, curs,
+                oncc, new_on_unclick, None, None, just, continue_animation, update_if_invisible
+            )
+            _b.place(0, 0)
+            _b.disable()
+            _b.hide()

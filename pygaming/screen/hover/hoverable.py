@@ -33,7 +33,7 @@ class Hoverable(GraphicalChild, Collideable):
         )
         self._arts.set_continue_animation(continue_animation)
         self._arts.add(WidgetStates.HOVERED, hovered_art)
-        self.master.add_child(self, False, False, True, True, False, True)
+        self.master.add_child(self, False, False, True, False, True)
         self.tooltip = tooltip
         self.cursor = cursor
         self._previous_state = WidgetStates.NORMAL

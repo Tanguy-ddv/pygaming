@@ -9,6 +9,8 @@ from ordered_set import OrderedSet
 from .visual import Visual
 from ...game import Game
 from ..anchors import AnchorLike, Anchor, TOP_LEFT, CENTER_CENTER
+from ..states import WidgetStates
+from ...inputs import Click
 
 @dataclass
 class _GridObject:
@@ -43,6 +45,15 @@ class Grid:
         self._objects: dict[tuple[int, int], _GridObject] = {}
         self._heights: dict[int, int] = {} # the height of each row
         self._widths: dict[int, int] = {} # the width of each column
+    
+    @property
+    def size(self):
+        max_col = max(col for (_, col) in self._dupl_objects)
+        max_row = max(row for (row, _) in self._dupl_objects)
+        grid_width = sum(self._widths.get(col, 0) for col in range(0, max_col + 1))
+        grid_height = sum(self._heights.get(row, 0) for row in range(0, max_row + 1))
+
+        return grid_width, grid_height
 
     def _update(self, row, column, rowspan, columnspan):
         for rw in range(row, row + rowspan):
@@ -182,7 +193,6 @@ class Master(Visual):
         self.focusable_children = OrderedSet()
         self.disableable_children = set()
         self.hoverable_children = set()
-        self.collideable_children = set()
         self.placeable_children = set()
         self.frame_children = set()
         self.wc_ratio: tuple[int, int]
@@ -192,7 +202,41 @@ class Master(Visual):
         self.absolute_left: int
         self.absolute_top: int
 
-    def add_child(self, child, focusable: bool, disableable: bool, collideable: bool, hoverable: bool, frame: bool, placeable: bool):
+    def update_focus(self, click: Click | None):
+        """Update the focus of all the children in the frame."""
+        if not self.state == WidgetStates.FOCUSED:
+            self.notify_change()
+            self.focus()
+        one_is_clicked = False
+
+        for (i,child) in enumerate(self.focusable_children):
+            if child.is_contact(click) and child.state != WidgetStates.DISABLED:
+                child.focus()
+                self._current_object_focus = i
+                one_is_clicked = True
+                self.has_a_widget_focused = True
+            else:
+                if self.state == WidgetStates.FOCUSED:
+                    child.unfocus()
+
+        for child in self.frame_children:
+            if child.is_contact(click):
+                child.update_focus(click)
+        if not one_is_clicked:
+            self._current_object_focus = None
+            self.has_a_widget_focused = False
+
+    def notify_change_all(self):
+        """Force the change notification to remake every surface."""
+        self.notify_change()
+
+        for child in self.children:
+            child.notify_change()
+
+        for frame in self.frame_children:
+            frame.notify_change_all()
+
+    def add_child(self, child, focusable: bool, disableable: bool, hoverable: bool, frame: bool, placeable: bool):
         """Add a new element to the child set."""
         self.children.add(child)
         if focusable:
@@ -201,10 +245,8 @@ class Master(Visual):
                 self.disableable_children.add(child)
         if placeable:
             self.placeable_children.add(child)
-            if collideable:
-                self.collideable_children.add(child)
-                if hoverable:
-                    self.hoverable_children.add(child)
+            if hoverable:
+                self.hoverable_children.add(child)
         if frame:
             self.frame_children.add(child)
 
@@ -236,10 +278,6 @@ class Master(Visual):
             return self.grids[idx]
         else:
             return self.create_grid(0, 0, TOP_LEFT)
-
-    @abstractmethod
-    def notify_change_all(self) -> None:
-        pass
 
     @lru_cache(1)
     def visible_children(self):
